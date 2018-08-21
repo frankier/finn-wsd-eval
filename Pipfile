@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 stiff = {editable = true, ref = "88c88a3686c2ae8990b7a9b0a70eca6f4d0fbe68", git = "https://github.com/frankier/STIFF.git"}
+nltk = {editable = true, ref = "fix-binary-search-unicode", git = "https://github.com/frankier/nltk.git"}
 
 [dev-packages]
 

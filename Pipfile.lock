@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c1df3573a51c821377939dfa07d40b719851fbfef2c6cdbe8ec337dc61a18064"
+            "sha256": "721e5853dcbe0162dca62892598b9b4384be427c6026aa192a379b1d298f52fe"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -258,10 +258,9 @@
             "version": "==4.3.0"
         },
         "nltk": {
-            "hashes": [
-                "sha256:fe0eda251be65843be86d7de9abfbf7161732256f742e623b21243ec47bdb718"
-            ],
-            "version": "==3.3.0"
+            "editable": true,
+            "git": "https://github.com/frankier/nltk.git",
+            "ref": "b8eeed7731e505b6fe11aa366e022a6774c03caf"
         },
         "numpy": {
             "hashes": [
