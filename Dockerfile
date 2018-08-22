@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:buster
 
 RUN apt-get update
 RUN apt-get install -y python3 python3.7 python3-pip openjdk-10-jdk
