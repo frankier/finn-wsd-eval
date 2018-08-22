@@ -1,5 +1,8 @@
 FROM debian:buster
 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 RUN apt-get update
 RUN apt-get install -y python3 python3.7 python3-pip openjdk-10-jdk
 RUN pip3 install pipenv
