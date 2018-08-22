@@ -1,6 +1,7 @@
 FROM debian:buster-slim
 
-RUN apt-get install python3 python3.7 python3-pip openjdk-7-jdk
+RUN apt-get update
+RUN apt-get install -y python3 python3.7 python3-pip openjdk-10-jdk
 RUN pip3 install pipenv
 RUN pipenv install
 RUN curl -s "https://get.sdkman.io" | bash
