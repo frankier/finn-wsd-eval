@@ -11,7 +11,7 @@ RUN ln -sf /usr/bin/python3.7 /usr/bin/python3
 RUN pip3 install pipenv
 
 # Python build requirements
-RUN apt-get install -y python3-dev build-essential libffi-dev linux-headers
+RUN apt-get install -y python3-dev build-essential libffi-dev
 
 # Build requirements for HFST + Omorfi
 RUN apk --no-cache add git autoconf automake libtool file
