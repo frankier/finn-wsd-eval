@@ -11,7 +11,7 @@ RUN pip3 install pipenv
 
 RUN apt-get install -y curl unzip zip openjdk-10-jdk
 RUN curl -s "https://get.sdkman.io" | bash
-RUN sdk install gradle 4.9
+RUN source "/root/.sdkman/bin/sdkman-init.sh" && sdk install gradle 4.9
 
 COPY . /app
 WORKDIR /app
