@@ -17,7 +17,7 @@ RUN apt-get install -y python3-dev build-essential libffi-dev
 RUN apt-get install -y git autoconf automake libtool file
 
 # Build requirements for HFST
-RUN apt-get install -y flex bison glib glib-dev
+RUN apt-get install -y flex bison libglib2.0-0 libglib2.0-dev
 
 # Java stuff for Scorer + IMS
 RUN apt-get install -y curl unzip zip openjdk-10-jdk
