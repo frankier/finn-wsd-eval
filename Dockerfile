@@ -14,10 +14,10 @@ RUN pip3 install pipenv
 RUN apt-get install -y python3-dev build-essential libffi-dev
 
 # Build requirements for HFST + Omorfi
-RUN apk --no-cache add git autoconf automake libtool file
+RUN apt-get install -y git autoconf automake libtool file
 
 # Build requirements for HFST
-RUN apk --no-cache add flex bison glib glib-dev
+RUN apt-get install -y flex bison glib glib-dev
 
 # Java stuff for Scorer + IMS
 RUN apt-get install -y curl unzip zip openjdk-10-jdk
