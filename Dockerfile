@@ -25,7 +25,7 @@ RUN curl -s "https://get.sdkman.io" | bash
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install gradle 4.9'
 
 # UKB
-RUN apt-get install -y libboost-all-dev
+RUN apt-get install -y libboost-all-dev libboost-program-options-dev
 
 # Evaluation framework setup
 COPY . /app
