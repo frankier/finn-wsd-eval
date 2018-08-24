@@ -24,6 +24,9 @@ RUN apt-get install -y curl wget unzip zip openjdk-10-jdk
 RUN curl -s "https://get.sdkman.io" | bash
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install gradle 4.9'
 
+# UKB
+RUN apt-get install -y libboost-dev
+
 # Evaluation framework setup
 COPY . /app
 WORKDIR /app
