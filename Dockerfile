@@ -29,7 +29,7 @@ COPY . /app
 WORKDIR /app
 
 RUN set -ex && pipenv install --deploy --system
-RUN bash ./get_scorer.sh
+RUN bash ./compile_scorer.sh
 
 # WSD system setup
 RUN python ukb.py fetch
