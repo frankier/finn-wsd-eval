@@ -11,7 +11,7 @@ RUN ln -sf /usr/bin/python3.7 /usr/bin/python3
 RUN pip3 install pipenv
 
 # Python build requirements
-RUN apt-get install -y python3-dev build-essential libffi-dev
+RUN apt-get install -y python3-dev python3.7-dev build-essential libffi-dev
 
 # Build requirements for HFST + Omorfi
 RUN apt-get install -y git autoconf automake libtool file
@@ -20,7 +20,7 @@ RUN apt-get install -y git autoconf automake libtool file
 RUN apt-get install -y flex bison libglib2.0-0 libglib2.0-dev
 
 # Java stuff for Scorer + IMS
-RUN apt-get install -y curl unzip zip openjdk-10-jdk
+RUN apt-get install -y curl wget unzip zip openjdk-10-jdk
 RUN curl -s "https://get.sdkman.io" | bash
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install gradle 4.9'
 

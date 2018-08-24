@@ -6,7 +6,10 @@ from plumbum.cmd import java, python, make, bash
 from stiff.filter_utils import iter_sentences
 from stiff.data import UNI_POS_WN_MAP
 
-ukb_wsd = local[local.env["UKB_PATH"] + "/ukb_wsd"]
+def get_ukb():
+    ukb_path = local.env.get("UKB_PATH", "systems/ukb/src")
+    return local[ukb_path + "/ukb_wsd"]
+
 
 @click.group()
 def ukb():
@@ -24,6 +27,7 @@ def run(input_fn, output_fn, variant, graph_fn, dict_fn):
 
 
 def run_inner(input_fn, output_fn, variant, graph_fn, dict_fn):
+    ukb_wsd = get_ukb()
     os.makedirs("guess", exist_ok=True)
     args = variant + ("-D", dict_fn, "-K", graph_fn, "-")
     pred_pipeline = (
