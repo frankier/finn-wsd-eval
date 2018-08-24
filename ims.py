@@ -13,15 +13,15 @@ def ims():
 @ims.command()
 def fetch():
     os.makedirs("systems", exist_ok=True)
-    with local.cd("systems"):
+    with local.cwd("systems"):
         git("clone", "https://github.com/frankier/ims.git")
-        with local.cd("ims"):
+        with local.cwd("ims"):
             wget("http://www.comp.nus.edu.sg/~nlp/sw/lib.tar.gz")
             tar("-xvzf", "lib.tar.gz")
             rm("lib.tar.gz")
 
-    copyfile("support/ims/test_ims.bash", "systems/ims/")
-    copyfile("support/ims/train_ims.bash", "systems/ims/")
+    copyfile("support/ims/test_ims.bash", "systems/ims/test_ims.bash")
+    copyfile("support/ims/train_ims.bash", "systems/ims/train_ims.bash")
 
 
 @ims.command()
@@ -48,3 +48,7 @@ def fixup_keyout(keyin, keyout):
     lines = sorted((l[1:] for l in open(keyin)))
     for line in lines:
         keyout.write(line)
+
+
+if __name__ == "__main__":
+    ims()

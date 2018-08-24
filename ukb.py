@@ -2,7 +2,7 @@ import os
 import sys
 import click
 from plumbum import local
-from plumbum.cmd import java, python, make, bash
+from plumbum.cmd import java, python, make, bash, git
 from stiff.filter_utils import iter_sentences
 from stiff.data import UNI_POS_WN_MAP
 
@@ -73,12 +73,13 @@ def clean_keyfile(keyin, keyout):
 @ukb.command()
 def fetch():
     os.makedirs("systems", exist_ok=True)
-    with local.cd("systems"):
+    with local.cwd("systems"):
         git("clone", "https://github.com/asoroa/ukb.git")
-        with local.cd("ukb/src"):
+        with local.cwd("ukb/src"):
+            local["./configure"]()
             make()
     # Prepare
-    with local.cd("ukb-eval"):
+    with local.cwd("ukb-eval"):
         bash("./prepare_wn30graph.sh")
     (python["mkwndict.py", "--en-synset-ids"] > "wndict.fi.txt")()
 

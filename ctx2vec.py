@@ -15,13 +15,13 @@ def ctx2vec():
 @ctx2vec.command()
 def fetch():
     os.makedirs("systems", exist_ok=True)
-    with local.cd("systems"):
-        git("clone", "https://github.com:orenmel/context2vec.git")
+    with local.cwd("systems"):
+        git("clone", "https://github.com/orenmel/context2vec.git")
 
-    copyfile("support/context2vec/Pipfile", "systems/context2vec/")
-    copyfile("support/context2vec/Pipfile.lock", "systems/context2vec/")
+    copyfile("support/context2vec/Pipfile", "systems/context2vec/Pipfile")
+    copyfile("support/context2vec/Pipfile.lock", "systems/context2vec/Pipfile.lock")
 
-    with local.cd("systems/context2vec"):
+    with local.cwd("systems/context2vec"):
         pipenv("install")
 
 
@@ -37,7 +37,7 @@ def test(modelin, trainin, keyin, testin, resultout):
     ln("-s", trainin, train_path)
     ln("-s", keyin, pjoin(tempdir, "train.key"))
     result_path = pjoin(tempdir, "results")
-    with local.cd("systems/context2vec"):
+    with local.cwd("systems/context2vec"):
         pipenv("run", "python", "eval/wsd/wsd_main.py", train_path, testin, result_path, modelin, "1")
     python(__file__, "context2vec-key-to-unified", result_path, resultout)
 
@@ -54,3 +54,7 @@ def context2vec_key_to_unified(keyin, keyout):
         if guesses:
             guessed = guesses[0].split("/")[0]
             keyout.write("{} {} {}\n".format(lemma_pos, iden, guessed))
+
+
+if __name__ == "__main__":
+    ctx2vec()
