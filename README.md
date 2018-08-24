@@ -18,3 +18,9 @@ is located.
     cd ukb-eval && ./prepare_wn30graph.sh && cd ..
     pipenv run python mkwndict.py --en-synset-ids > wndict.en.txt
     pipenv run python ukb.py run_all /path/to/eval/corpus.xml ukb-eval/wn30/wn30g.bin wndict.txt /path/to/eval/corpus.key
+
+## Licenses ##
+
+This project is licensed under the Apache v2 license. The code in `ukb-eval` is
+vendorized from UKB, and therefore licensed under the GPL. The scorer in
+`support/scorer` is under an unknown license, possibly public domain.
