@@ -1,6 +1,7 @@
 import os
 import sys
 import click
+from os.path import abspath
 from plumbum import local
 from plumbum.cmd import java, python, make, bash, git
 from stiff.filter_utils import iter_sentences
@@ -79,7 +80,7 @@ def fetch():
             local["./configure"]()
             make()
     # Prepare
-    with local.cwd("ukb-eval"):
+    with local.cwd("ukb-eval"), local.env(UKB_PATH=abspath("systems/ukb/src")):
         bash("./prepare_wn30graph.sh")
     (python["mkwndict.py", "--en-synset-ids"] > "wndict.fi.txt")()
 
