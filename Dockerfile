@@ -27,6 +27,9 @@ RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install gradle 4.9
 # UKB
 RUN apt-get install -y libboost-all-dev libboost-program-options-dev
 
+# Re-fixup Python
+RUN ln -sf /usr/bin/python3.7 /usr/bin/python
+
 # Evaluation framework setup
 COPY . /app
 WORKDIR /app
