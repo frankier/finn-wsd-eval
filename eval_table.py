@@ -5,11 +5,23 @@ from plumbum import local
 from plumbum.cmd import python, java
 from os import makedirs
 from os.path import join as pjoin, basename
+import sys
+import baselines
+
+
+MEAN_DISPS = {
+    "catp3_mean": "CATP3-WE",
+    "catp4_mean": "CATP4-WE",
+    "sif_mean": "SIF-WE",
+    "unnormalized_mean": "AWE",
+    "normalized_mean": "AWE-norm",
+}
 
 
 @dataclass(frozen=True)
 class Exp:
     category: str
+    subcat: str
     nick: str
     disp: str
     run: Callable[[str, str, str], None]
@@ -18,7 +30,6 @@ class Exp:
 def baseline(*args):
     def run(corpus_fn, truetag_fn, guess_fn):
         all_args = ["baselines.py"] + list(args) + [corpus_fn, guess_fn]
-        #print(" ".join(all_args))
         python(*all_args)
     return run
 
@@ -37,27 +48,40 @@ def ims(corpus_fn, truetag_fn, guess_fn):
 
 
 def ctx2vec(ctx2vec_model):
-    from ctx2vec import test as ctx2vec_test
-    ctx2vec_model_path = local.env["CTX2VEC_MODEL_PATH"]
-    full_model_path = pjoin(ctx2vec_model_path, ctx2vec_model, "model.params")
-    ctx2vec_train_corpus = local.env["CTX2VEC_TRAIN_CORPUS"]
-    ctx2vec_train_corpus_key = local.env["CTX2VEC_TRAIN_CORPUS_KEY"]
     def run(corpus_fn, truetag_fn, guess_fn):
+        from ctx2vec import test as ctx2vec_test
+        ctx2vec_model_path = local.env["CTX2VEC_MODEL_PATH"]
+        full_model_path = pjoin(ctx2vec_model_path, ctx2vec_model, "model.params")
+        ctx2vec_train_corpus = local.env["CTX2VEC_TRAIN_CORPUS"]
+        ctx2vec_train_corpus_key = local.env["CTX2VEC_TRAIN_CORPUS_KEY"]
+
         ctx2vec_test.callback(full_model_path, ctx2vec_train_corpus, ctx2vec_train_corpus_key, corpus_fn, guess_fn)
     return run
 
 
 EXPERIMENTS = [
-    Exp("Baseline", "first", "FiWN 1st sense", baseline("first")),
-    Exp("Baseline", "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
-    Exp("Baseline", "lesk.fasttext", "Lesk\\textsubscript{fastText+AWE}", baseline("lesk_fasttext")),
-    Exp("Baseline", "lesk.fasttext.wn-filter", "Lesk\\textsubscript{fastText+AWE+WN-filter}", baseline("lesk_fasttext", "--wn-filter")),
-    Exp("Baseline", "lesk.numberbatch", "Lesk\\textsubscript{numberbatch+AWE}", baseline("lesk_conceptnet")),
-    Exp("Baseline", "lesk.numberbatch.wn-filter", "Lesk\\textsubscript{numberbatch+AWE+WN-filter}", baseline("lesk_conceptnet", "--wn-filter")),
-    Exp("Supervised", "ims", "IMS", ims),
-    Exp("Supervised", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100")),
-    Exp("Supervised", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100")),
+    Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
+    Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
+    Exp("Supervised", "IMS", "ims", "IMS", ims),
+    Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100")),
+    Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100")),
 ]
+
+for vec in ["fastText", "numberbatch", "double"]:
+    lower_vec = vec.lower()
+    for mean in baselines.MEANS.keys():
+        for wn_filter in [False, True]:
+            baseline_args = ["lesk_" + lower_vec, mean]
+            if wn_filter:
+                baseline_args += ["--wn-filter"]
+                nick_extra = ".wn-filter"
+                disp_extra = "+WN-filter"
+            else:
+                nick_extra = ""
+                disp_extra = ""
+            nick = "lesk." + lower_vec + nick_extra
+            disp = f"Lesk\\textsubscript{{{vec}{disp_extra}}}"
+            EXPERIMENTS.append(Exp("Knowledge", "Multilingual Word Vector Lesk", nick, disp, baseline(*baseline_args)))
 
 # XXX: default configuration -- possibly bad due to using 1st sense + bad data
 DICTABLE_OPTS = [("--ppr_w2w",), ("--ppr",), ("--dgraph_dfs", "--dgraph_rank", "ppr")]
@@ -68,7 +92,7 @@ for extra in [(), ("--nodict_weight",)]:
 VARIANTS.append(("--static",))
 
 for idx, variant in enumerate(VARIANTS):
-    EXPERIMENTS.append(Exp("Knowledge", "UKB", "UKB{}".format(idx), ukb(*variant)))
+    EXPERIMENTS.append(Exp("Knowledge", "UKB", "UKB", "UKB{}".format(idx), ukb(*variant)))
 
 TABLE_HEAD = r"""
 \begin{tabu} to \linewidth { l X r r r }
@@ -90,11 +114,16 @@ TABLE_FOOT = r"""
 @click.command()
 @click.argument("corpus", type=click.Path())
 @click.argument("truetag", type=click.Path())
-def main(corpus, truetag):
+@click.argument("filter_l1", required=False)
+@click.argument("filter_l2", required=False)
+def main(corpus, truetag, filter_l1=None, filter_l2=None):
     print(TABLE_HEAD) 
     prev_cat = None
     makedirs('guess', exist_ok=True)
     for exp in EXPERIMENTS:
+        if (filter_l1 is not None and exp.category != filter_l1) or \
+                (filter_l2 is not None and exp.subcat != filter_l2):
+            continue
         if exp.category != prev_cat:
             prev_cat = exp.category
             print("\midrule")

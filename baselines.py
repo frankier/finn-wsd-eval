@@ -5,6 +5,17 @@ from stiff.data import UNI_POS_WN_MAP
 from finntk.wordnet.reader import fiwn, fiwn_encnt, get_en_fi_maps
 from finntk.wordnet.utils import pre_id_to_post, ss2pre
 from finntk.wsd.lesk_emb import disambg_fasttext, disambg_conceptnet
+from finntk.emb.utils import CATP_3, CATP_4, catp_mean, sif_mean, unnormalized_mean, normalized_mean
+from functools import partial
+
+
+MEANS = {
+    "catp3_mean": partial(catp_mean, ps=CATP_3),
+    "catp4_mean": partial(catp_mean, ps=CATP_4),
+    "sif_mean": sif_mean,
+    "unnormalized_mean": unnormalized_mean,
+    "normalized_mean": normalized_mean,
+}
 
 
 @click.group()
@@ -63,34 +74,54 @@ def mfe(inf, keyout):
     unigram(inf, keyout, fiwn_encnt)
 
 
-def wordvec_lesk(filter_ctx, repr_instance_ctx, disambg, wn_filter, inf, keyout):
+def wordvec_lesk(aggf, repr_instance_ctx, disambg, wn_filter, inf, keyout):
     for sent in iter_sentences(inf):
         context = set()
         word_tags = sent.xpath("/wf|instance")
         for tag in word_tags:
-            if filter_ctx(tag):
-                context.add(repr_instance_ctx(tag))
+            context.add(repr_instance_ctx(tag))
         for instance in sent.xpath("instance"):
             inst_id = instance.attrib["id"]
             wf = repr_instance_ctx(instance)
             sub_ctx = context - {wf}
             _lemma_str, _pos, lemmas = lemmas_from_instance(fiwn, instance)
-            lemma, dist = disambg(lemmas, sub_ctx, wn_filter=wn_filter)
+            lemma, dist = disambg(aggf, lemmas, sub_ctx, wn_filter=wn_filter)
             write_lemma(keyout, inst_id, lemma)
 
 
+def lesk_fasttext_inner(aggf, wn_filter, inf, keyout):
+    return wordvec_lesk(
+        aggf,
+        lambda inst: inst.text.lower(),
+        disambg_fasttext,
+        wn_filter,
+        inf,
+        keyout
+    )
+
+
 @baselines.command()
+@click.argument("mean")
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
 @click.option("--wn-filter/--no-wn-filter")
-def lesk_fasttext(inf, keyout, wn_filter):
+def lesk_fasttext(mean, inf, keyout, wn_filter):
     """
     Performs word vector averaging simplified Lesk
     """
-    wordvec_lesk(
-        lambda inst: True,
-        lambda inst: inst.text,
-        disambg_fasttext,
+    return lesk_fasttext_inner(
+        MEANS[mean],
+        wn_filter,
+        inf,
+        keyout,
+    )
+
+
+def lesk_conceptnet_inner(aggf, wn_filter, inf, keyout):
+    return wordvec_lesk(
+        aggf,
+        lambda inst: inst.attrib["lemma"].lower(),
+        disambg_conceptnet,
         wn_filter,
         inf,
         keyout,
@@ -98,20 +129,44 @@ def lesk_fasttext(inf, keyout, wn_filter):
 
 
 @baselines.command()
+@click.argument("mean")
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
 @click.option("--wn-filter/--no-wn-filter")
-def lesk_conceptnet(inf, keyout, wn_filter):
+def lesk_conceptnet(mean, inf, keyout, wn_filter):
     """
     Performs word vector averaging simplified Lesk
     """
-    # XXX: How does --no-wn-filter work when wfs don't have lemmas
-    # For EuroSense we might like to get wfs that aren't in WordNet
-    # XXX: IE INSTANCE and IN WORDNET are not equivalent
     wordvec_lesk(
-        lambda inst: True,
-        lambda inst: inst.attrib["lemma"],
+        MEANS[mean],
+        wn_filter,
+        inf,
+        keyout,
+    )
+
+
+def lesk_double_inner(aggf, wn_filter, inf, keyout):
+    return wordvec_lesk(
+        aggf,
+        lambda inst: (inst.text.lower(), inst.attrib["lemma"].lower()),
         disambg_conceptnet,
+        wn_filter,
+        inf,
+        keyout,
+    )
+
+
+@baselines.command()
+@click.argument("mean")
+@click.argument("inf", type=click.File("rb"))
+@click.argument("keyout", type=click.File("w"))
+@click.option("--wn-filter/--no-wn-filter")
+def lesk_double(mean, inf, keyout, wn_filter):
+    """
+    Performs word vector averaging simplified Lesk
+    """
+    wordvec_lesk(
+        MEANS[mean],
         wn_filter,
         inf,
         keyout,

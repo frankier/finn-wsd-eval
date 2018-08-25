@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-stiff = {editable = true, ref = "88c88a3686c2ae8990b7a9b0a70eca6f4d0fbe68", git = "https://github.com/frankier/STIFF.git"}
-nltk = {editable = true, ref = "fix-binary-search-unicode", git = "https://github.com/frankier/nltk.git"}
+stiff = {editable = true, ref = "fbdb7cade3c4e178e2964d84962ab307aae4c084", git = "https://github.com/frankier/STIFF.git"}
+nltk = {editable = true, ref = "e1b3fda3768288ba96309dd92fd1ee7943cc43f9", git = "https://github.com/nltk/nltk"}
 wordfreq = "*"
 
 [dev-packages]
