@@ -16,7 +16,7 @@ def fetch():
     with local.cwd("systems"):
         git("clone", "https://github.com/frankier/ims.git")
         with local.cwd("ims"):
-            wget("http://www.comp.nus.edu.sg/~nlp/sw/lib.tar.gz")
+            wget("https://www.comp.nus.edu.sg/~nlp/sw/lib.tar.gz")
             tar("-xvzf", "lib.tar.gz")
             rm("lib.tar.gz")
 
