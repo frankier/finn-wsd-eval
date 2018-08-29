@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 stiff = {editable = true, ref = "fbdb7cade3c4e178e2964d84962ab307aae4c084", git = "https://github.com/frankier/STIFF.git"}
 nltk = {editable = true, ref = "e1b3fda3768288ba96309dd92fd1ee7943cc43f9", git = "https://github.com/nltk/nltk"}
-wordfreq = "*"
 
 [dev-packages]
 
