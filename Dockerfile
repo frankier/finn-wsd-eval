@@ -37,6 +37,9 @@ WORKDIR /app
 RUN set -ex && pipenv install --deploy --system
 RUN bash ./compile_scorer.sh
 
+# NLTK resources
+RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
+
 # WSD system setup
 RUN python ukb.py fetch
 RUN python ims.py fetch
