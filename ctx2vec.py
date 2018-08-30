@@ -13,13 +13,15 @@ def ctx2vec():
 
 
 @ctx2vec.command()
-def fetch():
+@click.option("--gpu/--no-gpu")
+def fetch(gpu):
     os.makedirs("systems", exist_ok=True)
     with local.cwd("systems"):
         git("clone", "https://github.com/orenmel/context2vec.git")
 
-    copyfile("support/context2vec/Pipfile", "systems/context2vec/Pipfile")
-    copyfile("support/context2vec/Pipfile.lock", "systems/context2vec/Pipfile.lock")
+    subdir = "gpu" if gpu else "nogpu"
+    for fn in ["Pipfile", "Pipfile.lock"]:
+        copyfile("support/context2vec/{}/{}".format(subdir, fn), "systems/context2vec/{}".format(fn))
 
     with local.cwd("systems/context2vec"):
         pipenv("install")
