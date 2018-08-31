@@ -4,7 +4,7 @@ from typing import Callable
 from plumbum import local
 from plumbum.cmd import python, java
 from os import makedirs
-from os.path import join as pjoin, basename
+from os.path import join as pjoin, basename, exists
 import sys
 import baselines
 
@@ -42,9 +42,14 @@ def ukb(*variant):
 
 
 def ims(corpus_fn, truetag_fn, guess_fn):
-    from ims import test as ims_test
-    ims_model = local.env["IMS_MODEL"]
-    ims_test.callback(ims_model, corpus_fn, guess_fn)
+    from ims import test as ims_test, train as ims_train
+    ims_model_path = local.env["IMS_MODEL_PATH"]
+    if not exists(ims_model_path):
+        train_corpus = local.env["TRAIN_CORPUS"]
+        train_corpus_key = local.env["TRAIN_CORPUS_KEY"]
+        ims_train.callback(train_corpus, train_corpus_key, ims_model_path)
+
+    ims_test.callback(ims_model_path, corpus_fn, guess_fn)
 
 
 def ctx2vec(ctx2vec_model):
@@ -52,10 +57,10 @@ def ctx2vec(ctx2vec_model):
         from ctx2vec import test as ctx2vec_test
         ctx2vec_model_path = local.env["CTX2VEC_MODEL_PATH"]
         full_model_path = pjoin(ctx2vec_model_path, ctx2vec_model, "model.params")
-        ctx2vec_train_corpus = local.env["CTX2VEC_TRAIN_CORPUS"]
-        ctx2vec_train_corpus_key = local.env["CTX2VEC_TRAIN_CORPUS_KEY"]
+        train_corpus = local.env["TRAIN_CORPUS"]
+        train_corpus_key = local.env["TRAIN_CORPUS_KEY"]
 
-        ctx2vec_test.callback(full_model_path, ctx2vec_train_corpus, ctx2vec_train_corpus_key, corpus_fn, guess_fn)
+        ctx2vec_test.callback(full_model_path, train_corpus, train_corpus_key, corpus_fn, guess_fn)
     return run
 
 
