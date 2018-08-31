@@ -5,6 +5,7 @@ from plumbum import local
 from plumbum.cmd import python, java
 from os import makedirs
 from os.path import join as pjoin, basename, exists
+from stiff.eval import get_eval_paths
 import sys
 import baselines
 
@@ -28,39 +29,43 @@ class Exp:
 
 
 def baseline(*args):
-    def run(corpus_fn, truetag_fn, guess_fn):
-        all_args = ["baselines.py"] + list(args) + [corpus_fn, guess_fn]
+    def run(paths, guess_fn):
+        all_args = ["baselines.py"] + list(args) + [paths["test"]["unified"], guess_fn]
         python(*all_args)
     return run
 
 
 def ukb(*variant):
     from ukb import run_inner as run_ukb
-    def run(corpus_fn, truetag_fn, guess_fn):
-        run_ukb(corpus_fn, guess_fn, variant, "ukb-eval/wn30/wn30g.bin", "ukb-eval/wn30/wn30_dict.txt")
+    def run(paths, guess_fn):
+        run_ukb(paths["test"]["unified"], guess_fn, variant, "ukb-eval/wn30/wn30g.bin", "ukb-eval/wn30/wn30_dict.txt")
     return run
 
 
-def ims(corpus_fn, truetag_fn, guess_fn):
+def ims(paths, guess_fn):
     from ims import test as ims_test, train as ims_train
-    ims_model_path = local.env["IMS_MODEL_PATH"]
-    if not exists(ims_model_path):
-        train_corpus = local.env["TRAIN_CORPUS"]
-        train_corpus_key = local.env["TRAIN_CORPUS_KEY"]
-        ims_train.callback(train_corpus, train_corpus_key, ims_model_path)
+    ims_model_path = "models/ims"
+    if exists(ims_model_path):
+        timestr = datetime.now().isoformat()
+        shutil.move(ims_model_path, "{}.{}".format(ims_model_path, timestr))
+    makedirs(ims_model_path, exist_ok=True)
+    ims_train.callback(paths["train"]["suptag"], paths["train"]["supkey"], ims_model_path)
+    ims_test.callback(ims_model_path, paths["test"]["suptag"], guess_fn)
 
-    ims_test.callback(ims_model_path, corpus_fn, guess_fn)
 
-
-def ctx2vec(ctx2vec_model):
-    def run(corpus_fn, truetag_fn, guess_fn):
+def ctx2vec(ctx2vec_model, seg):
+    def run(paths, guess_fn):
         from ctx2vec import test as ctx2vec_test
         ctx2vec_model_path = local.env["CTX2VEC_MODEL_PATH"]
         full_model_path = pjoin(ctx2vec_model_path, ctx2vec_model, "model.params")
-        train_corpus = local.env["TRAIN_CORPUS"]
-        train_corpus_key = local.env["TRAIN_CORPUS_KEY"]
+        if seg:
+            train_corpus = paths["train"]["sup"]
+            test_corpus = paths["test"]["sup"]
+        else:
+            train_corpus = paths["train"]["supseg"]
+            test_corpus = paths["test"]["supseg"]
 
-        ctx2vec_test.callback(full_model_path, train_corpus, train_corpus_key, corpus_fn, guess_fn)
+        ctx2vec_test.callback(full_model_path, train_corpus, paths["train"]["supkey"], test_corpus, guess_fn)
     return run
 
 
@@ -68,8 +73,8 @@ EXPERIMENTS = [
     Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
     Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
     Exp("Supervised", "IMS", "ims", "IMS", ims),
-    Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100")),
-    Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100")),
+    Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100", False)),
+    Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100", True)),
 ]
 
 for vec in ["fastText", "numberbatch", "double"]:
@@ -118,13 +123,14 @@ TABLE_FOOT = r"""
 
 @click.command()
 @click.argument("corpus", type=click.Path())
-@click.argument("truetag", type=click.Path())
 @click.argument("filter_l1", required=False)
 @click.argument("filter_l2", required=False)
-def main(corpus, truetag, filter_l1=None, filter_l2=None):
+def main(corpus, filter_l1=None, filter_l2=None):
+    paths = get_eval_paths(corpus)
     print(TABLE_HEAD) 
     prev_cat = None
     makedirs('guess', exist_ok=True)
+    makedirs('models', exist_ok=True)
     for exp in EXPERIMENTS:
         if (filter_l1 is not None and exp.category != filter_l1) or \
                 (filter_l2 is not None and exp.subcat != filter_l2):
@@ -140,9 +146,9 @@ def main(corpus, truetag, filter_l1=None, filter_l2=None):
         guess_fn = "{}.{}.key".format(basename(corpus), exp.nick)
         guess_path = pjoin('guess', guess_fn)
 
-        exp.run(corpus, truetag, guess_path)
+        exp.run(paths, guess_path)
 
-        scorer = java["Scorer", truetag, guess_path]
+        scorer = java["Scorer", paths["test"]["unikey"], guess_path]
         score_out = scorer()
         print(" & ".join((line.split()[1] for line in score_out.split('\n') if line)), end=" \\\\\n")
     print(TABLE_FOOT)
