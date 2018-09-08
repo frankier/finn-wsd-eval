@@ -18,6 +18,6 @@ build:
   stage: build
   script:
     - docker pull $EVAL_IMAGE:latest || true
-    - docker build --cache-from $EVAL_IMAGE:latest -t eval -f docker/Dockerfile .
+    - docker build --cache-from $EVAL_IMAGE:latest -t eval -f Dockerfile .
     - docker tag eval $EVAL_IMAGE
     - docker push $EVAL_IMAGE
