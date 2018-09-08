@@ -5,7 +5,6 @@ stages:
 
 variables:
   DOCKER_DRIVER: overlay2
-  EVAL_IMAGE: $CI_REGISTRY_IMAGE/eval
 
 services:
 - docker:dind
@@ -17,7 +16,7 @@ before_script:
 build:
   stage: build
   script:
-    - docker pull $EVAL_IMAGE:latest || true
-    - docker build --cache-from $EVAL_IMAGE:latest -t eval -f Dockerfile .
-    - docker tag eval $EVAL_IMAGE
-    - docker push $EVAL_IMAGE
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest -t eval -f Dockerfile .
+    - docker tag eval $CI_REGISTRY_IMAGE
+    - docker push $CI_REGISTRY_IMAGE
