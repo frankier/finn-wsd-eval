@@ -1,0 +1,23 @@
+image: docker:latest
+
+stages:
+  - build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  EVAL_IMAGE: $CI_REGISTRY_IMAGE/eval
+
+services:
+- docker:dind
+
+before_script:
+  - docker info || true
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY || true
+
+build:
+  stage: build
+  script:
+    - docker pull $EVAL_IMAGE:latest || true
+    - docker build --cache-from $EVAL_IMAGE:latest -t eval -f docker/Dockerfile .
+    - docker tag eval $EVAL_IMAGE
+    - docker push $EVAL_IMAGE
