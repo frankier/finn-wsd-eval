@@ -1,5 +1,9 @@
 # Evaluation framework
 
+<p align="center">
+<a href="https://gitlab.com/frankier/finn-wsd-eval/pipelines"><img alt="pipeline status" src="https://gitlab.com/frankier/finn-wsd-eval/badges/master/pipeline.svg" /></a>
+</p>
+
 This directory contains the evaluation framework. The scorer program is the
 same as the one used in *Word Sense Disambiguation: A Unified Evaluation
 Framework and Empirical Comparison.*. First you need to obtain it:
