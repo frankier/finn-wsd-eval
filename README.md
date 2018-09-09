@@ -28,3 +28,32 @@ is located.
 This project is licensed under the Apache v2 license. The code in `ukb-eval` is
 vendorized from UKB, and therefore licensed under the GPL. The scorer in
 `support/scorer` is under an unknown license, possibly public domain.
+
+## See also
+
+ * [STIFF](https://github.com/frankier/STIFF): Automatically created sense
+   tagged corpus of Finnish and corpus wrangling tools.
+ * [STIFF-explore](https://github.com/frankier/STIFF-explore): Some exploratory
+   coding related to STIFF.
+ * [finn-man-ann](https://github.com/frankier/finn-man-ann): Small, Finnish
+   language, manually annotated word sense corpus.
+ * [FinnTK](https://github.com/frankier/finntk): Simple, high-level toolkit for
+   Finnish NLP, mainly providing convenience methods for, and gluing together,
+   other tools.
+ * [extjwnl_fiwn](https://github.com/frankier/extjwnl_fiwn): Java code to make
+   extjwnl interoperate with FinnWordNet.
+ * [FinnLink](https://github.com/frankier/FinnLink): Link between FinnWordNet
+   and Finnish Propbank created by joining with PredicateMatrix.
+ * [finn-sense-clust](https://github.com/frankier/finn-sense-clust): Sense
+   clusterings of FinnWordNet.
+
+### Forks/fixes
+
+ * [ItMakeseSense](https://github.com/frankier/ims): ItMakesSense fork to
+   support FiWN for use by finn-wsd-eval
+ * [AutoExtend](https://github.com/frankier/AutoExtend): AutoExtend fork to
+   support FiWN and ConceptNet Numberbatch
+ * [babelnet-lookup](https://github.com/frankier/babelnet-lookup):
+   babelnet-lookup fork to obtain `BABEL2WN_MAP`.
+ * [FinnWordNet](https://github.com/frankier/fiwn): Temporary fixes to
+   FinnWordNet 2.0.
