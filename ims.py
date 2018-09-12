@@ -29,7 +29,7 @@ def fetch():
 @click.argument("keyin")
 @click.argument("modelout")
 def train(inf, keyin, modelout):
-    bash("systems/ims/train_one.bash", inf, keyin, modelout)
+    bash("systems/ims/train_ims.bash", inf, keyin, modelout)
 
 
 @ims.command()
