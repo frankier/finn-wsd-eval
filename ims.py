@@ -3,6 +3,7 @@ import click
 from plumbum import local
 from plumbum.cmd import git, wget, tar, rm, bash, python
 from shutil import copyfile
+from string import Template
 
 
 @click.group()
@@ -12,6 +13,8 @@ def ims():
 
 @ims.command()
 def fetch():
+    from finntk.wordnet.reader import fiwn_resman
+
     os.makedirs("systems", exist_ok=True)
     with local.cwd("systems"):
         git("clone", "https://github.com/frankier/ims.git")
@@ -22,6 +25,15 @@ def fetch():
 
     copyfile("support/ims/test_ims.bash", "systems/ims/test_ims.bash")
     copyfile("support/ims/train_ims.bash", "systems/ims/train_ims.bash")
+
+    fiwn_path = fiwn_resman.get_res("")
+    jwnl_properties = (
+        Template(open("support/ims/jwnl-properties.xml.tmpl").read()).substitute({
+            "FIWN_PATH": fiwn_path,
+        })
+    )
+    with open("systems/ims/jwnl-properties.xml", "w") as jwnl_properties_f:
+        jwnl_properties_f.write(jwnl_properties)
 
 
 @ims.command()
