@@ -25,6 +25,7 @@ def fetch():
 
     copyfile("support/ims/test_ims.bash", "systems/ims/test_ims.bash")
     copyfile("support/ims/train_ims.bash", "systems/ims/train_ims.bash")
+    copyfile("support/ims/gradle.properties", "systems/ims/gradle.properties")
 
     fiwn_path = fiwn_resman.get_res("")
     jwnl_properties = (
