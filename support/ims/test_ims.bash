@@ -3,6 +3,7 @@ if [ $# -lt 3 ]; then
   echo "$0 modelDir testFile savePath"
   exit
 fi
+. ~/.bashrc
 modelDir=$1
 testFile=$2
 savePath=$3
