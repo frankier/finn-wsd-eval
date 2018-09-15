@@ -74,7 +74,7 @@ def ctx2vec(ctx2vec_model, seg):
 EXPERIMENTS = [
     Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
     Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
-    Exp("Supervised", "IMS", "ims", "IMS", ims),
+    #Exp("Supervised", "IMS", "ims", "IMS", ims),
     Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100", False)),
     Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100", True)),
 ]
