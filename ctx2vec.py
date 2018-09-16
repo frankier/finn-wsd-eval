@@ -40,7 +40,7 @@ def test(modelin, trainin, keyin, testin, resultout):
     ln("-s", keyin, pjoin(tempdir, "train.key"))
     result_path = pjoin(tempdir, "results")
     with local.cwd("systems/context2vec"):
-        pipenv("run", "python", "eval/wsd/wsd_main.py", train_path, testin, result_path, modelin, "1")
+        pipenv("run", "python", "context2vec/eval/wsd/wsd_main.py", train_path, testin, result_path, modelin, "1")
     python(__file__, "context2vec-key-to-unified", result_path, resultout)
 
 
