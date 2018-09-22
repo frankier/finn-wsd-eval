@@ -148,7 +148,12 @@ def main(corpus, filter_l1=None, filter_l2=None):
         guess_fn = "{}.{}.key".format(basename(corpus), exp.nick)
         guess_path = pjoin('guess', guess_fn)
 
-        exp.run(paths, guess_path)
+        try:
+            exp.run(paths, guess_path)
+        except:
+            import traceback
+            traceback.print_exc()
+            continue
 
         scorer = java["Scorer", paths["test"]["unikey"], guess_path]
         score_out = scorer()
