@@ -61,11 +61,11 @@ def ctx2vec(ctx2vec_model, seg):
         ctx2vec_model_path = local.env["CTX2VEC_MODEL_PATH"]
         full_model_path = pjoin(ctx2vec_model_path, ctx2vec_model, "model.params")
         if seg:
-            train_corpus = paths["train"]["sup"]
-            test_corpus = paths["test"]["sup"]
-        else:
             train_corpus = paths["train"]["supseg"]
             test_corpus = paths["test"]["supseg"]
+        else:
+            train_corpus = paths["train"]["sup"]
+            test_corpus = paths["test"]["sup"]
 
         ctx2vec_test.callback(full_model_path, train_corpus, paths["train"]["supkey"], test_corpus, guess_fn)
     return run
