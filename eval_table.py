@@ -145,7 +145,8 @@ def main(corpus, filter_l1=None, filter_l2=None):
             print(f" & ", end="")
         print(exp.disp, end=" & ")
 
-        guess_fn = "{}.{}.key".format(basename(corpus), exp.nick)
+        corpus_basename = basename(corpus.rstrip("/"))
+        guess_fn = "{}.{}.key".format(corpus_basename, exp.nick)
         guess_path = pjoin('guess', guess_fn)
 
         try:
