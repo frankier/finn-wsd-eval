@@ -71,12 +71,26 @@ def ctx2vec(ctx2vec_model, seg):
     return run
 
 
+def supwsd(paths, guess_fn):
+    from supwsd import train, test
+    supwsd_model_path = "models/supwsd"
+    if exists(supwsd_model_path):
+        timestr = datetime.now().isoformat()
+        shutil.move(supwsd_model_path, "{}.{}".format(supwsd_model_path, timestr))
+    makedirs(supwsd_model_path, exist_ok=True)
+    print("train", paths["train"]["suptag"], paths["train"]["supkey"])
+    train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
+    print("test", paths["test"]["suptag"], guess_fn)
+    test.callback(paths["test"]["suptag"], guess_fn)
+
+
 EXPERIMENTS = [
     Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
     Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
     #Exp("Supervised", "IMS", "ims", "IMS", ims),
     Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100", False)),
     Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100", True)),
+    Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
 ]
 
 for vec in ["fastText", "numberbatch", "double"]:
