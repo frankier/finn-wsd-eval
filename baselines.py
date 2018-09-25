@@ -1,7 +1,7 @@
 import sys
 import click
-from stiff.filter_utils import iter_sentences
-from stiff.data import UNI_POS_WN_MAP
+from stiff.utils.xml import iter_sentences
+from stiff.data.constants import UNI_POS_WN_MAP
 from finntk.wordnet.reader import fiwn, fiwn_encnt, get_en_fi_maps
 from finntk.wordnet.utils import pre_id_to_post, ss2pre
 from finntk.wsd.lesk_emb import disambg_fasttext, disambg_conceptnet

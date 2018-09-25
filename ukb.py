@@ -4,8 +4,8 @@ import click
 from os.path import abspath
 from plumbum import local
 from plumbum.cmd import java, python, make, bash, git
-from stiff.filter_utils import iter_sentences
-from stiff.data import UNI_POS_WN_MAP
+from stiff.utils.xml import iter_sentences
+from stiff.data.constants import UNI_POS_WN_MAP
 
 def get_ukb():
     ukb_path = local.env.get("UKB_PATH", "systems/ukb/src")

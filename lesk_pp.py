@@ -3,7 +3,7 @@ from finntk.wordnet.reader import fiwn
 from finntk.wsd.lesk_emb import mk_defn_vec_conceptnet_en
 from finntk.wsd.lesk_pp import mk_lemma_vec, mk_context_vec
 from finntk.emb.utils import cosine_sim
-from stiff.filter_utils import iter_sentences
+from stiff.utils.xml import iter_sentences
 import click
 from baselines import lemmas_from_instance, write_lemma
 
