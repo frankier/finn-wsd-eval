@@ -84,6 +84,10 @@ def supwsd(paths, guess_fn):
     test.callback(paths["test"]["suptag"], guess_fn)
 
 
+def lesk_pp(paths, guess_fn):
+    python("lesk_pp.py", paths["test"]["unified"], guess_fn, "--include-wfs")
+
+
 EXPERIMENTS = [
     Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
     Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
@@ -91,6 +95,7 @@ EXPERIMENTS = [
     Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100", False)),
     Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100", True)),
     Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
+    Exp("Knowledge", "Lesk++", "lesk_pp", "Lesk++", lesk_pp),
 ]
 
 for vec in ["fastText", "numberbatch", "double"]:
