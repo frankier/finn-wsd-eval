@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jwnl_properties language="en">
+        <version publisher="University of Helsinki" number="2.0"
+                path="file:${FIWN_PATH}" language="fi"/>
+        <dictionary class="net.sf.extjwnl.dictionary.FileBackedDictionary">
+                <param name="morphological_processor" value="io.github.frankier.extjwnl_fiwn.OmorfiMorphologicalProcessor"/>
+                <param name="dictionary_element_factory" value="io.github.frankier.extjwnl_fiwn.FiWNFileDictionaryElementFactory"/>
+                <param name="file_manager" value="net.sf.extjwnl.dictionary.file_manager.FileManagerImpl">
+                        <param name="file_type" value="net.sf.extjwnl.princeton.file.PrincetonRandomAccessDictionaryFile">
+                                <param name="encoding" value="UTF-8"/>
+                        </param>
+                        <param name="dictionary_path" value="${FIWN_PATH}"/>
+                </param>
+        </dictionary>
+        <resource class="net.sf.extjwnl.princeton.PrincetonResource"/>
+</jwnl_properties>

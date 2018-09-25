@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<supWSD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="supconfig.xsd">
+	<working_directory>.</working_directory>
+	<parser>lexical</parser>
+	<preprocessing>
+		<splitter model="\n">none</splitter>
+		<tokenizer model=" ">none</tokenizer>
+		<tagger model="/">simple</tagger>
+		<lemmatizer model="/">simple</lemmatizer>
+		<dependency_parser>none</dependency_parser>
+	</preprocessing>
+	<extraction>
+		<features>
+			<pos_tags cutoff="0">true</pos_tags>
+			<local_collocations cutoff="0">true</local_collocations>
+			<surrounding_words cutoff="0" window="-1">true</surrounding_words>
+			<word_embeddings
+				strategy="AVG"
+				window="1"
+				vectors=""
+				vocab=""
+				cache="1">false</word_embeddings>
+			<syntactic_relations>false</syntactic_relations>
+		</features>
+	</extraction>
+	<classifier>liblinear</classifier>
+	<writer>plain</writer>
+	<sense_inventory dict="${FIWN_PATH}">wordnet</sense_inventory>
+</supWSD>
