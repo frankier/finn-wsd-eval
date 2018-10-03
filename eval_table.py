@@ -171,7 +171,7 @@ def main(corpus, filter_l1=None, filter_l2=None):
 
         try:
             exp.run(paths, guess_path)
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
             continue
