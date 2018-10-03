@@ -10,6 +10,7 @@ from stiff.eval import get_eval_paths
 import sys
 import shutil
 import baselines
+from means import MEANS
 
 
 MEAN_DISPS = {
@@ -100,7 +101,7 @@ EXPERIMENTS = [
 
 for vec in ["fastText", "numberbatch", "double"]:
     lower_vec = vec.lower()
-    for mean in baselines.MEANS.keys():
+    for mean in MEANS.keys():
         for wn_filter in [False, True]:
             baseline_args = ["lesk_" + lower_vec, mean]
             if wn_filter:
