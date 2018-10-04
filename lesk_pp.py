@@ -43,7 +43,7 @@ def lesk_pp(mean, inf, keyout, include_wfs):
             lemma_str, lemmas = sent_lemmas[lemma_idx]
 
             # XXX: Should context_vec exclude the word being disambiguated
-            context_vec = mk_context_vec(mean_func, sent_lemmas)
+            context_vec = mk_context_vec(mean_func, sent_lemmas, "fi")
             if context_vec is None:
                 # Back off to MFS
                 sent_lemmas[lemma_idx] = (lemma_str, [lemmas[0]])
