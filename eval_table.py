@@ -76,8 +76,12 @@ def supwsd(paths, guess_fn):
     test.callback(paths["test"]["suptag"], guess_fn)
 
 
-def lesk_pp(paths, guess_fn):
-    python("lesk_pp.py", paths["test"]["unified"], guess_fn, "--include-wfs")
+
+
+def lesk_pp(mean):
+    def inner(paths, guess_fn):
+        python("lesk_pp.py", mean, paths["test"]["unified"], guess_fn, "--include-wfs")
+    return inner
 
 
 EXPERIMENTS = [
@@ -87,7 +91,6 @@ EXPERIMENTS = [
     Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100", False)),
     Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100", True)),
     Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
-    Exp("Knowledge", "Lesk++", "lesk_pp", "Lesk++", lesk_pp),
 ]
 
 for vec in ["fastText", "numberbatch", "double"]:
@@ -109,6 +112,9 @@ for vec in ["fastText", "numberbatch", "double"]:
 
 for mean in ALL_MEANS.keys():
     EXPERIMENTS.append(Exp("Supervised", "NN", "nn", "NN ({})".format(MEAN_DISPS[mean]), nn(mean)))
+
+for mean in NON_EXPANDING_MEANS.keys():
+    EXPERIMENTS.append(Exp("Knowledge", "Lesk++", "lesk_pp", "Lesk++ ({})".format(MEAN_DISPS[mean]), lesk_pp(mean)))
 
 # XXX: default configuration -- possibly bad due to using 1st sense + bad data
 DICTABLE_OPTS = [("--ppr_w2w",), ("--ppr",), ("--dgraph_dfs", "--dgraph_rank", "ppr")]
