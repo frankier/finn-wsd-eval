@@ -5,7 +5,7 @@ from finntk.wsd.lesk_pp import mk_lemma_vec, mk_context_vec
 from finntk.emb.utils import cosine_sim
 from stiff.utils.xml import iter_sentences
 import click
-from means import MEANS
+from means import ALL_MEANS
 from utils import lemmas_from_instance, write_lemma
 
 
@@ -15,7 +15,7 @@ from utils import lemmas_from_instance, write_lemma
 @click.argument("keyout", type=click.File("w"))
 @click.option("--include-wfs/--no-include-wfs")
 def lesk_pp(mean, inf, keyout, include_wfs):
-    mean_func = MEANS[mean]
+    mean_func = ALL_MEANS[mean]
     for sent in iter_sentences(inf):
         if include_wfs:
             instances = sent.xpath("instance|wf")

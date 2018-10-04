@@ -10,16 +10,7 @@ from stiff.eval import get_eval_paths
 import sys
 import shutil
 import baselines
-from means import MEANS
-
-
-MEAN_DISPS = {
-    "catp3_mean": "CATP3-WE",
-    "catp4_mean": "CATP4-WE",
-    "sif_mean": "SIF-WE",
-    "unnormalized_mean": "AWE",
-    "normalized_mean": "AWE-norm",
-}
+from means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
 
 
 @dataclass(frozen=True)
@@ -101,7 +92,7 @@ EXPERIMENTS = [
 
 for vec in ["fastText", "numberbatch", "double"]:
     lower_vec = vec.lower()
-    for mean in MEANS.keys():
+    for mean in ALL_MEANS.keys():
         for wn_filter in [False, True]:
             baseline_args = ["lesk_" + lower_vec, mean]
             if wn_filter:
@@ -112,8 +103,12 @@ for vec in ["fastText", "numberbatch", "double"]:
                 nick_extra = ""
                 disp_extra = ""
             nick = "lesk." + lower_vec + nick_extra
-            disp = f"Lesk\\textsubscript{{{vec}{disp_extra}}}"
-            EXPERIMENTS.append(Exp("Knowledge", "Multilingual Word Vector Lesk", nick, disp, baseline(*baseline_args)))
+            mean_disp = "+" + MEAN_DISPS[mean]
+            disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
+            EXPERIMENTS.append(Exp("Knowledge", "Multilingual Word Vector Lesk".format(), nick, disp, baseline(*baseline_args)))
+
+for mean in ALL_MEANS.keys():
+    EXPERIMENTS.append(Exp("Supervised", "NN", "nn", "NN ({})".format(MEAN_DISPS[mean]), nn(mean)))
 
 # XXX: default configuration -- possibly bad due to using 1st sense + bad data
 DICTABLE_OPTS = [("--ppr_w2w",), ("--ppr",), ("--dgraph_dfs", "--dgraph_rank", "ppr")]
