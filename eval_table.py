@@ -32,7 +32,7 @@ def baseline(*args):
 def ukb(*variant):
     from ukb import run_inner as run_ukb
     def run(paths, guess_fn):
-        run_ukb(paths["test"]["unified"], guess_fn, variant, "ukb-eval/wn30/wn30g.bin", "ukb-eval/wn30/wn30_dict.txt")
+        run_ukb(paths["test"]["unified"], guess_fn, variant, "support/ukb/wn30/wn30g.bin", "support/ukb/wndict.fi.txt")
     return run
 
 

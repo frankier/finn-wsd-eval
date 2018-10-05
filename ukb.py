@@ -84,9 +84,9 @@ def fetch():
             make()
     # Prepare
     with local.env(UKB_PATH=abspath("systems/ukb/src")):
-        with local.cwd("ukb-eval"):
+        with local.cwd("support/ukb"):
             bash("./prepare_wn30graph.sh")
-    (python[__file__, "mkwndict", "--en-synset-ids"] > "systems/ukb/wndict.fi.txt")()
+    (python[__file__, "mkwndict", "--en-synset-ids"] > "support/ukb/wndict.fi.txt")()
 
 
 @ukb.command()
