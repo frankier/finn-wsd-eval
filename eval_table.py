@@ -143,15 +143,11 @@ for mean in ALL_MEANS.keys():
 for mean in NON_EXPANDING_MEANS.keys():
     EXPERIMENTS.append(Exp("Knowledge", "Lesk++", "lesk_pp", "Lesk++ ({})".format(MEAN_DISPS[mean]), lesk_pp(mean)))
 
-# XXX: default configuration -- possibly bad due to using 1st sense + bad data
-DICTABLE_OPTS = [("--ppr_w2w",), ("--ppr",), ("--dgraph_dfs", "--dgraph_rank", "ppr")]
-VARIANTS = []
-for extra in [(), ("--nodict_weight",)]:
-    for opt in DICTABLE_OPTS:
-        VARIANTS.append(opt + extra)
-VARIANTS.append(("--static",))
+UKB_VARIANTS = []
+for extra in [("--dict_weight",), ("--dict_noweight",)]:
+    UKB_VARIANTS.append(("--ppr_w2w",) + extra)
 
-for idx, variant in enumerate(VARIANTS):
+for idx, variant in enumerate(UKB_VARIANTS):
     EXPERIMENTS.append(Exp("Knowledge", "UKB", "UKB", "UKB{}".format(idx), ukb(*variant)))
 
 TABLE_HEAD = r"""
