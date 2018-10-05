@@ -6,6 +6,9 @@ from plumbum import local
 from plumbum.cmd import java, python, make, bash, git
 from stiff.utils.xml import iter_sentences
 from stiff.data.constants import UNI_POS_WN_MAP
+from finntk.wordnet.reader import fiwn_encnt
+from finntk.wordnet.utils import fi2en_post
+
 
 def get_ukb():
     ukb_path = local.env.get("UKB_PATH", "systems/ukb/src")
@@ -83,7 +86,24 @@ def fetch():
     with local.env(UKB_PATH=abspath("systems/ukb/src")):
         with local.cwd("ukb-eval"):
             bash("./prepare_wn30graph.sh")
-    (python["mkwndict.py", "--en-synset-ids"] > "wndict.fi.txt")()
+    (python[__file__, "mkwndict", "--en-synset-ids"] > "systems/ukb/wndict.fi.txt")()
+
+
+@ukb.command()
+@click.option("--en-synset-ids/--fi-synset-ids")
+def mkwndict(en_synset_ids):
+    lemma_names = fiwn_encnt.all_lemma_names()
+
+    for lemma_name in lemma_names:
+        lemmas = fiwn_encnt.lemmas(lemma_name)
+        synsets = []
+        for lemma in lemmas:
+            synset = lemma.synset()
+            post_synset_id = fiwn_encnt.ss2of(synset)
+            if en_synset_ids:
+                post_synset_id = fi2en_post(post_synset_id)
+            synsets.append("{}:{}".format(post_synset_id, lemma.count()))
+        print("{}\t{}".format(lemma_name, " ".join(synsets)))
 
 
 if __name__ == "__main__":
