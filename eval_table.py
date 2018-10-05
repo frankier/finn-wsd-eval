@@ -76,6 +76,33 @@ def supwsd(paths, guess_fn):
     test.callback(paths["test"]["suptag"], guess_fn)
 
 
+def nn(mean):
+    def inner(paths, guess_fn):
+        from nn import train, test
+        model = "models/nn"
+        with \
+                open(paths["train"]["sup"], "rb") as inf,\
+                open(paths["train"]["supkey"], "r") as keyin,\
+                open(model, "wb") as modelout:
+            train.callback(
+                mean,
+                inf,
+                keyin,
+                modelout,
+                wn_filter
+            )
+        with \
+                open(model, "rb") as modelin,\
+                open(paths["train"]["sup"], "rb") as inf,\
+                open(guess_fn, "w") as keyout:
+            test.callback(
+                mean,
+                modelin,
+                inf,
+                keyout,
+                wn_filter
+            )
+    return inner
 
 
 def lesk_pp(mean):
