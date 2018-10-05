@@ -4,9 +4,9 @@
 	<parser>lexical</parser>
 	<preprocessing>
 		<splitter model="\n">none</splitter>
-		<tokenizer model=" ">none</tokenizer>
-		<tagger model="/">simple</tagger>
-		<lemmatizer model="/">simple</lemmatizer>
+		<tokenizer model=" ">simple</tokenizer>
+		<tagger model="|POS|">simple</tagger>
+		<lemmatizer model="|LEM|">simple</lemmatizer>
 		<dependency_parser>none</dependency_parser>
 	</preprocessing>
 	<extraction>
