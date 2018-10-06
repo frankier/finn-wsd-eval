@@ -103,6 +103,8 @@ def mkwndict(en_synset_ids):
             if en_synset_ids:
                 post_synset_id = fi2en_post(post_synset_id)
             synsets.append("{}:{}".format(post_synset_id, lemma.count()))
+        if not lemma_name:
+            continue
         print("{}\t{}".format(lemma_name, " ".join(synsets)))
 
 
