@@ -27,20 +27,27 @@ def fetch(gpu):
         pipenv("install")
 
 
+def get_xml_key_pair(xml_path, key_path):
+    tempdir = tempfile.mkdtemp(prefix="ctx2vec")
+    pair_path = pjoin(tempdir, "corpus")
+    ln("-s", xml_path, pair_path)
+    ln("-s", key_path, pjoin(tempdir, "corpus.key"))
+    return pair_path
+
+
 @ctx2vec.command()
 @click.argument("modelin")
 @click.argument("trainin")
 @click.argument("keyin")
 @click.argument("testin")
 @click.argument("resultout")
-def test(modelin, trainin, keyin, testin, resultout):
+def test(modelin, trainin, keyin, testin, testkeyin, resultout):
+    train_path = get_xml_key_pair(trainin, keyin)
+    test_path = get_xml_key_pair(testin, testkeyin)
     tempdir = tempfile.mkdtemp(prefix="ctx2vec")
-    train_path = pjoin(tempdir, "train")
-    ln("-s", trainin, train_path)
-    ln("-s", keyin, pjoin(tempdir, "train.key"))
     result_path = pjoin(tempdir, "results")
     with local.cwd("systems/context2vec"):
-        pipenv("run", "python", "context2vec/eval/wsd/wsd_main.py", train_path, testin, result_path, modelin, "1")
+        pipenv("run", "python", "context2vec/eval/wsd/wsd_main.py", train_path, test_path, result_path, modelin, "1")
     python(__file__, "context2vec-key-to-unified", result_path, resultout)
 
 

@@ -70,7 +70,7 @@ def ctx2vec(ctx2vec_model, seg):
             train_corpus = paths["train"]["sup"]
             test_corpus = paths["test"]["sup"]
 
-        ctx2vec_test.callback(full_model_path, train_corpus, paths["train"]["supkey"], test_corpus, guess_fn)
+        ctx2vec_test.callback(full_model_path, train_corpus, paths["train"]["sup3key"], test_corpus, paths["test"]["sup3key"], guess_fn)
     return run
 
 
