@@ -36,10 +36,14 @@ def lesk(variety, *args):
     return run
 
 
-def ukb(*variant):
+def ukb(use_new_dict, *variant):
     from ukb import run_inner as run_ukb
     def run(paths, guess_fn):
-        run_ukb(paths["test"]["unified"], guess_fn, variant, "support/ukb/wn30/wn30g.bin", "support/ukb/wndict.fi.txt")
+        if use_new_dict:
+            dict_fn = "support/ukb/wndict.fi.txt"
+        else:
+            dict_fn = "support/ukb/wn30/wn30_dict.txt"
+        run_ukb(paths["test"]["unified"], guess_fn, variant, "support/ukb/wn30/wn30g.bin", dict_fn)
     return run
 
 
@@ -154,8 +158,10 @@ UKB_VARIANTS = []
 for extra in [("--dict_weight",), ("--dict_noweight",)]:
     UKB_VARIANTS.append(("--ppr_w2w",) + extra)
 
+UKB_LABELS = ["", "_nf"]
+
 for idx, variant in enumerate(UKB_VARIANTS):
-    EXPERIMENTS.append(Exp("Knowledge", "UKB", "UKB", "UKB{}".format(idx), ukb(*variant)))
+    EXPERIMENTS.append(Exp("Knowledge", "UKB", "UKB", "UKB{}".format(UKB_LABELS[idx]), ukb(True, *variant)))
 
 TABLE_HEAD = r"""
 \begin{tabu} to \linewidth { l X r r r }
