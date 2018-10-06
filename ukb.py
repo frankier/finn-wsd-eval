@@ -35,9 +35,9 @@ def run_inner(input_fn, output_fn, variant, graph_fn, dict_fn):
     os.makedirs("guess", exist_ok=True)
     args = variant + ("-D", dict_fn, "-K", graph_fn, "-")
     pred_pipeline = (
-        python[__file__, "unified_to_ukb", input_fn, "-"]
+        python[__file__, "unified-to-ukb", input_fn, "-"]
         | ukb_wsd[args]
-        | python[__file__, "clean_keyfile", "-", "-"]
+        | python[__file__, "clean-keyfile", "-", "-"]
         > output_fn
     )
     pred_pipeline(stderr=sys.stderr)
