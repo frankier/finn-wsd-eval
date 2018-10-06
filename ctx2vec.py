@@ -62,7 +62,7 @@ def context2vec_key_to_unified(keyin, keyout):
         guesses = bits[2:]
         if guesses:
             guessed = guesses[0].split("/")[0]
-            keyout.write("{} {} {}\n".format(lemma_pos, iden, guessed))
+            keyout.write("{} {}\n".format(iden, guessed))
 
 
 if __name__ == "__main__":
