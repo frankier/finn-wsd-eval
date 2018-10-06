@@ -29,6 +29,13 @@ def baseline(*args):
     return run
 
 
+def lesk(variety, *args):
+    def run(paths, guess_fn):
+        all_args = ["lesk.py", variety] + list(args) + [paths["test"]["unified"], guess_fn]
+        python(*all_args)
+    return run
+
+
 def ukb(*variant):
     from ukb import run_inner as run_ukb
     def run(paths, guess_fn):
@@ -120,11 +127,11 @@ EXPERIMENTS = [
     Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
 ]
 
-for vec in ["fastText", "numberbatch", "double"]:
+for vec in ["fasttext", "numberbatch", "double"]:
     lower_vec = vec.lower()
     for mean in ALL_MEANS.keys():
         for wn_filter in [False, True]:
-            baseline_args = ["lesk_" + lower_vec, mean]
+            baseline_args = [lower_vec, mean]
             if wn_filter:
                 baseline_args += ["--wn-filter"]
                 nick_extra = ".wn-filter"
@@ -135,7 +142,7 @@ for vec in ["fastText", "numberbatch", "double"]:
             nick = "lesk." + lower_vec + nick_extra
             mean_disp = "+" + MEAN_DISPS[mean]
             disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
-            EXPERIMENTS.append(Exp("Knowledge", "Multilingual Word Vector Lesk".format(), nick, disp, baseline(*baseline_args)))
+            EXPERIMENTS.append(Exp("Knowledge", "X-lingual Lesk".format(), nick, disp, lesk(*baseline_args)))
 
 for mean in ALL_MEANS.keys():
     EXPERIMENTS.append(Exp("Supervised", "NN", "nn", "NN ({})".format(MEAN_DISPS[mean]), nn(mean)))

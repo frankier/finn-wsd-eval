@@ -1,15 +1,36 @@
 import click
 
 from finntk.wordnet.reader import fiwn
-from finntk.wsd.lesk_emb import disambg_conceptnet, disambg_fasttext
+from finntk.wsd.lesk_emb import disambg_conceptnet, disambg_fasttext, disambg_double
 from stiff.utils.xml import iter_sentences
-from means import MEANS
+from means import ALL_MEANS
 from utils import lemmas_from_instance, write_lemma
 
 
-@click.group()
-def lesk():
-    pass
+@click.command()
+@click.argument("vec")
+@click.argument("mean")
+@click.argument("inf", type=click.File("rb"))
+@click.argument("keyout", type=click.File("w"))
+@click.option("--wn-filter/--no-wn-filter")
+def lesk(vec, mean, inf, keyout, wn_filter):
+    if vec == "fasttext":
+        disambg = disambg_fasttext
+        repr_ctx = lambda inst: inst.text.lower()
+    elif vec == "numberbatch":
+        disambg = disambg_conceptnet
+        repr_ctx = lambda inst: inst.attrib["lemma"].lower()
+    else:
+        disambg = disambg_double
+        repr_ctx = lambda inst: (inst.text.lower(), inst.attrib["lemma"].lower())
+    return wordvec_lesk(
+        ALL_MEANS[mean],
+        repr_ctx,
+        disambg,
+        wn_filter,
+        inf,
+        keyout
+    )
 
 
 def wordvec_lesk(aggf, repr_instance_ctx, disambg, wn_filter, inf, keyout):
@@ -25,90 +46,6 @@ def wordvec_lesk(aggf, repr_instance_ctx, disambg, wn_filter, inf, keyout):
             _lemma_str, _pos, lemmas = lemmas_from_instance(fiwn, instance)
             lemma, dist = disambg(aggf, lemmas, sub_ctx, wn_filter=wn_filter)
             write_lemma(keyout, inst_id, lemma)
-
-
-def lesk_fasttext_inner(aggf, wn_filter, inf, keyout):
-    return wordvec_lesk(
-        aggf,
-        lambda inst: inst.text.lower(),
-        disambg_fasttext,
-        wn_filter,
-        inf,
-        keyout
-    )
-
-
-@lesk.command()
-@click.argument("mean")
-@click.argument("inf", type=click.File("rb"))
-@click.argument("keyout", type=click.File("w"))
-@click.option("--wn-filter/--no-wn-filter")
-def lesk_fasttext(mean, inf, keyout, wn_filter):
-    """
-    Performs word vector averaging simplified Lesk
-    """
-    return lesk_fasttext_inner(
-        MEANS[mean],
-        wn_filter,
-        inf,
-        keyout,
-    )
-
-
-def lesk_conceptnet_inner(aggf, wn_filter, inf, keyout):
-    return wordvec_lesk(
-        aggf,
-        lambda inst: inst.attrib["lemma"].lower(),
-        disambg_conceptnet,
-        wn_filter,
-        inf,
-        keyout,
-    )
-
-
-@lesk.command()
-@click.argument("mean")
-@click.argument("inf", type=click.File("rb"))
-@click.argument("keyout", type=click.File("w"))
-@click.option("--wn-filter/--no-wn-filter")
-def lesk_conceptnet(mean, inf, keyout, wn_filter):
-    """
-    Performs word vector averaging simplified Lesk
-    """
-    wordvec_lesk(
-        MEANS[mean],
-        wn_filter,
-        inf,
-        keyout,
-    )
-
-
-def lesk_double_inner(aggf, wn_filter, inf, keyout):
-    return wordvec_lesk(
-        aggf,
-        lambda inst: (inst.text.lower(), inst.attrib["lemma"].lower()),
-        disambg_conceptnet,
-        wn_filter,
-        inf,
-        keyout,
-    )
-
-
-@lesk.command()
-@click.argument("mean")
-@click.argument("inf", type=click.File("rb"))
-@click.argument("keyout", type=click.File("w"))
-@click.option("--wn-filter/--no-wn-filter")
-def lesk_double(mean, inf, keyout, wn_filter):
-    """
-    Performs word vector averaging simplified Lesk
-    """
-    wordvec_lesk(
-        MEANS[mean],
-        wn_filter,
-        inf,
-        keyout,
-    )
 
 
 if __name__ == '__main__':
