@@ -1,16 +1,33 @@
 import click
 import pickle
 
-from finntk.wordnet.reader import fiwn
 from finntk.wsd.lesk_emb import mk_context_vec_fasttext_fi
 from stiff.utils.xml import iter_blocks
 from means import ALL_MEANS
-from utils import lemmas_from_instance
 
 
 @click.group()
 def nn():
     pass
+
+
+def iter_instances(inf, aggf, repr_instance_ctx, repr_ctx):
+    for lexelt in iter_blocks("lexelt")(inf):
+        item = lexelt.get("item")
+        pos = lexelt.get("pos")
+        item_pos = "{}.{}".format(item, pos)
+        for instance in lexelt.xpath("instance"):
+            context_tag = instance.xpath("context")[0]
+            tokens = "".join(context_tag.xpath('//text()')).split(" ")
+            context = set()
+            for token in tokens:
+                context.add(repr_instance_ctx(token))
+            inst_id = instance.attrib["id"]
+            head_word = context_tag.xpath("head")[0].text
+            wf = repr_instance_ctx(head_word)
+            sub_ctx = context - {wf}
+            ctx_vec = repr_ctx(aggf, sub_ctx) if sub_ctx else None
+            yield inst_id, item_pos, ctx_vec
 
 
 @nn.command("train")
@@ -38,23 +55,18 @@ def train_nn(aggf, repr_instance_ctx, repr_ctx, wn_filter, inf, keyin, model):
     from finntk.wsd.nn import WsdNn
     classifier = WsdNn()
 
-    for instance in iter_blocks("instance")(inf):
-        context_tag = instance.xpath("context")[0]
-        tokens = "".join(context_tag.xpath('//text()')).split(" ")
-        context = set()
-        for token in tokens:
-            context.add(repr_instance_ctx(token))
-        inst_id = instance.attrib["id"]
+    prev_item = None
+    for inst_id, item, ctx_vec in iter_instances(inf, aggf, repr_instance_ctx, repr_ctx):
         key_id, synset_id = next(keyin).strip().split()
         assert inst_id == key_id
-        head_word = context_tag.xpath("head")[0].text
-        wf = repr_instance_ctx(head_word)
-        sub_ctx = context - {wf}
-        ctx_vec = repr_ctx(aggf, sub_ctx)
-        print("add_word(wf, ctx_vec, synset_id)", wf, ctx_vec, synset_id)
-        classifier.add_word(wf, ctx_vec, synset_id)
+        if ctx_vec is not None:
+            classifier.add_word(item, ctx_vec, synset_id)
 
-    classifier.fit()
+        if prev_item is not None and item != prev_item:
+            classifier.fit_word(prev_item)
+        prev_item = item
+    classifier.fit_word(prev_item)
+
     pickle.dump(classifier, model)
 
 
@@ -82,17 +94,16 @@ def test(mean, model, inf, keyout, wn_filter):
 def test_nn(aggf, repr_instance_ctx, repr_ctx, wn_filter, inf, keyout, model):
     classifier = pickle.load(model)
 
-    for sent in iter_blocks("context")(inf):
-        context = set()
-        word_tags = sent.xpath("/wf|instance")
-        for tag in word_tags:
-            context.add(repr_instance_ctx(tag))
-        for instance in sent.xpath("instance"):
-            wf = repr_instance_ctx(instance)
-            sub_ctx = context - {wf}
-            ctx_vec = repr_ctx(sub_ctx)
-            _lemma_str, _pos, lemmas = lemmas_from_instance(fiwn, instance)
-            keyout.write("{}\n".format(classifier.predict(wf, ctx_vec)))
+    for inst_id, item, ctx_vec in iter_instances(inf, aggf, repr_instance_ctx, repr_ctx):
+        prediction = None
+        if ctx_vec is not None:
+            try:
+                prediction = classifier.predict(item, ctx_vec)
+            except KeyError:
+                pass
+        if prediction is None:
+            prediction = "U"
+        keyout.write("{} {}\n".format(inst_id, prediction))
 
 
 if __name__ == '__main__':
