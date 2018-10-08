@@ -87,6 +87,33 @@ def supwsd(paths, guess_fn):
     test.callback(paths["test"]["suptag"], guess_fn)
 
 
+def elmo(layer):
+    def run(paths, guess_fn):
+        from elmo import train, test
+        model = "models/elmo." + str(layer)
+        with \
+                open(paths["train"]["sup"], "rb") as inf,\
+                open(paths["train"]["supkey"], "r") as keyin,\
+                open(model, "wb") as modelout:
+            train.callback(
+                inf,
+                keyin,
+                modelout,
+                layer,
+            )
+        with \
+                open(model, "rb") as modelin,\
+                open(paths["train"]["sup"], "rb") as inf,\
+                open(guess_fn, "w") as keyout:
+            test.callback(
+                modelin,
+                inf,
+                keyout,
+                layer,
+            )
+    return run
+
+
 def nn(mean):
     def inner(paths, guess_fn):
         from nn import train, test
@@ -147,7 +174,10 @@ for vec in ["fasttext", "numberbatch", "double"]:
             EXPERIMENTS.append(Exp("Knowledge", "X-lingual Lesk".format(), nick, disp, lesk(*baseline_args)))
 
 for mean in ALL_MEANS.keys():
-    EXPERIMENTS.append(Exp("Supervised", "NN", "nn", "NN ({})".format(MEAN_DISPS[mean]), nn(mean)))
+    EXPERIMENTS.append(Exp("Supervised", "AWE-NN", "awe_nn", "AWE-NN ({})".format(MEAN_DISPS[mean]), nn(mean)))
+
+for layer in (-1, 0, 1, 2):
+    EXPERIMENTS.append(Exp("Supervised", "ELMo-NN", "elmo_nn", "ELMO-NN ({})".format(layer), elmo(layer)))
 
 for mean in NON_EXPANDING_MEANS.keys():
     EXPERIMENTS.append(Exp("Knowledge", "Lesk++", "lesk_pp", "Lesk++ ({})".format(MEAN_DISPS[mean]), lesk_pp(mean)))
