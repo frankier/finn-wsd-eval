@@ -11,23 +11,12 @@ def nn():
     pass
 
 
-def iter_instances(inf, aggf, repr_instance_ctx, repr_ctx):
-    for lexelt in iter_blocks("lexelt")(inf):
-        item = lexelt.get("item")
-        pos = lexelt.get("pos")
-        item_pos = "{}.{}".format(item, pos)
-        for instance in lexelt.xpath("instance"):
-            context_tag = instance.xpath("context")[0]
-            tokens = "".join(context_tag.xpath('//text()')).split(" ")
-            context = set()
-            for token in tokens:
-                context.add(repr_instance_ctx(token))
-            inst_id = instance.attrib["id"]
-            head_word = context_tag.xpath("head")[0].text
-            wf = repr_instance_ctx(head_word)
-            sub_ctx = context - {wf}
-            ctx_vec = repr_ctx(aggf, sub_ctx) if sub_ctx else None
-            yield inst_id, item_pos, ctx_vec
+def iter_inst_ctxs(inf, aggf, repr_instance_ctx, repr_ctx):
+    from sup_corpus import iter_instances
+    for inst_id, item_pos, (be, he, af) in iter_instances(inf):
+        ctx = map(repr_instance_ctx, be + af)
+        ctx_vec = repr_ctx(aggf, ctx) if ctx else None
+        yield inst_id, item_pos, ctx_vec
 
 
 @nn.command("train")
@@ -56,7 +45,7 @@ def train_nn(aggf, repr_instance_ctx, repr_ctx, wn_filter, inf, keyin, model):
     classifier = WsdNn()
 
     prev_item = None
-    for inst_id, item, ctx_vec in iter_instances(inf, aggf, repr_instance_ctx, repr_ctx):
+    for inst_id, item, ctx_vec in iter_inst_ctxs(inf, aggf, repr_instance_ctx, repr_ctx):
         key_id, synset_id = next(keyin).strip().split()
         assert inst_id == key_id
         if ctx_vec is not None:
@@ -94,7 +83,7 @@ def test(mean, model, inf, keyout, wn_filter):
 def test_nn(aggf, repr_instance_ctx, repr_ctx, wn_filter, inf, keyout, model):
     classifier = pickle.load(model)
 
-    for inst_id, item, ctx_vec in iter_instances(inf, aggf, repr_instance_ctx, repr_ctx):
+    for inst_id, item, ctx_vec in iter_inst_ctxs(inf, aggf, repr_instance_ctx, repr_ctx):
         prediction = None
         if ctx_vec is not None:
             try:
