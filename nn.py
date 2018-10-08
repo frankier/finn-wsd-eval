@@ -24,8 +24,7 @@ def iter_inst_ctxs(inf, aggf, repr_instance_ctx, repr_ctx):
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyin", type=click.File("r"))
 @click.argument("model", type=click.File("wb"))
-@click.option("--wn-filter/--no-wn-filter")
-def train(mean, inf, keyin, model, wn_filter):
+def train(mean, inf, keyin, model):
     """
     Train nearest neighbour classifier.
     """
@@ -33,14 +32,13 @@ def train(mean, inf, keyin, model, wn_filter):
         ALL_MEANS[mean],
         lambda inst: inst.lower(),
         mk_context_vec_fasttext_fi,
-        wn_filter,
         inf,
         keyin,
         model,
     )
 
 
-def train_nn(aggf, repr_instance_ctx, repr_ctx, wn_filter, inf, keyin, model):
+def train_nn(aggf, repr_instance_ctx, repr_ctx, inf, keyin, model):
     from finntk.wsd.nn import WsdNn
     classifier = WsdNn()
 
@@ -64,8 +62,7 @@ def train_nn(aggf, repr_instance_ctx, repr_ctx, wn_filter, inf, keyin, model):
 @click.argument("model", type=click.File("rb"))
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
-@click.option("--wn-filter/--no-wn-filter")
-def test(mean, model, inf, keyout, wn_filter):
+def test(mean, model, inf, keyout):
     """
     Test nearest neighbour classifier.
     """
@@ -73,14 +70,13 @@ def test(mean, model, inf, keyout, wn_filter):
         ALL_MEANS[mean],
         lambda inst: inst.lower(),
         mk_context_vec_fasttext_fi,
-        wn_filter,
         inf,
         keyout,
         model,
     )
 
 
-def test_nn(aggf, repr_instance_ctx, repr_ctx, wn_filter, inf, keyout, model):
+def test_nn(aggf, repr_instance_ctx, repr_ctx, inf, keyout, model):
     classifier = pickle.load(model)
 
     for inst_id, item, ctx_vec in iter_inst_ctxs(inf, aggf, repr_instance_ctx, repr_ctx):

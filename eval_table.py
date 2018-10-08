@@ -100,7 +100,6 @@ def nn(mean):
                 inf,
                 keyin,
                 modelout,
-                wn_filter
             )
         with \
                 open(model, "rb") as modelin,\
@@ -111,7 +110,6 @@ def nn(mean):
                 modelin,
                 inf,
                 keyout,
-                wn_filter
             )
     return inner
 
