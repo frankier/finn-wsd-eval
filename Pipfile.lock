@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "eca23859d54cf42dbcb5e61847a24469e6c4513b938fb63ae16d57246cf165f0"
+            "sha256": "151327f7a3acce5a359eace74a0588b0caacb14ec0bded70c67e0158459a9d34"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -47,17 +47,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:b32bdfd9f061ac7c367e91f94666153e443f745221c4d55da344ed2bbe88cffc",
-                "sha256:bf0f8dcae2505e90690546bd9f0a842c5def7809b9506fa903493ae2023f058e"
+                "sha256:b9664b5e11dc5d3e2b546609f2c86e457ac1b4b596fee18322fa3667ce730f88",
+                "sha256:b9e5a9c4c70d06a7aca9270ea4b4f69577c9107a891ab6de279565284c335eb1"
             ],
-            "version": "==1.9.17"
+            "version": "==1.9.19"
         },
         "botocore": {
             "hashes": [
-                "sha256:880f804c49710566667a2c4b63e74d766eb596ff860090cc4ca9f899078cfaed",
-                "sha256:e394c807f859c19ad9449c1edceb0e3bdc4bd0588ae7efe8d4e356aebef35c3b"
+                "sha256:0f0a2a74a9dc1d53531f559477f329ad087f3b378fc9cf02e67017e475854f8d",
+                "sha256:bc2fa51e05afb944f4f684c7d52a0db165898985d46b2fcb55fb842028fcc7a6"
             ],
-            "version": "==1.12.17"
+            "version": "==1.12.19"
         },
         "bz2file": {
             "hashes": [
@@ -174,10 +174,11 @@
         },
         "finntk": {
             "hashes": [
-                "sha256:96f8236c7aee31f6ea6e94ed4f82f3773651f7eadfbc6fdfc4bf2f2b9c511d0a",
-                "sha256:da6bf44bab2b71766714eec40f9a1df74038ad2b4e45409e7f3e6ea0616ac337"
+                "sha256:5579718aeb9d52c672e8b86c49b5932d44d475d69f87d6c18f45c9aee65eeea5",
+                "sha256:a50ef8f471e31a3142a8b38465a966a4d8092e3d0601772b6d305fb739b75b1e"
             ],
-            "version": "==0.0.23"
+            "markers": "python_version != '3.0.*' and python_version != '3.2.*' and python_version >= '2.7' and python_version != '3.1.*'",
+            "version": "==0.0.24"
         },
         "gensim": {
             "hashes": [
@@ -528,14 +529,14 @@
         "stiff": {
             "editable": true,
             "git": "https://github.com/frankier/STIFF.git",
-            "ref": "f59572b3b0a5e8f3349b2f51790c58ca6fe63c7f"
+            "ref": "156c3e56d0d2513f8a6e5eb88aff28c8082d443b"
         },
         "streamz": {
             "hashes": [
-                "sha256:8638d63c9663f43e74918b66d06c7f10f82b5862f5a16aa919293e758eec52f6",
-                "sha256:942b7c9d480f5b1c2576bb17e212732d66ed5951c5446459096d5a90278a03c6"
+                "sha256:1c35da8242a980fc77944beb3d61af12be37e10581a9567b5ff0e4b474bc75b8",
+                "sha256:cfdd42aa62df299f550768de5002ec83112136a34b44441db9d633b2df802fb4"
             ],
-            "version": "==0.4.0"
+            "version": "==0.5.0"
         },
         "toolz": {
             "hashes": [
