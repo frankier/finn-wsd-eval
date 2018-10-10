@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0c42e8635b09b1567a4f3c9e05552af9a18bfd047deaed7aea4cf3f9eb8ebad5"
+            "sha256": "8073c7cdef31371694caa06c46a2a84b59badc37dd6749d84929ff9e5efd2219"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -175,7 +175,7 @@
         "elmoformanylangs": {
             "editable": true,
             "git": "https://github.com/frankier/ELMoForManyLangs.git",
-            "ref": "69526fca08624fd493c04403a43e526569f54177"
+            "ref": "01f66b22d52cfb7b304c71261eee61cc498e1dcf"
         },
         "finntk": {
             "hashes": [
@@ -395,6 +395,12 @@
             ],
             "markers": "python_version != '3.3.*' and python_version != '3.2.*' and python_version >= '2.7' and python_version != '3.0.*' and python_version != '3.1.*'",
             "version": "==0.6.2"
+        },
+        "overrides": {
+            "hashes": [
+                "sha256:91b59ac1f6f38aae1531f5d6111033b8f4d7e593306bd282c3f9078202567963"
+            ],
+            "version": "==1.9"
         },
         "plumbum": {
             "hashes": [
