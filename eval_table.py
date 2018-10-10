@@ -103,7 +103,7 @@ def elmo(layer):
             )
         with \
                 open(model, "rb") as modelin,\
-                open(paths["train"]["sup"], "rb") as inf,\
+                open(paths["test"]["sup"], "rb") as inf,\
                 open(guess_fn, "w") as keyout:
             test.callback(
                 modelin,
@@ -131,7 +131,7 @@ def nn(vec, mean):
             )
         with \
                 open(model, "rb") as modelin,\
-                open(paths["train"]["sup"], "rb") as inf,\
+                open(paths["test"]["sup"], "rb") as inf,\
                 open(guess_fn, "w") as keyout:
             test.callback(
                 vec,
