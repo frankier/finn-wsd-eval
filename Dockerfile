@@ -43,5 +43,5 @@ RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt'
 
 # WSD system setup
 RUN python ukb.py fetch
-RUN python ims.py fetch
+RUN python supwsd.py fetch
 RUN python ctx2vec.py fetch
