@@ -5,7 +5,7 @@ from typing import Callable
 from plumbum import local
 from plumbum.cmd import python, java
 from os import makedirs
-from os.path import join as pjoin, basename, exists
+from os.path import abspath, join as pjoin, basename, exists
 from stiff.eval import get_eval_paths
 import sys
 import shutil
@@ -76,16 +76,24 @@ def ctx2vec(ctx2vec_model, seg):
 
 
 def supwsd(paths, guess_fn):
-    from supwsd import train, test
+    from supwsd import conf, train, test
+    from utils import iter_supwsd_result
     supwsd_model_path = "models/supwsd"
     if exists(supwsd_model_path):
         timestr = datetime.now().isoformat()
         shutil.move(supwsd_model_path, "{}.{}".format(supwsd_model_path, timestr))
     makedirs(supwsd_model_path, exist_ok=True)
-    print("train", paths["train"]["suptag"], paths["train"]["supkey"])
+    conf.callback(abspath(supwsd_model_path))
     train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
-    print("test", paths["test"]["suptag"], guess_fn)
-    test.callback(paths["test"]["suptag"], guess_fn)
+    test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
+    with \
+            open(paths["test"]["unikey"]) as goldkey,\
+            open(pjoin(supwsd_model_path, "scores/plain.result")) as supwsd_result_fp,\
+            open(guess_fn, "w") as guess_fp:
+        for gold_line, supwsd_result in zip(goldkey, iter_supwsd_result(supwsd_result_fp)):
+            key = gold_line.split()[0]
+            synset = supwsd_result[1][0][0]
+            guess_fp.write("{} {}\n".format(key, synset))
 
 
 def elmo(layer):

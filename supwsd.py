@@ -17,7 +17,7 @@ def supwsd():
 @supwsd.command()
 def prepare():
     fetch()
-    conf()
+    conf(".")
 
 
 @supwsd.command()
@@ -31,7 +31,7 @@ def fetch():
 
 
 @supwsd.command()
-def conf():
+def conf(work_dir):
     from finntk.wordnet.reader import fiwn_resman
 
     fiwn_path = fiwn_resman.get_res("")
@@ -42,6 +42,7 @@ def conf():
         content = (
             Template(open("support/supWSD/{}.tmpl".format(src_fn)).read()).substitute({
                 "FIWN_PATH": fiwn_path,
+                "WORK_DIR": work_dir,
             })
         )
 
@@ -67,14 +68,14 @@ def train(inf, keyin):
 
 @supwsd.command()
 @click.argument("inf")
-@click.argument("resultout")
-def test(inf, resultout):
+@click.argument("goldkey")
+def test(inf, goldkey):
     with local.cwd("systems/supWSD"):
         inf_path = pjoin("../../", inf)
-        resultout_path = pjoin("../../", resultout)
+        goldkey_path = pjoin("../../", goldkey)
         java(
             "-jar", SUPWSD_JAR, "test",
-            "supconfig.xml", inf_path, resultout_path
+            "supconfig.xml", inf_path, goldkey_path
         )
 
 
