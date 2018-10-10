@@ -20,6 +20,7 @@ class Exp:
     nick: str
     disp: str
     run: Callable[[str, str, str], None]
+    lex_group: bool = False
 
 
 def baseline(*args):
@@ -248,7 +249,11 @@ def main(corpus, filter_l1=None, filter_l2=None):
             traceback.print_exc()
             continue
 
-        scorer = java["Scorer", paths["test"]["unikey"], guess_path]
+        if exp.lex_group:
+            gold = paths["test"]["supkey"]
+        else:
+            gold = paths["test"]["unikey"]
+        scorer = java["Scorer", gold, guess_path]
         score_out = scorer()
         print(" & ".join((line.split()[1] for line in score_out.split('\n') if line)), end=" \\\\\n")
     print(TABLE_FOOT)
