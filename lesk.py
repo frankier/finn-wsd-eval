@@ -22,8 +22,10 @@ def lesk(vec, mean, inf, keyout, wn_filter, expand):
         multispace = fasttext_multispace
     elif vec == "numberbatch":
         multispace = numberbatch_multispace
-    else:
+    elif vec == "double":
         multispace = ft_nb_multispace
+    else:
+        assert False
     return wordvec_lesk(
         ALL_MEANS[mean],
         multispace,
