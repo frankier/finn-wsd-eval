@@ -1,7 +1,10 @@
 import click
 
 from finntk.wordnet.reader import fiwn
-from finntk.wsd.lesk_emb import disambg_conceptnet, disambg_fasttext, disambg_double
+from finntk.emb.concat import ft_nb_multispace
+from finntk.emb.fasttext import multispace as fasttext_multispace
+from finntk.emb.numberbatch import multispace as numberbatch_multispace
+from finntk.wsd.lesk_emb import MultilingualLesk
 from stiff.utils.xml import iter_sentences
 from means import ALL_MEANS
 from utils import lemmas_from_instance, write_lemma
@@ -13,38 +16,48 @@ from utils import lemmas_from_instance, write_lemma
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
 @click.option("--wn-filter/--no-wn-filter")
-def lesk(vec, mean, inf, keyout, wn_filter):
+@click.option("--expand/--no-expand")
+def lesk(vec, mean, inf, keyout, wn_filter, expand):
     if vec == "fasttext":
-        disambg = disambg_fasttext
-        repr_ctx = lambda inst: inst.text.lower()
+        multispace = fasttext_multispace
     elif vec == "numberbatch":
-        disambg = disambg_conceptnet
-        repr_ctx = lambda inst: inst.attrib["lemma"].lower()
+        multispace = numberbatch_multispace
     else:
-        disambg = disambg_double
-        repr_ctx = lambda inst: (inst.text.lower(), inst.attrib["lemma"].lower())
+        multispace = ft_nb_multispace
     return wordvec_lesk(
         ALL_MEANS[mean],
-        repr_ctx,
-        disambg,
+        multispace,
         wn_filter,
+        expand,
         inf,
         keyout
     )
 
 
-def wordvec_lesk(aggf, repr_instance_ctx, disambg, wn_filter, inf, keyout):
+def wordvec_lesk(aggf, multispace, wn_filter, expand, inf, keyout):
+    lesk = MultilingualLesk(
+        multispace,
+        aggf,
+        wn_filter,
+        expand
+    )
     for sent in iter_sentences(inf):
-        context = set()
-        word_tags = sent.xpath("/wf|instance")
-        for tag in word_tags:
-            context.add(repr_instance_ctx(tag))
         for instance in sent.xpath("instance"):
+            context = []
+            word_tags = sent.xpath("/wf|instance")
+            for tag in word_tags:
+                if tag == instance:
+                    continue
+                context.append((
+                    instance.text.lower(),
+                    instance.attrib["lemma"].lower()
+                ))
             inst_id = instance.attrib["id"]
-            wf = repr_instance_ctx(instance)
-            sub_ctx = context - {wf}
             _lemma_str, _pos, lemmas = lemmas_from_instance(fiwn, instance)
-            lemma, dist = disambg(aggf, lemmas, sub_ctx, wn_filter=wn_filter)
+            lemma, dist = lesk.disambg_one(
+                lemmas,
+                context,
+            )
             write_lemma(keyout, inst_id, lemma)
 
 

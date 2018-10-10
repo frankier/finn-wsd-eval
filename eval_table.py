@@ -114,7 +114,7 @@ def elmo(layer):
     return run
 
 
-def nn(mean):
+def nn(vec, mean):
     def inner(paths, guess_fn):
         from nn import train, test
         model = "models/nn"
@@ -123,6 +123,7 @@ def nn(mean):
                 open(paths["train"]["supkey"], "r") as keyin,\
                 open(model, "wb") as modelout:
             train.callback(
+                vec,
                 mean,
                 inf,
                 keyin,
@@ -133,6 +134,7 @@ def nn(mean):
                 open(paths["train"]["sup"], "rb") as inf,\
                 open(guess_fn, "w") as keyout:
             test.callback(
+                vec,
                 mean,
                 modelin,
                 inf,
@@ -156,25 +158,30 @@ EXPERIMENTS = [
     Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
 ]
 
-for vec in ["fasttext", "numberbatch", "double"]:
-    lower_vec = vec.lower()
-    for mean in ALL_MEANS.keys():
-        for wn_filter in [False, True]:
-            baseline_args = [lower_vec, mean]
-            if wn_filter:
-                baseline_args += ["--wn-filter"]
-                nick_extra = ".wn-filter"
-                disp_extra = "+WN-filter"
-            else:
+for do_expand in [False, True]:
+    for vec in ["fasttext", "numberbatch", "double"]:
+        lower_vec = vec.lower()
+        for mean in ALL_MEANS.keys():
+            for wn_filter in [False, True]:
+                baseline_args = [lower_vec, mean]
                 nick_extra = ""
                 disp_extra = ""
-            nick = "lesk." + lower_vec + nick_extra
-            mean_disp = "+" + MEAN_DISPS[mean]
-            disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
-            EXPERIMENTS.append(Exp("Knowledge", "X-lingual Lesk".format(), nick, disp, lesk(*baseline_args)))
+                if wn_filter:
+                    baseline_args += ["--wn-filter"]
+                    nick_extra += ".wn-filter"
+                    disp_extra += "+WN-filter"
+                if do_expand:
+                    baseline_args += ["--expand"]
+                    nick_extra += ".expand"
+                    disp_extra += "+expand"
+                nick = "lesk." + lower_vec + nick_extra
+                mean_disp = "+" + MEAN_DISPS[mean]
+                disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
+                EXPERIMENTS.append(Exp("Knowledge", "X-lingual Lesk".format(), nick, disp, lesk(*baseline_args)))
 
-for mean in ALL_MEANS.keys():
-    EXPERIMENTS.append(Exp("Supervised", "AWE-NN", "awe_nn", "AWE-NN ({})".format(MEAN_DISPS[mean]), nn(mean)))
+for vec in ["fasttext", "word2vec"]:
+    for mean in ALL_MEANS.keys():
+        EXPERIMENTS.append(Exp("Supervised", "AWE-NN", "awe_nn", "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]), nn(vec, mean)))
 
 for layer in (-1, 0, 1, 2):
     EXPERIMENTS.append(Exp("Supervised", "ELMo-NN", "elmo_nn", "ELMO-NN ({})".format(layer), elmo(layer)))
