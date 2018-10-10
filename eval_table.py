@@ -213,7 +213,7 @@ TABLE_FOOT = r"""
 @click.argument("filter_l1", required=False)
 @click.argument("filter_l2", required=False)
 def main(corpus, filter_l1=None, filter_l2=None):
-    paths = get_eval_paths(corpus)
+    root, paths = get_eval_paths(corpus)
     print(TABLE_HEAD) 
     prev_cat = None
     makedirs('guess', exist_ok=True)

@@ -8,9 +8,9 @@ from stiff.eval import get_eval_paths
 @click.argument("corpus_in", type=click.Path())
 @click.argument("corpus_out", type=click.Path())
 def main(corpus_in, corpus_out):
-    paths_in = get_eval_paths(corpus_in)
+    root_in, paths_in = get_eval_paths(corpus_in)
     makedirs(corpus_out, exist_ok=True)
-    paths_out = get_eval_paths(corpus_out)
+    root_out, paths_out = get_eval_paths(corpus_out)
     for partition in ["test", "train"]:
         for tag in paths_in[partition]:
             dest = paths_out[partition][tag]
