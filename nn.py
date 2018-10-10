@@ -1,18 +1,24 @@
 import click
 import pickle
 
-from finntk.emb.base import MonoVectorSpaceAdapter
+from finntk.emb.base import BothVectorSpaceAdapter, MonoVectorSpaceAdapter
+from finntk.emb.concat import ft_nb_w2v_space
 from finntk.emb.fasttext import multispace as fasttext_multispace
+from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.utils import apply_vec
 from finntk.emb.word2vec import space as word2vec_space
 from means import ALL_MEANS
 
 
 def get_vec_space(vec):
-    if vec == "fasttext":
-        return MonoVectorSpaceAdapter(fasttext_multispace, "fi")
+    if vec == "numberbatch":
+        return BothVectorSpaceAdapter(MonoVectorSpaceAdapter(numberbatch_multispace, "fi"))
+    elif vec == "fasttext":
+        return BothVectorSpaceAdapter(MonoVectorSpaceAdapter(fasttext_multispace, "fi"))
     elif vec == "word2vec":
-        return word2vec_space
+        return BothVectorSpaceAdapter(word2vec_space)
+    elif vec == "triple":
+        return ft_nb_w2v_space
     else:
         assert False
 
@@ -23,9 +29,9 @@ def nn():
 
 
 def iter_inst_ctxs(inf, aggf, space):
-    from sup_corpus import iter_instances
+    from sup_corpus import iter_instances, norm_wf_lemma_of_tokens
     for inst_id, item_pos, (be, he, af) in iter_instances(inf):
-        ctx = map(lambda x: x.lower(), be + af)
+        ctx = norm_wf_lemma_of_tokens(be + af)
         ctx_vec = apply_vec(aggf, space, ctx, "fi") if ctx else None
         yield inst_id, item_pos, ctx_vec
 

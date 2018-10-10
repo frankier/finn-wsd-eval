@@ -119,7 +119,7 @@ def nn(vec, mean):
         from nn import train, test
         model = "models/nn"
         with \
-                open(paths["train"]["sup"], "rb") as inf,\
+                open(paths["train"]["suptag"], "rb") as inf,\
                 open(paths["train"]["supkey"], "r") as keyin,\
                 open(model, "wb") as modelout:
             train.callback(
@@ -131,7 +131,7 @@ def nn(vec, mean):
             )
         with \
                 open(model, "rb") as modelin,\
-                open(paths["test"]["sup"], "rb") as inf,\
+                open(paths["test"]["suptag"], "rb") as inf,\
                 open(guess_fn, "w") as keyout:
             test.callback(
                 vec,
@@ -179,7 +179,7 @@ for do_expand in [False, True]:
                 disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
                 EXPERIMENTS.append(Exp("Knowledge", "X-lingual Lesk".format(), nick, disp, lesk(*baseline_args)))
 
-for vec in ["fasttext", "word2vec"]:
+for vec in ["fasttext", "word2vec", "numberbatch", "triple"]:
     for mean in ALL_MEANS.keys():
         EXPERIMENTS.append(Exp("Supervised", "AWE-NN", "awe_nn", "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]), nn(vec, mean)))
 

@@ -31,3 +31,17 @@ def iter_instances(inf):
                     space_tokenize(after_text)
                 )
             )
+
+
+def split_tagged_token(token):
+    wf, rest = token.split("|LEM|")
+    lem, pos = rest.split("|POS|")
+    return wf, lem, pos
+
+
+def split_tagged_tokens(tokens):
+    return map(split_tagged_token, tokens)
+
+
+def norm_wf_lemma_of_tokens(tokens):
+    return [(wf.lower(), lem) for wf, lem, _ in split_tagged_tokens(tokens)]
