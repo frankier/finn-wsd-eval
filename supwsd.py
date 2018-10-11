@@ -1,7 +1,7 @@
 import os
 import click
 from plumbum import local
-from plumbum.cmd import git, java, mvn
+from plumbum.cmd import git, java
 from string import Template
 from os.path import join as pjoin
 
@@ -22,6 +22,7 @@ def prepare():
 
 @supwsd.command()
 def fetch():
+    from plumbum.cmd import mvn
     os.makedirs("systems", exist_ok=True)
     with local.cwd("systems"):
         git("clone", "https://github.com/frankier/supWSD.git")
