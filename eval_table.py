@@ -167,10 +167,15 @@ EXPERIMENTS = [
     Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
 ]
 
+
+LESK_MEANS = ALL_MEANS.copy()
+del LESK_MEANS["normalized_mean"]
+
+
 for do_expand in [False, True]:
     for vec in ["fasttext", "numberbatch", "double"]:
         lower_vec = vec.lower()
-        for mean in ALL_MEANS.keys():
+        for mean in LESK_MEANS.keys():
             for wn_filter in [False, True]:
                 baseline_args = [lower_vec, mean]
                 nick_extra = ""
