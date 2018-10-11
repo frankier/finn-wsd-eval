@@ -6,7 +6,7 @@ def iter_instances(inf):
     for lexelt in iter_blocks("lexelt")(inf):
         item = lexelt.get("item")
         pos = lexelt.get("pos")
-        item_pos = "{}.{}".format(item, pos)
+        item_pos = (item, pos)
         for instance in lexelt.xpath("instance"):
             contexts = instance.xpath("context")
             assert len(contexts) == 1

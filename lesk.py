@@ -5,9 +5,8 @@ from finntk.emb.concat import ft_nb_multispace
 from finntk.emb.fasttext import multispace as fasttext_multispace
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.wsd.lesk_emb import MultilingualLesk
-from stiff.utils.xml import iter_sentences
 from means import ALL_MEANS
-from utils import lemmas_from_instance, write_lemma
+from utils import write_lemma
 
 
 @click.command()
@@ -37,30 +36,22 @@ def lesk(vec, mean, inf, keyout, wn_filter, expand):
 
 
 def wordvec_lesk(aggf, multispace, wn_filter, expand, inf, keyout):
+    from sup_corpus import iter_instances, norm_wf_lemma_of_tokens
     lesk = MultilingualLesk(
         multispace,
         aggf,
         wn_filter,
         expand
     )
-    for sent in iter_sentences(inf):
-        for instance in sent.xpath("instance"):
-            context = []
-            word_tags = sent.xpath("/wf|instance")
-            for tag in word_tags:
-                if tag == instance:
-                    continue
-                context.append((
-                    instance.text.lower(),
-                    instance.attrib["lemma"].lower()
-                ))
-            inst_id = instance.attrib["id"]
-            _lemma_str, _pos, lemmas = lemmas_from_instance(fiwn, instance)
-            lemma, dist = lesk.disambg_one(
-                lemmas,
-                context,
-            )
-            write_lemma(keyout, inst_id, lemma)
+    for inst_id, lemma_pos, (be, he, af) in iter_instances(inf):
+        lemma, pos = lemma_pos
+        ctx = norm_wf_lemma_of_tokens(be + af)
+        lemmas = fiwn.lemmas(lemma, pos=pos)
+        lemma, dist = lesk.disambg_one(
+            lemmas,
+            ctx,
+        )
+        write_lemma(keyout, inst_id, lemma)
 
 
 if __name__ == '__main__':

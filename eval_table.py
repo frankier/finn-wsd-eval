@@ -32,7 +32,7 @@ def baseline(*args):
 
 def lesk(variety, *args):
     def run(paths, guess_fn):
-        all_args = ["lesk.py", variety] + list(args) + [paths["test"]["unified"], guess_fn]
+        all_args = ["lesk.py", variety] + list(args) + [paths["test"]["suptag"], guess_fn]
         python(*all_args)
     return run
 
