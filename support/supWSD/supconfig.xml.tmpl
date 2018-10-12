@@ -13,13 +13,13 @@
 		<features>
 			<pos_tags cutoff="0">true</pos_tags>
 			<local_collocations cutoff="0">true</local_collocations>
-			<surrounding_words cutoff="0" window="-1">true</surrounding_words>
+			<surrounding_words cutoff="0" window="-1">${USE_SURROUNDING_WORDS}</surrounding_words>
 			<word_embeddings
-				strategy="AVG"
+				strategy="EXP"
 				window="1"
-				vectors=""
+				vectors="${VEC_PATH}"
 				vocab=""
-				cache="1">false</word_embeddings>
+				cache="1">${USE_VEC}</word_embeddings>
 			<syntactic_relations>false</syntactic_relations>
 		</features>
 	</extraction>

@@ -21,6 +21,7 @@ class Exp:
     disp: str
     run: Callable[[str, str, str], None]
     lex_group: bool = False
+    needs_model: bool = False
 
 
 def baseline(*args):
@@ -64,25 +65,31 @@ def ctx2vec(ctx2vec_model, seg):
     return run
 
 
-def supwsd(paths, guess_fn):
-    from supwsd import conf, train, test
-    from utils import iter_supwsd_result
-    supwsd_model_path = "models/supwsd"
-    if exists(supwsd_model_path):
-        timestr = datetime.now().isoformat()
-        shutil.move(supwsd_model_path, "{}.{}".format(supwsd_model_path, timestr))
-    makedirs(supwsd_model_path, exist_ok=True)
-    conf.callback(abspath(supwsd_model_path))
-    train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
-    test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
-    with \
-            open(paths["test"]["unikey"]) as goldkey,\
-            open(pjoin(supwsd_model_path, "scores/plain.result")) as supwsd_result_fp,\
-            open(guess_fn, "w") as guess_fp:
-        for gold_line, supwsd_result in zip(goldkey, iter_supwsd_result(supwsd_result_fp)):
-            key = gold_line.split()[0]
-            synset = supwsd_result[1][0][0]
-            guess_fp.write("{} {}\n".format(key, synset))
+def supwsd(vec_path, use_vec, use_surrounding_words):
+    def run(paths, guess_fn, model_path):
+        from supwsd import conf, train, test
+        from utils import iter_supwsd_result
+        if exists(model_path):
+            timestr = datetime.now().isoformat()
+            shutil.move(model_path, "{}.{}".format(model_path, timestr))
+        makedirs(model_path, exist_ok=True)
+        conf.callback(
+            work_dir=abspath(model_path),
+            vec_path=abspath(vec_path),
+            use_vec=use_vec,
+            use_surrounding_words=use_surrounding_words,
+        )
+        train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
+        test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
+        with \
+                open(paths["test"]["unikey"]) as goldkey,\
+                open(pjoin(model_path, "scores/plain.result")) as supwsd_result_fp,\
+                open(guess_fn, "w") as guess_fp:
+            for gold_line, supwsd_result in zip(goldkey, iter_supwsd_result(supwsd_result_fp)):
+                key = gold_line.split()[0]
+                synset = supwsd_result[1][0][0]
+                guess_fp.write("{} {}\n".format(key, synset))
+    return run
 
 
 def elmo(layer):
@@ -152,8 +159,44 @@ EXPERIMENTS = [
     Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
     Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100", False)),
     Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100", True)),
-    Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
 ]
+
+
+for vec, sur_words in [
+    (None, True),
+    ("word2vec", False),
+    ("word2vec", True),
+    ("fasttext", False),
+    ("fasttext", True),
+]:
+    if vec is not None:
+        vec_path = "support/emb/{}.txt".format(vec)
+        use_vec = True
+        nick_extra = vec
+    else:
+        vec_path = ""
+        use_vec = False
+        nick_extra = ""
+    no_sur = "-s" if not sur_words else ""
+    if sur_words:
+        nick_extra += ".sur"
+    else:
+        nick_extra += ".nosur"
+    disp = f"SupWSD\\textsubscript{{{vec}{no_sur}}}"
+    EXPERIMENTS.append(
+        Exp(
+            "Supervised",
+            "SupWSD",
+            "supwsd." + nick_extra,
+            disp,
+            supwsd(
+                vec_path,
+                use_vec,
+                sur_words
+            ),
+            needs_model=True
+        )
+    )
 
 
 LESK_MEANS = ALL_MEANS.copy()
@@ -239,11 +282,16 @@ def main(corpus, filter_l1=None, filter_l2=None):
         print(exp.disp, end=" & ")
 
         corpus_basename = basename(corpus.rstrip("/"))
-        guess_fn = "{}.{}.key".format(corpus_basename, exp.nick)
+        iden = "{}.{}".format(corpus_basename, exp.nick)
+        guess_fn = iden + ".key"
         guess_path = pjoin('guess', guess_fn)
+        model_path = pjoin('models', iden)
 
         try:
-            exp.run(paths, guess_path)
+            if exp.needs_model:
+                exp.run(paths, guess_path, model_path)
+            else:
+                exp.run(paths, guess_path)
         except Exception:
             import traceback
             traceback.print_exc()
