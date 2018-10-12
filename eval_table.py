@@ -120,13 +120,12 @@ def elmo(layer):
 
 
 def nn(vec, mean):
-    def inner(paths, guess_fn):
+    def inner(paths, guess_fn, model_path):
         from nn import train, test
-        model = "models/nn"
         with \
                 open(paths["train"]["suptag"], "rb") as inf,\
                 open(paths["train"]["supkey"], "r") as keyin,\
-                open(model, "wb") as modelout:
+                open(model_path, "wb") as modelout:
             train.callback(
                 vec,
                 mean,
@@ -135,7 +134,7 @@ def nn(vec, mean):
                 modelout,
             )
         with \
-                open(model, "rb") as modelin,\
+                open(model_path, "rb") as modelin,\
                 open(paths["test"]["suptag"], "rb") as inf,\
                 open(guess_fn, "w") as keyout:
             test.callback(
@@ -226,7 +225,7 @@ for do_expand in [False, True]:
 
 for vec in ["fasttext", "word2vec", "numberbatch", "triple"]:
     for mean in ALL_MEANS.keys():
-        EXPERIMENTS.append(Exp("Supervised", "AWE-NN", "awe_nn", "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]), nn(vec, mean)))
+        EXPERIMENTS.append(Exp("Supervised", "AWE-NN", "awe_nn", "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]), nn(vec, mean), needs_model=True))
 
 for layer in (-1, 0, 1, 2):
     EXPERIMENTS.append(Exp("Supervised", "ELMo-NN", "elmo_nn", "ELMO-NN ({})".format(layer), elmo(layer)))
