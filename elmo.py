@@ -1,5 +1,6 @@
 import click
 import pickle
+from vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
 
 
 @click.group()
@@ -29,19 +30,7 @@ def train(inf, keyin, model, output_layer):
     Train nearest neighbour classifier with ELMo.
     """
     from finntk.wsd.nn import WsdNn
-    classifier = WsdNn()
-
-    prev_item = None
-    for inst_id, item, vec in iter_inst_vecs(inf, output_layer):
-        key_id, synset_id = next_key(keyin)
-        assert inst_id == key_id
-        if vec is not None:
-            classifier.add_word(item, vec, synset_id)
-
-        if prev_item is not None and item != prev_item:
-            classifier.fit_word(prev_item)
-        prev_item = item
-    classifier.fit_word(prev_item)
+    classifier = train_vec_nn(mk_training_examples(iter_inst_vecs(inf, output_layer), keyin))
 
     pickle.dump(classifier, model)
 
@@ -57,13 +46,4 @@ def test(model, inf, keyout, output_layer):
     """
     classifier = pickle.load(model)
 
-    for inst_id, item, vec in iter_inst_vecs(inf, output_layer):
-        prediction = None
-        if vec is not None:
-            try:
-                prediction = classifier.predict(item, vec)
-            except KeyError:
-                pass
-        if prediction is None:
-            prediction = "U"
-        keyout.write("{} {}\n".format(inst_id, prediction))
+    test_vec_nn(classifier, iter_inst_vecs(inf, output_layer), keyout)
