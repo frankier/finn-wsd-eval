@@ -26,7 +26,6 @@ RUN pip3 install pipenv
 
 # Java stuff for Scorer + IMS
 RUN curl -s "https://get.sdkman.io" | bash
-RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install gradle 4.9'
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven'
 
 # Re-fixup Python
