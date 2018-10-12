@@ -48,17 +48,6 @@ def ukb(use_new_dict, *variant):
     return run
 
 
-def ims(paths, guess_fn):
-    from ims import test as ims_test, train as ims_train
-    ims_model_path = "models/ims"
-    if exists(ims_model_path):
-        timestr = datetime.now().isoformat()
-        shutil.move(ims_model_path, "{}.{}".format(ims_model_path, timestr))
-    makedirs(ims_model_path, exist_ok=True)
-    ims_train.callback(paths["train"]["suptag"], paths["train"]["supkey"], ims_model_path)
-    ims_test.callback(ims_model_path, paths["test"]["suptag"], guess_fn)
-
-
 def ctx2vec(ctx2vec_model, seg):
     def run(paths, guess_fn):
         from ctx2vec import test as ctx2vec_test
@@ -161,7 +150,6 @@ def lesk_pp(mean):
 EXPERIMENTS = [
     Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
     Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
-    #Exp("Supervised", "IMS", "ims", "IMS", ims),
     Exp("Supervised", "Context2Vec", "ctx2vec.noseg.b100", "Context2Vec\\textsubscript{noseg}", ctx2vec("model_noseg_b100", False)),
     Exp("Supervised", "Context2Vec", "ctx2vec.seg.b100", "Context2Vec\\textsubscript{seg}", ctx2vec("model_seg_b100", True)),
     Exp("Supervised", "SupWSD", "supwsd", "SupWSD", supwsd),
@@ -221,7 +209,6 @@ TABLE_HEAD = r"""
      #& FiWN + PWN 1st sense & 50.3\% & 50.3\% & 50.3\% \\
      #& Lesk with fasttext vector averaging & 29.4\% & 29.4\% & 29.4\% \\
     #\midrule
-    #Supervised & IMS & & & \\
     #\midrule
     #\multirow{2}{*}{Knowledge} & UKB (default configuration -- possibly bad due to using 1st sense + bad data) & 51.3\% & 50.6\% & 50.9\% \\
 TABLE_FOOT = r"""
