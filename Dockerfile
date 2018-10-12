@@ -43,5 +43,5 @@ RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt'
 
 # WSD system setup
 RUN python ukb.py fetch
-RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && python supwsd.py fetch'
+RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && python supwsd.py fetch && mvn clean'
 RUN python ctx2vec.py fetch
