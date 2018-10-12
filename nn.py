@@ -8,6 +8,7 @@ from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.utils import apply_vec
 from finntk.emb.word2vec import space as word2vec_space
 from means import ALL_MEANS
+from sup_corpus import next_key
 
 
 def get_vec_space(vec):
@@ -61,7 +62,7 @@ def train_nn(space, aggf, inf, keyin, model):
 
     prev_item = None
     for inst_id, item, ctx_vec in iter_inst_ctxs(inf, aggf, space):
-        key_id, synset_id = next(keyin).strip().split()
+        key_id, synset_id = next_key(keyin)
         assert inst_id == key_id
         if ctx_vec is not None:
             classifier.add_word(item, ctx_vec, synset_id)

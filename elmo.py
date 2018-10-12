@@ -33,7 +33,7 @@ def train(inf, keyin, model, output_layer):
 
     prev_item = None
     for inst_id, item, vec in iter_inst_vecs(inf, output_layer):
-        key_id, synset_id = next(keyin).strip().split()
+        key_id, synset_id = next_key(keyin)
         assert inst_id == key_id
         if vec is not None:
             classifier.add_word(item, vec, synset_id)

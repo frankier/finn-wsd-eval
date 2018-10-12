@@ -2,11 +2,15 @@ from stiff.munge.utils import space_tokenize
 from stiff.utils.xml import iter_blocks
 
 
-def iter_instances(inf):
+def iter_lexelts(inf):
     for lexelt in iter_blocks("lexelt")(inf):
         item = lexelt.get("item")
         pos = lexelt.get("pos")
-        item_pos = (item, pos)
+        yield lexelt, (item, pos)
+
+
+def iter_instances(inf):
+    for lexelt, item_pos in iter_lexelts(inf):
         for instance in lexelt.xpath("instance"):
             contexts = instance.xpath("context")
             assert len(contexts) == 1
@@ -45,3 +49,8 @@ def split_tagged_tokens(tokens):
 
 def norm_wf_lemma_of_tokens(tokens):
     return [(wf.lower(), lem) for wf, lem, _ in split_tagged_tokens(tokens)]
+
+
+def next_key(keyin):
+    bits = next(keyin).strip().split()
+    return bits[0], bits[1:]
