@@ -58,7 +58,7 @@ def unified_to_ukb(inf, outf):
         outf.write("\n")
         for instance in sent_elem.xpath("instance"):
             id = instance.attrib["id"]
-            lemma = instance.attrib["lemma"]
+            lemma = instance.attrib["lemma"].lower()
             pos = UNI_POS_WN_MAP[instance.attrib["pos"]]
             bits.append(f"{lemma}#{pos}#{id}#1")
         outf.write(" ".join(bits))
