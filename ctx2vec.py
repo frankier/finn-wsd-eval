@@ -21,7 +21,10 @@ def fetch(gpu):
 
     subdir = "gpu" if gpu else "nogpu"
     for fn in ["Pipfile", "Pipfile.lock"]:
-        copyfile("support/context2vec/{}/{}".format(subdir, fn), "systems/context2vec/{}".format(fn))
+        copyfile(
+            "support/context2vec/{}/{}".format(subdir, fn),
+            "systems/context2vec/{}".format(fn),
+        )
 
     with local.cwd("systems/context2vec"):
         pipenv("install")
@@ -47,7 +50,16 @@ def test(modelin, trainin, keyin, testin, testkeyin, resultout):
     tempdir = tempfile.mkdtemp(prefix="ctx2vec")
     result_path = pjoin(tempdir, "results")
     with local.cwd("systems/context2vec"):
-        pipenv("run", "python", "context2vec/eval/wsd/wsd_main.py", train_path, test_path, result_path, modelin, "1")
+        pipenv(
+            "run",
+            "python",
+            "context2vec/eval/wsd/wsd_main.py",
+            train_path,
+            test_path,
+            result_path,
+            modelin,
+            "1",
+        )
     python(__file__, "context2vec-key-to-unified", result_path, resultout)
 
 

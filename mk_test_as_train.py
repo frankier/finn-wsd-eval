@@ -20,5 +20,5 @@ def main(corpus_in, corpus_out):
             symlink(src, dest)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

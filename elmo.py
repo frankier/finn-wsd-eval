@@ -12,11 +12,12 @@ def iter_inst_vecs(inf, output_layer):
     from sup_corpus import iter_instances
     from finntk.emb.elmo import vecs
     from finntk.vendor.elmo import embed_sentence
+
     model = vecs.get()
     for inst_id, item_pos, (be, he, af) in iter_instances(inf):
         sent = be + he + af
         vecs = embed_sentence(model, sent, output_layer)
-        vec = vecs[len(be): len(be) + len(he)].mean(axis=0)
+        vec = vecs[len(be) : len(be) + len(he)].mean(axis=0)
         yield inst_id, item_pos, vec
 
 
@@ -30,7 +31,10 @@ def train(inf, keyin, model, output_layer):
     Train nearest neighbour classifier with ELMo.
     """
     from finntk.wsd.nn import WsdNn
-    classifier = train_vec_nn(mk_training_examples(iter_inst_vecs(inf, output_layer), keyin))
+
+    classifier = train_vec_nn(
+        mk_training_examples(iter_inst_vecs(inf, output_layer), keyin)
+    )
 
     pickle.dump(classifier, model)
 

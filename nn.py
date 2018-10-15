@@ -14,7 +14,9 @@ from vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
 
 def get_vec_space(vec):
     if vec == "numberbatch":
-        return BothVectorSpaceAdapter(MonoVectorSpaceAdapter(numberbatch_multispace, "fi"))
+        return BothVectorSpaceAdapter(
+            MonoVectorSpaceAdapter(numberbatch_multispace, "fi")
+        )
     elif vec == "fasttext":
         return BothVectorSpaceAdapter(MonoVectorSpaceAdapter(fasttext_multispace, "fi"))
     elif vec == "word2vec":
@@ -32,6 +34,7 @@ def nn():
 
 def iter_inst_ctxs(inf, aggf, space):
     from sup_corpus import iter_instances, norm_wf_lemma_of_tokens
+
     for inst_id, item_pos, (be, he, af) in iter_instances(inf):
         ctx = norm_wf_lemma_of_tokens(be + af)
         ctx_vec = apply_vec(aggf, space, ctx, "fi") if ctx else None
@@ -50,7 +53,9 @@ def train(vec, mean, inf, keyin, model):
     """
     space = get_vec_space(vec)
     aggf = ALL_MEANS[mean]
-    classifier = train_vec_nn(mk_training_examples(iter_inst_ctxs(inf, aggf, space), keyin))
+    classifier = train_vec_nn(
+        mk_training_examples(iter_inst_ctxs(inf, aggf, space), keyin)
+    )
 
     pickle.dump(classifier, model)
 
@@ -71,5 +76,5 @@ def test(vec, mean, model, inf, keyout):
     test_vec_nn(classifier, iter_inst_ctxs(inf, aggf, space), keyout)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     nn()

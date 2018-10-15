@@ -9,7 +9,7 @@ from means import ALL_MEANS
 from utils import lemmas_from_instance, write_lemma
 
 
-@click.command('lesk-pp')
+@click.command("lesk-pp")
 @click.argument("mean")
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
@@ -28,15 +28,19 @@ def lesk_pp(mean, inf, keyout, include_wfs):
         instance_ids = []
         # XXX: SHOULD add wfs too! (equiv to wn_filter)
         for idx, instance in enumerate(instances):
-            if instance.tag == 'wf':
+            if instance.tag == "wf":
                 lemma_str = tagged_sent[idx][1]
                 lemmas = []
             else:
                 lemma_str, _pos, lemmas = lemmas_from_instance(fiwn, instance)
             sent_lemmas.append((lemma_str, lemmas))
-            if instance.tag == 'instance':
+            if instance.tag == "instance":
                 instance_ids.append(instance.attrib["id"])
-        disambg_order = sorted((len(lemmas), idx) for idx, (lemma_str, lemmas) in enumerate(sent_lemmas) if len(lemmas) > 0)
+        disambg_order = sorted(
+            (len(lemmas), idx)
+            for idx, (lemma_str, lemmas) in enumerate(sent_lemmas)
+            if len(lemmas) > 0
+        )
         for ambiguity, lemma_idx in disambg_order:
             if ambiguity <= 1:
                 continue
@@ -64,11 +68,13 @@ def lesk_pp(mean, inf, keyout, include_wfs):
                         best_lemma = lemma
                         best_score = score
                 sent_lemmas[lemma_idx] = (lemma_str, [best_lemma])
-        for (lemma_str, lemmas), inst_id in zip((x for x in sent_lemmas if len(x[1]) > 0), instance_ids):
+        for (lemma_str, lemmas), inst_id in zip(
+            (x for x in sent_lemmas if len(x[1]) > 0), instance_ids
+        ):
             if lemmas[0] is None:
                 continue
             write_lemma(keyout, inst_id, lemmas[0])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     lesk_pp()

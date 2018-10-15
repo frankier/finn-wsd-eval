@@ -17,15 +17,16 @@ def main(corpus):
     root, paths = get_eval_paths(corpus)
     seen = set()
     for item_pos, synset_ids in iter_tags(
-            open(paths["train"]["sup"], "rb"),
-            open(paths["train"]["supkey"])):
+        open(paths["train"]["sup"], "rb"), open(paths["train"]["supkey"])
+    ):
         for synset_id in synset_ids:
             seen.add((item_pos, synset_id))
     predictable = 0
     singletons = 0
     total = 0
-    for item_pos, synset_ids in iter_tags(open(paths["test"]["sup"], "rb"),
-                                          open(paths["test"]["supkey"])):
+    for item_pos, synset_ids in iter_tags(
+        open(paths["test"]["sup"], "rb"), open(paths["test"]["supkey"])
+    ):
         lemma, pos = item_pos
         if any((item_pos, synset_id) in seen for synset_id in synset_ids):
             predictable += 1
@@ -39,5 +40,5 @@ def main(corpus):
     print(predictable / total)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

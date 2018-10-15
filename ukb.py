@@ -34,10 +34,13 @@ def run_inner(input_fn, output_fn, variant, graph_fn, dict_fn):
     ukb_wsd = get_ukb()
     os.makedirs("guess", exist_ok=True)
     args = variant + (
-        "-D", dict_fn,
-        "-K", graph_fn,
+        "-D",
+        dict_fn,
+        "-K",
+        graph_fn,
         "-",
-        "--smooth_dict_weight", "1000"
+        "--smooth_dict_weight",
+        "1000",
     )
     pred_pipeline = (
         python[__file__, "unified-to-ukb", input_fn, "-"]

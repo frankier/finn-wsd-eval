@@ -32,8 +32,8 @@ def iter_instances(inf):
                 (
                     space_tokenize(before_text),
                     space_tokenize(head_text),
-                    space_tokenize(after_text)
-                )
+                    space_tokenize(after_text),
+                ),
             )
 
 

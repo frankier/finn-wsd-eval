@@ -25,34 +25,20 @@ def lesk(vec, mean, inf, keyout, wn_filter, expand):
         multispace = ft_nb_multispace
     else:
         assert False
-    return wordvec_lesk(
-        ALL_MEANS[mean],
-        multispace,
-        wn_filter,
-        expand,
-        inf,
-        keyout
-    )
+    return wordvec_lesk(ALL_MEANS[mean], multispace, wn_filter, expand, inf, keyout)
 
 
 def wordvec_lesk(aggf, multispace, wn_filter, expand, inf, keyout):
     from sup_corpus import iter_instances, norm_wf_lemma_of_tokens
-    lesk = MultilingualLesk(
-        multispace,
-        aggf,
-        wn_filter,
-        expand
-    )
+
+    lesk = MultilingualLesk(multispace, aggf, wn_filter, expand)
     for inst_id, lemma_pos, (be, he, af) in iter_instances(inf):
         lemma, pos = lemma_pos
         ctx = norm_wf_lemma_of_tokens(be + af)
         lemmas = fiwn.lemmas(lemma, pos=pos)
-        lemma, dist = lesk.disambg_one(
-            lemmas,
-            ctx,
-        )
+        lemma, dist = lesk.disambg_one(lemmas, ctx)
         write_lemma(keyout, inst_id, lemma)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     lesk()

@@ -10,6 +10,7 @@ def mk_training_examples(instances, keyin):
 
 def train_vec_nn(training_examples):
     from finntk.wsd.nn import WsdNn
+
     classifier = WsdNn()
 
     prev_item = None

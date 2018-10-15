@@ -37,7 +37,9 @@ def unigram(inf, keyout, wn):
 
 
 CHUNK_SIZE = 4096
-TAG_REGEX = re.compile(r"<(?P<START_TAG>.) (?P<SYNSETS>[^>]+)>(?P<WF>.)</(?P<END_TAG>.)>")
+TAG_REGEX = re.compile(
+    r"<(?P<START_TAG>.) (?P<SYNSETS>[^>]+)>(?P<WF>.)</(?P<END_TAG>.)>"
+)
 
 
 def proc_match(match):
@@ -73,4 +75,4 @@ def iter_supwsd_result(fp):
             if end_pos == len(buffer):
                 break
             assert buffer[end_pos] == " "
-            buffer = buffer[end_pos + 1:]
+            buffer = buffer[end_pos + 1 :]

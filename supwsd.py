@@ -33,6 +33,7 @@ def fetch_emb():
 @supwsd.command()
 def fetch_program():
     from plumbum.cmd import mvn
+
     os.makedirs("systems", exist_ok=True)
     with local.cwd("systems"):
         git("clone", "https://github.com/frankier/supWSD.git")
@@ -47,17 +48,19 @@ def conf(work_dir, vec_path="", use_vec=False, use_surrounding_words=True):
 
     fiwn_path = fiwn_resman.get_res("")
     for src_fn, dst_fn in [
-            ("jwnl-properties.xml", "resources/wndictionary/prop.xml"),
-            ("supconfig.xml", "supconfig.xml")
+        ("jwnl-properties.xml", "resources/wndictionary/prop.xml"),
+        ("supconfig.xml", "supconfig.xml"),
     ]:
-        content = (
-            Template(open("support/supWSD/{}.tmpl".format(src_fn)).read()).substitute({
+        content = Template(
+            open("support/supWSD/{}.tmpl".format(src_fn)).read()
+        ).substitute(
+            {
                 "FIWN_PATH": fiwn_path,
                 "WORK_DIR": work_dir,
                 "VEC_PATH": vec_path,
                 "USE_VEC": "true" if use_vec else "false",
                 "USE_SURROUNDING_WORDS": "true" if use_surrounding_words else "false",
-            })
+            }
         )
 
         with open("systems/supWSD/{}".format(dst_fn), "w") as dst_f:
@@ -72,12 +75,9 @@ def train(inf, keyin):
         inf_path = pjoin("../../", inf)
         keyin_path = pjoin("../../", keyin)
         print(
-            "java", "-jar", SUPWSD_JAR, "train",
-            "supconfig.xml", inf_path, keyin_path)
-        java(
-            "-jar", SUPWSD_JAR, "train",
-            "supconfig.xml", inf_path, keyin_path
+            "java", "-jar", SUPWSD_JAR, "train", "supconfig.xml", inf_path, keyin_path
         )
+        java("-jar", SUPWSD_JAR, "train", "supconfig.xml", inf_path, keyin_path)
 
 
 @supwsd.command()
@@ -87,10 +87,7 @@ def test(inf, goldkey):
     with local.cwd("systems/supWSD"):
         inf_path = pjoin("../../", inf)
         goldkey_path = pjoin("../../", goldkey)
-        java(
-            "-jar", SUPWSD_JAR, "test",
-            "supconfig.xml", inf_path, goldkey_path
-        )
+        java("-jar", SUPWSD_JAR, "test", "supconfig.xml", inf_path, goldkey_path)
 
 
 if __name__ == "__main__":
