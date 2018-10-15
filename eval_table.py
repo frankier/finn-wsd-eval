@@ -35,6 +35,7 @@ class Exp:
             "disp": self.disp,
         }
         info.update(self.opts)
+        return info
 
 
 def baseline(*args):
@@ -253,7 +254,12 @@ for do_expand in [False, True]:
                         nick,
                         disp,
                         lesk(*baseline_args),
-                        {"vec": vec, "expand": do_expand, "mean": mean},
+                        {
+                            "vec": vec,
+                            "expand": do_expand,
+                            "mean": mean,
+                            "wn_filter": wn_filter,
+                        },
                     )
                 )
 
@@ -312,87 +318,89 @@ for idx, variant in enumerate(UKB_VARIANTS):
         )
     )
 
-TABLE_HEAD = r"""
-\begin{tabu} to \linewidth { l X r r r }
-  \toprule
-   & System & P & R & F$_1$ \\
-"""
-# \multirow{3}{*}{Baseline} & FiWN 1st sense & 29.2\% & 29.2\% & 29.2\% \\
-# & FiWN + PWN 1st sense & 50.3\% & 50.3\% & 50.3\% \\
-# & Lesk with fasttext vector averaging & 29.4\% & 29.4\% & 29.4\% \\
-# \midrule
-# \midrule
-# \multirow{2}{*}{Knowledge} & UKB (default configuration -- possibly bad due to using 1st sense + bad data) & 51.3\% & 50.6\% & 50.9\% \\
-TABLE_FOOT = r"""
-  \bottomrule
-\end{tabu}
-"""
+
+def score(gold, guess):
+    scorer = java["Scorer", gold, guess]
+    score_out = scorer()
+    measures = {}
+    for line in score_out.split("\n"):
+        if not line:
+            continue
+        bits = line.split()
+        assert bits[0][-1] == "="
+        measures[bits[0][:-1]] = bits[1]
+    return measures
+
+
+def run_exp(db, corpus, exp):
+    root, paths = get_eval_paths(corpus)
+    corpus_basename = basename(corpus.rstrip("/"))
+    iden = "{}.{}".format(corpus_basename, exp.nick)
+    guess_fn = iden + ".key"
+    guess_path = pjoin("guess", guess_fn)
+    model_path = pjoin("models", iden)
+
+    try:
+        if exp.needs_model:
+            exp.run(paths, guess_path, model_path)
+        else:
+            exp.run(paths, guess_path)
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        return
+
+    if exp.lex_group:
+        gold = paths["test"]["supkey"]
+    else:
+        gold = paths["test"]["unikey"]
+
+    measures = score(gold, guess_path)
+
+    result = exp.info()
+    result.update(measures)
+    result["corpus"] = corpus
+    result["time"] = time.time()
+
+    with transaction(db) as tr:
+        tr.insert(result)
+    return measures
 
 
 @click.command()
 @click.argument("corpus", type=click.Path())
 @click.argument("filter_l1", required=False)
 @click.argument("filter_l2", required=False)
-def main(corpus, filter_l1=None, filter_l2=None):
-    root, paths = get_eval_paths(corpus)
-    print(TABLE_HEAD)
+@click.argument("opts", nargs=-1)
+def main(corpus, filter_l1=None, filter_l2=None, opts=None):
     prev_cat = None
     makedirs("guess", exist_ok=True)
     makedirs("models", exist_ok=True)
-    table = TinyDB("results.json").table("results")
-    for exp in EXPERIMENTS:
-        if (filter_l1 is not None and exp.category != filter_l1) or (
-            filter_l2 is not None and exp.subcat != filter_l2
-        ):
-            continue
-        if exp.category != prev_cat:
-            prev_cat = exp.category
-            print("\midrule")
-            print(f"\multirow{{3}}{{*}} {exp.category} & ", end="")
-        else:
-            print(f" & ", end="")
-        print(exp.disp, end=" & ")
-
-        corpus_basename = basename(corpus.rstrip("/"))
-        iden = "{}.{}".format(corpus_basename, exp.nick)
-        guess_fn = iden + ".key"
-        guess_path = pjoin("guess", guess_fn)
-        model_path = pjoin("models", iden)
-
-        try:
-            if exp.needs_model:
-                exp.run(paths, guess_path, model_path)
+    db = TinyDB("results.json").table("results")
+    opt_dict = {}
+    if opts:
+        for opt in opts:
+            k, v = opt.split("=")
+            if v in ["True", "False"]:
+                py_v = bool(v)
             else:
-                exp.run(paths, guess_path)
-        except Exception:
-            import traceback
-
-            traceback.print_exc()
-            continue
-
-        if exp.lex_group:
-            gold = paths["test"]["supkey"]
-        else:
-            gold = paths["test"]["unikey"]
-        scorer = java["Scorer", gold, guess_path]
-        score_out = scorer()
-        measures = {}
-        for line in score_out.split("\n"):
-            if not line:
-                continue
-            bits = line.split()
-            assert bits[0][-1] == "="
-            measures[bits[0][:-1]] = bits[1]
-        # print(" & ".join(), end=" \\\\\n")
-
-        result = exp.info()
-        result.update(measures)
-        result["corpus"] = corpus
-        result["time"] = time.time()
-
-        with transaction(table) as tr:
-            tr.insert(result)
-    print(TABLE_FOOT)
+                try:
+                    py_v = int(v)
+                except ValueError:
+                    py_v = v
+            opt_dict[k] = py_v
+    experiments = [
+        exp
+        for exp in EXPERIMENTS
+        if (filter_l1 is None or exp.category == filter_l1)
+        and (filter_l2 is None or exp.subcat == filter_l2)
+        and (not opts or all((exp.opts[opt] == opt_dict[opt] for opt in opt_dict)))
+    ]
+    for exp in experiments:
+        print("Running", exp)
+        measures = run_exp(db, corpus, exp)
+        print("Got", measures)
 
 
 if __name__ == "__main__":
