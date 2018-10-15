@@ -266,6 +266,7 @@ for vec in ["fasttext", "word2vec", "numberbatch", "triple"]:
                 "awe_nn",
                 "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]),
                 nn(vec, mean),
+                {"vec": vec, "mean": mean},
                 needs_model=True,
             )
         )
@@ -277,6 +278,7 @@ for layer in (-1, 0, 1, 2):
             "ELMo-NN",
             "elmo_nn",
             "ELMO-NN ({})".format(layer),
+            {"layer": layer},
             elmo(layer),
         )
     )
@@ -288,6 +290,7 @@ for mean in NON_EXPANDING_MEANS.keys():
             "Lesk++",
             "lesk_pp",
             "Lesk++ ({})".format(MEAN_DISPS[mean]),
+            {"mean": mean},
             lesk_pp(mean),
         )
     )
