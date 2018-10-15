@@ -1,7 +1,8 @@
+import time
 import click
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Dict
 from plumbum import local
 from plumbum.cmd import python, java
 from os import makedirs
@@ -11,6 +12,8 @@ import sys
 import shutil
 import baselines
 from means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
+from tinydb import TinyDB, where
+from tinyrecord import transaction
 
 
 @dataclass(frozen=True)
@@ -20,8 +23,18 @@ class Exp:
     nick: str
     disp: str
     run: Callable[[str, str, str], None]
+    opts: Dict[str, any] = field(default_factory=dict)
     lex_group: bool = False
     needs_model: bool = False
+
+    def info(self):
+        info = {
+            "category": self.category,
+            "subcat": self.subcat,
+            "nick": self.nick,
+            "disp": self.disp,
+        }
+        info.update(self.opts)
 
 
 def baseline(*args):
@@ -193,6 +206,10 @@ for vec, sur_words in [
                 use_vec,
                 sur_words
             ),
+            {
+                "vec": vec,
+                "sur_words": sur_words
+            },
             needs_model=True
         )
     )
@@ -221,7 +238,18 @@ for do_expand in [False, True]:
                 nick = "lesk." + lower_vec + nick_extra
                 mean_disp = "+" + MEAN_DISPS[mean]
                 disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
-                EXPERIMENTS.append(Exp("Knowledge", "X-lingual Lesk".format(), nick, disp, lesk(*baseline_args)))
+                EXPERIMENTS.append(Exp(
+                    "Knowledge",
+                    "X-lingual Lesk".format(),
+                    nick,
+                    disp,
+                    lesk(*baseline_args)
+                    {
+                        "vec": vec,
+                        "expand": do_expand,
+                        "mean": mean,
+                    }
+                ))
 
 for vec in ["fasttext", "word2vec", "numberbatch", "triple"]:
     for mean in ALL_MEANS.keys():
@@ -268,6 +296,7 @@ def main(corpus, filter_l1=None, filter_l2=None):
     prev_cat = None
     makedirs('guess', exist_ok=True)
     makedirs('models', exist_ok=True)
+    table = TinyDB('results.json').table('results')
     for exp in EXPERIMENTS:
         if (filter_l1 is not None and exp.category != filter_l1) or \
                 (filter_l2 is not None and exp.subcat != filter_l2):
@@ -302,7 +331,22 @@ def main(corpus, filter_l1=None, filter_l2=None):
             gold = paths["test"]["unikey"]
         scorer = java["Scorer", gold, guess_path]
         score_out = scorer()
-        print(" & ".join((line.split()[1] for line in score_out.split('\n') if line)), end=" \\\\\n")
+        measures = {}
+        for line in score_out.split('\n'):
+            if not line:
+                continue
+            bits = line.split()
+            assert bits[0][-1] == "="
+            measures[bits[0][:-1]] = bits[1]
+        #print(" & ".join(), end=" \\\\\n")
+
+        result = exp.info()
+        result.update(measures)
+        result['corpus'] = corpus
+        result['time'] = time.time()
+
+        with transaction(table) as tr:
+            tr.insert(result)
     print(TABLE_FOOT)
 
 
