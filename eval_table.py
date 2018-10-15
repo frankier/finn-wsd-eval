@@ -250,7 +250,7 @@ for do_expand in [False, True]:
                 EXPERIMENTS.append(
                     Exp(
                         "Knowledge",
-                        "X-lingual Lesk".format(),
+                        "Cross-lingual Lesk".format(),
                         nick,
                         disp,
                         lesk(*baseline_args),
