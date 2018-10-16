@@ -10,6 +10,7 @@ elmoformanylangs = {editable = true, ref = "01f66b22d52cfb7b304c71261eee61cc498e
 tinydb = "*"
 tinyrecord = "*"
 black = "==18.9b0"
+pre-commit = "*"
 
 [dev-packages]
 
