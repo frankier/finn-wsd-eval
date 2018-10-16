@@ -30,8 +30,6 @@ def train(inf, keyin, model, output_layer):
     """
     Train nearest neighbour classifier with ELMo.
     """
-    from finntk.wsd.nn import WsdNn
-
     classifier = train_vec_nn(
         mk_training_examples(iter_inst_vecs(inf, output_layer), keyin)
     )

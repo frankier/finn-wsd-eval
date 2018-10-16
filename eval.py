@@ -8,11 +8,9 @@ from plumbum.cmd import python, java
 from os import makedirs
 from os.path import abspath, join as pjoin, basename, exists
 from stiff.eval import get_eval_paths
-import sys
 import shutil
-import baselines
 from means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
-from tinydb import TinyDB, where
+from tinydb import TinyDB
 from tinyrecord import transaction
 
 
@@ -389,7 +387,6 @@ def parse_opts(opts):
 @click.argument("filter_l2", required=False)
 @click.argument("opts", nargs=-1)
 def main(corpus, filter_l1=None, filter_l2=None, opts=None):
-    prev_cat = None
     makedirs("guess", exist_ok=True)
     makedirs("models", exist_ok=True)
     db = TinyDB("results.json").table("results")

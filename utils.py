@@ -21,7 +21,9 @@ def write_lemma(keyout, inst_id, lemma):
         chosen_synset_fi_id = ss2pre(lemma.synset())
         if chosen_synset_fi_id not in fi2en:
             sys.stderr.write(
-                "No fi2en mapping found for {} ({})\n".format(chosen_synset_fi_id, lemma)
+                "No fi2en mapping found for {} ({})\n".format(
+                    chosen_synset_fi_id, lemma
+                )
             )
             guess = "U"
         else:

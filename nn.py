@@ -8,7 +8,6 @@ from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.utils import apply_vec
 from finntk.emb.word2vec import space as word2vec_space
 from means import ALL_MEANS
-from sup_corpus import next_key
 from vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
 
 

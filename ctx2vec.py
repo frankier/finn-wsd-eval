@@ -69,7 +69,6 @@ def test(modelin, trainin, keyin, testin, testkeyin, resultout):
 def context2vec_key_to_unified(keyin, keyout):
     for line in keyin:
         bits = line.split(" ")
-        lemma_pos = bits[0]
         iden = bits[1]
         guesses = bits[2:]
         if guesses:

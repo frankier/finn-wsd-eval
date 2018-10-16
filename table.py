@@ -91,6 +91,7 @@ def get_attr_value_pairs(spec, docs):
 @click.option("--header/--no-header", default=True)
 def main(db_paths, filter, table, header):
     from eval_table import parse_opts
+
     dbs = []
     for db_path in db_paths:
         dbs.append(TinyDB(db_path).table("results"))
@@ -101,7 +102,8 @@ def main(db_paths, filter, table, header):
         filter_l2 = bits[1] if len(bits) >= 2 else None
         opt_dict = parse_opts(bits[2:])
         docs = [
-            doc for doc in docs
+            doc
+            for doc in docs
             if (filter_l1 is None or doc["category"] == filter_l1)
             and (filter_l2 is None or doc["subcat"] == filter_l2)
             and (all((doc[opt] == opt_dict[opt] for opt in opt_dict)))
@@ -114,7 +116,9 @@ def main(db_paths, filter, table, header):
         y_combs = get_attr_combs(docs, y_bits)
         if header:
             print(" & ", end="")
-            print(" & ".join((str_of_comb(y_comb) for y_comb in y_combs)), end=" \\\\\n")
+            print(
+                " & ".join((str_of_comb(y_comb) for y_comb in y_combs)), end=" \\\\\n"
+            )
         for x_comb in x_combs:
             if header:
                 print(str_of_comb(x_comb) + " & ", end="")

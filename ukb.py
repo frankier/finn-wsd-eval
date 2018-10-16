@@ -3,7 +3,7 @@ import sys
 import click
 from os.path import abspath
 from plumbum import local
-from plumbum.cmd import java, python, make, bash, git
+from plumbum.cmd import python, make, bash, git
 from stiff.utils.xml import iter_sentences
 from stiff.data.constants import UNI_POS_WN_MAP
 from finntk.wordnet.reader import fiwn_encnt
