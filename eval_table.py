@@ -368,6 +368,21 @@ def run_exp(db, corpus, exp):
     return measures
 
 
+def parse_opts(opts):
+    opt_dict = {}
+    for opt in opts:
+        k, v = opt.split("=")
+        if v in ["True", "False"]:
+            py_v = bool(v)
+        else:
+            try:
+                py_v = int(v)
+            except ValueError:
+                py_v = v
+        opt_dict[k] = py_v
+    return opt_dict
+
+
 @click.command()
 @click.argument("corpus", type=click.Path())
 @click.argument("filter_l1", required=False)
@@ -378,18 +393,10 @@ def main(corpus, filter_l1=None, filter_l2=None, opts=None):
     makedirs("guess", exist_ok=True)
     makedirs("models", exist_ok=True)
     db = TinyDB("results.json").table("results")
-    opt_dict = {}
     if opts:
-        for opt in opts:
-            k, v = opt.split("=")
-            if v in ["True", "False"]:
-                py_v = bool(v)
-            else:
-                try:
-                    py_v = int(v)
-                except ValueError:
-                    py_v = v
-            opt_dict[k] = py_v
+        opt_dict = parse_opts(opts)
+    else:
+        opt_dict = {}
     experiments = [
         exp
         for exp in EXPERIMENTS
