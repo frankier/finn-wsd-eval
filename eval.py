@@ -282,8 +282,8 @@ for layer in (-1, 0, 1, 2):
             "ELMo-NN",
             "elmo_nn",
             "ELMO-NN ({})".format(layer),
-            {"layer": layer},
             elmo(layer),
+            {"layer": layer},
         )
     )
 
