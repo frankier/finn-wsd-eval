@@ -31,17 +31,35 @@ RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven'
 # Re-fixup Python
 RUN ln -sf /usr/bin/python3.7 /usr/bin/python
 
-# Evaluation framework setup
-COPY . /app
+# Script driven stuff begins
 WORKDIR /app
 
-RUN set -ex && pipenv install --deploy --system
+# Scorer
+COPY ./compile_scorer.sh /app/
+COPY ./support/scorer /app/support/scorer
 RUN bash ./compile_scorer.sh
+
+# Pipenv requirements
+COPY ./Pipfile* /app/
+RUN set -ex && pipenv install --deploy --system
 
 # NLTK resources
 RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
 
-# WSD system setup
+# UKB
+COPY ./ukb.py /app/
+COPY ./support/ukb /app/support/ukb
 RUN python ukb.py fetch
+
+# SupWSD
+COPY ./supwsd.py /app/
+COPY ./support/supWSD /app/support/supWSD
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && python supwsd.py fetch'
+
+# Context2Vec
+COPY ./ctx2vec.py /app/
+COPY ./support/context2vec /app/support/context2vec
 RUN python ctx2vec.py fetch
+
+# Evaluation framework setup
+COPY . /app
