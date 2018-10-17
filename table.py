@@ -90,7 +90,7 @@ def get_attr_value_pairs(spec, docs):
 @click.option("--table", nargs=1, required=False)
 @click.option("--header/--no-header", default=True)
 def main(db_paths, filter, table, header):
-    from eval_table import parse_opts
+    from eval import parse_opts
 
     dbs = []
     for db_path in db_paths:
