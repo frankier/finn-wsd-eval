@@ -382,14 +382,15 @@ def parse_opts(opts):
 
 
 @click.command()
+@click.argument("db_path", type=click.Path())
 @click.argument("corpus", type=click.Path())
 @click.argument("filter_l1", required=False)
 @click.argument("filter_l2", required=False)
 @click.argument("opts", nargs=-1)
-def main(corpus, filter_l1=None, filter_l2=None, opts=None):
+def main(db_path, corpus, filter_l1=None, filter_l2=None, opts=None):
     makedirs("guess", exist_ok=True)
     makedirs("models", exist_ok=True)
-    db = TinyDB("results.json").table("results")
+    db = TinyDB(db_path).table("results")
     if opts:
         opt_dict = parse_opts(opts)
     else:
