@@ -43,6 +43,10 @@ def fetch_program():
 
 
 @supwsd.command()
+@click.argument("work_dir")
+@click.argument("vec_path", required=False)
+@click.option("--use-vec/--no-use-vec")
+@click.option("--use-surrounding-words/--no-use-surrounding-words")
 def conf(work_dir, vec_path="", use_vec=False, use_surrounding_words=True):
     from finntk.wordnet.reader import fiwn_resman
 
