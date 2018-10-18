@@ -221,40 +221,46 @@ LESK_MEANS = ALL_MEANS.copy()
 del LESK_MEANS["normalized_mean"]
 
 
-for do_expand in [False, True]:
-    for vec in ["fasttext", "numberbatch", "double"]:
-        lower_vec = vec.lower()
-        for mean in LESK_MEANS.keys():
-            for wn_filter in [False, True]:
-                baseline_args = [lower_vec, mean]
-                nick_extra = ""
-                disp_extra = ""
-                if wn_filter:
-                    baseline_args += ["--wn-filter"]
-                    nick_extra += ".wn-filter"
-                    disp_extra += "+WN-filter"
-                if do_expand:
-                    baseline_args += ["--expand"]
-                    nick_extra += ".expand"
-                    disp_extra += "+expand"
-                nick = "lesk." + lower_vec + nick_extra
-                mean_disp = "+" + MEAN_DISPS[mean]
-                disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
-                EXPERIMENTS.append(
-                    Exp(
-                        "Knowledge",
-                        "Cross-lingual Lesk",
-                        nick,
-                        disp,
-                        lesk(*baseline_args),
-                        {
-                            "vec": vec,
-                            "expand": do_expand,
-                            "mean": mean,
-                            "wn_filter": wn_filter,
-                        },
+for use_freq in [False, True]:
+    for do_expand in [False, True]:
+        for vec in ["fasttext", "numberbatch", "double"]:
+            lower_vec = vec.lower()
+            for mean in LESK_MEANS.keys():
+                for wn_filter in [False, True]:
+                    baseline_args = [lower_vec, mean]
+                    nick_extra = ""
+                    disp_extra = ""
+                    if wn_filter:
+                        baseline_args += ["--wn-filter"]
+                        nick_extra += ".wn-filter"
+                        disp_extra += "+WN-filter"
+                    if do_expand:
+                        baseline_args += ["--expand"]
+                        nick_extra += ".expand"
+                        disp_extra += "+expand"
+                    if use_freq:
+                        baseline_args += ["--use-freq"]
+                        nick_extra += ".freq"
+                        disp_extra += "+freq"
+                    nick = "lesk." + lower_vec + nick_extra
+                    mean_disp = "+" + MEAN_DISPS[mean]
+                    disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
+                    EXPERIMENTS.append(
+                        Exp(
+                            "Knowledge",
+                            "Cross-lingual Lesk",
+                            nick,
+                            disp,
+                            lesk(*baseline_args),
+                            {
+                                "vec": vec,
+                                "expand": do_expand,
+                                "mean": mean,
+                                "wn_filter": wn_filter,
+                                "use_freq": use_freq,
+                            },
+                        )
                     )
-                )
 
 for vec in ["fasttext", "word2vec", "numberbatch", "triple"]:
     for mean in ALL_MEANS.keys():
