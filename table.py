@@ -13,7 +13,7 @@ def pk(doc):
     return tuple(sorted(pk_doc.items()))
 
 
-def all(dbs):
+def all_docs(dbs):
     for db in dbs:
         for doc in db.all():
             yield doc
@@ -21,7 +21,7 @@ def all(dbs):
 
 def all_recent(dbs):
     recents = {}
-    for doc in all(dbs):
+    for doc in all_docs(dbs):
         if "time" not in doc:
             continue
         key = pk(doc)
@@ -104,9 +104,11 @@ def main(db_paths, filter, table, header):
         docs = [
             doc
             for doc in docs
-            if (filter_l1 is None or doc["category"] == filter_l1)
-            and (filter_l2 is None or doc["subcat"] == filter_l2)
-            and (all((doc[opt] == opt_dict[opt] for opt in opt_dict)))
+            if (
+                (filter_l1 is None or doc["category"] == filter_l1)
+                and (filter_l2 is None or doc["subcat"] == filter_l2)
+                and all(doc.get(opt) == opt_dict[opt] for opt in opt_dict)
+            )
         ]
     if table:
         x_groups, y_groups = table.split()
