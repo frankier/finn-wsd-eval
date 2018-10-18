@@ -23,7 +23,10 @@ def train_one_sif(inf, vec):
         ctx = norm_wf_lemma_of_tokens(be + af)
         if not ctx:
             continue
-        mat[idx] = apply_vec(pre_sif_mean, space, ctx, "fi")
+        vec = apply_vec(pre_sif_mean, space, ctx, "fi")
+        if vec is None:
+            continue
+        mat[idx] = vec
     return compute_pc(mat)
 
 
