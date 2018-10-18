@@ -45,7 +45,7 @@ def unigram(inf, keyout, wn):
 
 CHUNK_SIZE = 4096
 TAG_REGEX = re.compile(
-    br"<(?P<START_TAG>.) (?P<SYNSETS>[^>]+)>(?P<WF>.)</(?P<END_TAG>.)>"
+    br" ?<(?P<START_TAG>.) (?P<SYNSETS>[^>]+)>(?P<WF>.)</(?P<END_TAG>.)>"
 )
 
 
@@ -63,26 +63,24 @@ def proc_match(match):
 
 def iter_supwsd_result(fp):
     buffer = b""
-    while True:
+    done = False
+    while not done:
         chunk = fp.read(CHUNK_SIZE)
         if not chunk:
-            match = TAG_REGEX.match(buffer)
-            assert match
-            end_pos = match.end(0)
-            assert end_pos == len(buffer)
-            yield proc_match(match)
-            return
-        buffer += chunk
-        while True:
+            done = True
+        else:
+            buffer += chunk
+        while len(buffer) > 0:
             match = TAG_REGEX.match(buffer)
             if not match:
                 break
             yield proc_match(match)
             end_pos = match.end(0)
-            if end_pos == len(buffer):
-                break
-            assert buffer[end_pos] == b" "[0]
+            if end_pos != len(buffer):
+                assert buffer[end_pos] in b" \n"
             buffer = buffer[end_pos + 1 :]
+        if done:
+            assert len(buffer) == 0
 
 
 def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
