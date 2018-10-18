@@ -116,13 +116,14 @@ def supwsd(vec_path, use_vec, use_surrounding_words):
         train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
         test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
         with open(paths["test"]["unikey"]) as goldkey, open(
-            pjoin(model_path, "scores/plain.result")
+            pjoin(model_path, "scores/plain.result"), "rb"
         ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
+            print(pjoin(model_path, "scores/plain.result"))
             for gold_line, supwsd_result in zip(
                 goldkey, iter_supwsd_result(supwsd_result_fp)
             ):
                 key = gold_line.split()[0]
-                synset = supwsd_result[1][0][0]
+                synset = supwsd_result[1][0][0].decode("utf-8")
                 guess_fp.write("{} {}\n".format(key, synset))
 
     return run

@@ -45,7 +45,7 @@ def unigram(inf, keyout, wn):
 
 CHUNK_SIZE = 4096
 TAG_REGEX = re.compile(
-    r"<(?P<START_TAG>.) (?P<SYNSETS>[^>]+)>(?P<WF>.)</(?P<END_TAG>.)>"
+    br"<(?P<START_TAG>.) (?P<SYNSETS>[^>]+)>(?P<WF>.)</(?P<END_TAG>.)>"
 )
 
 
@@ -53,16 +53,16 @@ def proc_match(match):
     groups = match.groupdict()
     assert groups["START_TAG"] == groups["END_TAG"]
     synsets = []
-    synsets_str = groups["SYNSETS"].split(" ")
+    synsets_str = groups["SYNSETS"].split(b" ")
     for synset in synsets_str:
-        synset_id, weight_str = synset.split("|")
+        synset_id, weight_str = synset.split(b"|")
         weight = float(weight_str)
         synsets.append((synset_id, weight))
     return groups["START_TAG"], synsets, groups["WF"]
 
 
 def iter_supwsd_result(fp):
-    buffer = ""
+    buffer = b""
     while True:
         chunk = fp.read(CHUNK_SIZE)
         if not chunk:
@@ -81,5 +81,5 @@ def iter_supwsd_result(fp):
             end_pos = match.end(0)
             if end_pos == len(buffer):
                 break
-            assert buffer[end_pos] == " "
+            assert buffer[end_pos] == b" "[0]
             buffer = buffer[end_pos + 1 :]
