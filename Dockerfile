@@ -46,20 +46,22 @@ RUN set -ex && pipenv install --deploy --system
 # NLTK resources
 RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
 
+RUN mkdir /app/fetchers
+
 # UKB
-COPY ./ukb.py /app/
+COPY ./fetchers/ukb.py /app/fetchers/
 COPY ./support/ukb /app/support/ukb
-RUN python ukb.py fetch
+RUN python fetchers/ukb.py fetch
 
 # SupWSD
-COPY ./supwsd.py /app/
+COPY ./fetchers/supwsd.py /app/fetchers/
 COPY ./support/supWSD /app/support/supWSD
-RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && python supwsd.py fetch'
+RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && python fetchers/supwsd.py'
 
 # Context2Vec
-COPY ./ctx2vec.py /app/
+COPY ./fetchers/ctx2vec.py /app/fetchers/
 COPY ./support/context2vec /app/support/context2vec
-RUN python ctx2vec.py fetch
+RUN python fetchers/ctx2vec.py
 
 # Evaluation framework setup
 COPY . /app

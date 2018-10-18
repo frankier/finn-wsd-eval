@@ -1,11 +1,8 @@
-import os
 import click
 from plumbum import local
-from plumbum.cmd import git, java
+from plumbum.cmd import java
 from string import Template
 from os.path import join as pjoin
-from finntk.emb.word2vec import vecs as word2vec_res
-from finntk.emb.fasttext import vecs as fasttext_res
 
 
 SUPWSD_JAR = "target/supwsd-toolkit-1.0.0.jar"
@@ -14,32 +11,6 @@ SUPWSD_JAR = "target/supwsd-toolkit-1.0.0.jar"
 @click.group()
 def supwsd():
     pass
-
-
-@supwsd.command()
-def fetch():
-    fetch_program.callback()
-    fetch_emb.callback()
-
-
-@supwsd.command()
-def fetch_emb():
-    emb = "support/emb"
-    os.makedirs(emb, exist_ok=True)
-    word2vec_res.get_vecs().save_word2vec_format(pjoin(emb, "word2vec.txt"))
-    fasttext_res.get_fi().save_word2vec_format(pjoin(emb, "fasttext.txt"))
-
-
-@supwsd.command()
-def fetch_program():
-    from plumbum.cmd import mvn
-
-    os.makedirs("systems", exist_ok=True)
-    with local.cwd("systems"):
-        git("clone", "https://github.com/frankier/supWSD.git")
-        with local.cwd("supWSD"):
-            git("checkout", "fixes-sep-24-1")
-            mvn("package")
 
 
 @supwsd.command()

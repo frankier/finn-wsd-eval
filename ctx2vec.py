@@ -1,33 +1,13 @@
 import tempfile
-import os
 import click
 from plumbum import local
-from plumbum.cmd import git, python, pipenv, ln
-from shutil import copyfile
+from plumbum.cmd import python, pipenv, ln
 from os.path import join as pjoin
 
 
 @click.group()
 def ctx2vec():
     pass
-
-
-@ctx2vec.command()
-@click.option("--gpu/--no-gpu")
-def fetch(gpu):
-    os.makedirs("systems", exist_ok=True)
-    with local.cwd("systems"):
-        git("clone", "https://github.com/orenmel/context2vec.git")
-
-    subdir = "gpu" if gpu else "nogpu"
-    for fn in ["Pipfile", "Pipfile.lock"]:
-        copyfile(
-            "support/context2vec/{}/{}".format(subdir, fn),
-            "systems/context2vec/{}".format(fn),
-        )
-
-    with local.cwd("systems/context2vec"):
-        pipenv("install")
 
 
 def get_xml_key_pair(xml_path, key_path):
