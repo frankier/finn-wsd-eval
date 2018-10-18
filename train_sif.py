@@ -42,7 +42,7 @@ def train_sif(corpus, out_path):
     root, paths = get_eval_paths(corpus)
     for vec in ["numberbatch", "fasttext", "word2vec", "triple"]:
         pc = train_one_sif(open(paths["train"]["suptag"], "rb"), vec)
-        pickle.dump(pc, open(sif_filename(out_path, vec, "w")))
+        pickle.dump(pc, open(sif_filename(out_path, vec), "wb"))
 
 
 def load_sif(path, vec):
