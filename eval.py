@@ -372,7 +372,9 @@ def parse_opts(opts):
     for opt in opts:
         k, v = opt.split("=")
         if v in ["True", "False"]:
-            py_v = bool(v)
+            py_v = v == "True"
+        elif v == "None":
+            py_v = None
         else:
             try:
                 py_v = int(v)
