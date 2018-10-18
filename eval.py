@@ -101,7 +101,7 @@ def ctx2vec(ctx2vec_model, seg):
 def supwsd(vec_path, use_vec, use_surrounding_words):
     def run(paths, guess_fn, model_path):
         from supwsd import conf, train, test
-        from utils import iter_supwsd_result
+        from utils import proc_supwsd
 
         if exists(model_path):
             timestr = datetime.now().isoformat()
@@ -118,13 +118,7 @@ def supwsd(vec_path, use_vec, use_surrounding_words):
         with open(paths["test"]["unikey"]) as goldkey, open(
             pjoin(model_path, "scores/plain.result"), "rb"
         ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
-            print(pjoin(model_path, "scores/plain.result"))
-            for gold_line, supwsd_result in zip(
-                goldkey, iter_supwsd_result(supwsd_result_fp)
-            ):
-                key = gold_line.split()[0]
-                synset = supwsd_result[1][0][0].decode("utf-8")
-                guess_fp.write("{} {}\n".format(key, synset))
+            proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
 
     return run
 

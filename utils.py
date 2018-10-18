@@ -83,3 +83,10 @@ def iter_supwsd_result(fp):
                 break
             assert buffer[end_pos] == b" "[0]
             buffer = buffer[end_pos + 1 :]
+
+
+def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
+    for gold_line, supwsd_result in zip(goldkey, iter_supwsd_result(supwsd_result_fp)):
+        key = gold_line.split()[0]
+        synset = supwsd_result[1][0][0].decode("utf-8")
+        guess_fp.write("{} {}\n".format(key, synset))
