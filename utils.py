@@ -45,7 +45,7 @@ def unigram(inf, keyout, wn):
 
 CHUNK_SIZE = 4096
 TAG_REGEX = re.compile(
-    br" ?<(?P<START_TAG>.) (?P<SYNSETS>[^>]+)>(?P<WF>.)</(?P<END_TAG>.)>"
+    br" ?<(?P<START_TAG>.)(?P<SYNSETS>[^>]*)>(?P<WF>.)</(?P<END_TAG>.)>"
 )
 
 
@@ -53,11 +53,13 @@ def proc_match(match):
     groups = match.groupdict()
     assert groups["START_TAG"] == groups["END_TAG"]
     synsets = []
-    synsets_str = groups["SYNSETS"].split(b" ")
-    for synset in synsets_str:
-        synset_id, weight_str = synset.split(b"|")
-        weight = float(weight_str)
-        synsets.append((synset_id, weight))
+    synsets_str = groups["SYNSETS"].strip(b" ")
+    if synsets_str:
+        synsets_bits = synsets_str.split(b" ")
+        for synset in synsets_bits:
+            synset_id, weight_str = synset.split(b"|")
+            weight = float(weight_str)
+            synsets.append((synset_id, weight))
     return groups["START_TAG"], synsets, groups["WF"]
 
 
@@ -86,5 +88,9 @@ def iter_supwsd_result(fp):
 def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
     for gold_line, supwsd_result in zip(goldkey, iter_supwsd_result(supwsd_result_fp)):
         key = gold_line.split()[0]
-        synset = supwsd_result[1][0][0].decode("utf-8")
+        synsets = supwsd_result[1]
+        if len(synsets):
+            synset = synsets[0][0].decode("utf-8")
+        else:
+            synset = "U"
         guess_fp.write("{} {}\n".format(key, synset))
