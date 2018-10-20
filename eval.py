@@ -230,15 +230,16 @@ for vec, sur_words in [
     )
 
 
-LESK_MEANS = ALL_MEANS.copy()
-del LESK_MEANS["normalized_mean"]
+LESK_MEANS = list(ALL_MEANS.keys())
+LESK_MEANS.remove("normalized_mean")
+LESK_MEANS.append("sif_mean")
 
 
 for use_freq in [False, True]:
     for do_expand in [False, True]:
         for vec in ["fasttext", "numberbatch", "double"]:
             lower_vec = vec.lower()
-            for mean in LESK_MEANS.keys():
+            for mean in LESK_MEANS:
                 for wn_filter in [False, True]:
                     baseline_args = [lower_vec, mean]
                     nick_extra = ""

@@ -4,9 +4,12 @@ from finntk.emb.utils import (
     catp_mean,
     unnormalized_mean,
     normalized_mean,
+    mk_sif_mean,
+    pre_sif_mean,
 )
 
 from functools import partial
+import pickle
 
 EXPANDING_MEANS = {
     "catp3_mean": partial(catp_mean, ps=CATP_3),
@@ -14,9 +17,9 @@ EXPANDING_MEANS = {
 }
 
 NON_EXPANDING_MEANS = {
-    # "sif_mean": sif_mean,
     "unnormalized_mean": unnormalized_mean,
     "normalized_mean": normalized_mean,
+    "pre_sif_mean": pre_sif_mean,
 }
 
 ALL_MEANS = {**EXPANDING_MEANS, **NON_EXPANDING_MEANS}
@@ -24,7 +27,20 @@ ALL_MEANS = {**EXPANDING_MEANS, **NON_EXPANDING_MEANS}
 MEAN_DISPS = {
     "catp3_mean": "CATP3-WE",
     "catp4_mean": "CATP4-WE",
-    # "sif_mean": "SIF-WE",
+    "sif_mean": "SIF-WE",
+    "pre_sif_mean": "preSIF-WE",
     "unnormalized_mean": "AWE",
     "normalized_mean": "AWE-norm",
 }
+
+pcs_cache = {}
+
+
+def get_mean(mean, emb_name):
+    if mean == "sif_mean":
+        if emb_name not in pcs_cache:
+            vec = pickle.load(open("support/sif/{}.pkl".format(emb_name), "rb"))
+            pcs_cache[emb_name] = vec[0]
+        return mk_sif_mean(pcs_cache[emb_name])
+    else:
+        return ALL_MEANS[mean]

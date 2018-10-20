@@ -5,7 +5,7 @@ from finntk.emb.concat import ft_nb_multispace
 from finntk.emb.fasttext import multispace as fasttext_multispace
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.wsd.lesk_emb import MultilingualLesk
-from means import ALL_MEANS
+from means import get_mean
 from utils import write_lemma
 
 
@@ -27,7 +27,7 @@ def lesk(vec, mean, inf, keyout, wn_filter, expand, use_freq):
     else:
         assert False
     return wordvec_lesk(
-        ALL_MEANS[mean], multispace, wn_filter, expand, use_freq, inf, keyout
+        get_mean(mean, vec), multispace, wn_filter, expand, use_freq, inf, keyout
     )
 
 
