@@ -1,7 +1,8 @@
 from finntk.finnpos import sent_finnpos
 from finntk.wordnet.reader import fiwn
-from finntk.wsd.lesk_emb import mk_defn_vec_conceptnet_en
-from finntk.wsd.lesk_pp import mk_lemma_vec, mk_context_vec
+from finntk.emb.numberbatch import multispace as numberbatch_multispace
+from finntk.emb.autoextend import mk_lemma_vec
+from finntk.wsd.lesk_pp import LeskPP
 from finntk.emb.utils import cosine_sim
 from stiff.utils.xml import iter_sentences
 import click
@@ -14,9 +15,13 @@ from utils import lemmas_from_instance, write_lemma
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
 @click.option("--include-wfs/--no-include-wfs")
-def lesk_pp(mean, inf, keyout, include_wfs):
-    mean_func = ALL_MEANS[mean]
-    for sent in iter_sentences(inf):
+@click.option("--expand/--no-expand")
+@click.option("--exclude-cand/--no-exclude-cand")
+@click.option("--score-by")
+def lesk_pp(mean, inf, keyout, include_wfs, expand, exclude_cand, score_by):
+    aggf = ALL_MEANS[mean]
+    lesk_pp = LeskPP(numberbatch_multispace, aggf, False, expand)
+    for sent_idx, sent in enumerate(iter_sentences(inf)):
         if include_wfs:
             instances = sent.xpath("instance|wf")
             sent = [inst.text for inst in instances]
@@ -47,7 +52,9 @@ def lesk_pp(mean, inf, keyout, include_wfs):
             lemma_str, lemmas = sent_lemmas[lemma_idx]
 
             # XXX: Should context_vec exclude the word being disambiguated
-            context_vec = mk_context_vec(mean_func, sent_lemmas, "fi")
+            context_vec = lesk_pp.mk_ctx_vec(
+                sent_lemmas, *([lemma_idx] if exclude_cand else [])
+            )
             if context_vec is None:
                 # Back off to MFS
                 sent_lemmas[lemma_idx] = (lemma_str, [lemmas[0]])
@@ -55,15 +62,23 @@ def lesk_pp(mean, inf, keyout, include_wfs):
                 best_lemma = None
                 best_score = -2
                 for lemma in lemmas:
-                    defn_vec = mk_defn_vec_conceptnet_en(mean_func, lemma)
-                    score = cosine_sim(defn_vec, context_vec)
+                    defn_vec = lesk_pp.mk_defn_vec(lemma)
+                    defn_ctx_score = cosine_sim(defn_vec, context_vec)
                     try:
                         lemma_vec = mk_lemma_vec(lemma)
                     except KeyError:
                         # XXX: Is this reasonable, or should there be a penalty?
-                        score = 2 * score
+                        lemma_ctx_score = defn_ctx_score
                     else:
-                        score = score + cosine_sim(lemma_vec, context_vec)
+                        lemma_ctx_score = cosine_sim(lemma_vec, context_vec)
+                    if score_by == "both":
+                        score = defn_ctx_score + lemma_ctx_score
+                    elif score_by == "defn":
+                        score = defn_ctx_score
+                    elif score_by == "lemma":
+                        score = lemma_ctx_score
+                    else:
+                        assert False
                     if score > best_score:
                         best_lemma = lemma
                         best_score = score

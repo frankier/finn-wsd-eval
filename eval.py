@@ -156,9 +156,22 @@ def nn(vec, mean):
     return inner
 
 
-def lesk_pp(mean):
+def lesk_pp(mean, do_expand, exclude_cand, score_by):
     def inner(paths, guess_fn):
-        python("lesk_pp.py", mean, paths["test"]["unified"], guess_fn, "--include-wfs")
+        args = [
+            "lesk_pp.py",
+            mean,
+            paths["test"]["unified"],
+            guess_fn,
+            "--include-wfs",
+            "--score-by",
+            score_by,
+        ]
+        if do_expand:
+            args.append("--expand")
+        if exclude_cand:
+            args.append("--exclude-cand")
+        python(*args)
 
     return inner
 
@@ -288,17 +301,25 @@ for layer in (-1, 0, 1, 2):
         )
     )
 
-for mean in NON_EXPANDING_MEANS.keys():
-    EXPERIMENTS.append(
-        Exp(
-            "Knowledge",
-            "Lesk++",
-            "lesk_pp",
-            "Lesk++ ({})".format(MEAN_DISPS[mean]),
-            {"mean": mean},
-            lesk_pp(mean),
-        )
-    )
+for score_by in ["both", "defn", "lemma"]:
+    for exclude_cand in [False, True]:
+        for do_expand in [False, True]:
+            for mean in NON_EXPANDING_MEANS:
+                EXPERIMENTS.append(
+                    Exp(
+                        "Knowledge",
+                        "Lesk++",
+                        "lesk_pp",
+                        "Lesk++ ({} {})".format(MEAN_DISPS[mean], do_expand),
+                        lesk_pp(mean, do_expand, exclude_cand, score_by),
+                        {
+                            "mean": mean,
+                            "expand": do_expand,
+                            "exclude_cand": exclude_cand,
+                            "score_by": score_by,
+                        },
+                    )
+                )
 
 UKB_VARIANTS = []
 for extra in [("--dict_weight",), ("--dict_noweight",)]:
