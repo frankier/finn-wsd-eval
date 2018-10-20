@@ -7,9 +7,19 @@ from os.path import join as pjoin
 from stiff.eval import get_eval_paths
 from sup_corpus import iter_instances, norm_wf_lemma_of_tokens
 from finntk.emb.utils import apply_vec, compute_pc
-from nn import get_vec_space
 from stiff.utils.xml import iter_blocks
+from finntk.emb.base import MonoVectorSpaceAdapter
 from finntk.emb.utils import pre_sif_mean
+
+
+def get_vec_space(vec):
+    from nn import get_vec_space
+    from finntk.emb.concat import ft_nb_multispace
+
+    if vec == "double":
+        return MonoVectorSpaceAdapter(ft_nb_multispace, "fi")
+    else:
+        return get_vec_space(vec)
 
 
 def train_one_sif(inf, vec):
@@ -30,6 +40,11 @@ def train_one_sif(inf, vec):
     return compute_pc(mat)
 
 
+def train_one_sif_outer(paths, vec, out_path):
+    pc = train_one_sif(open(paths["train"]["suptag"], "rb"), vec)
+    pickle.dump(pc, open(sif_filename(out_path, vec), "wb"))
+
+
 def sif_filename(path, vec):
     makedirs(path, exist_ok=True)
     return pjoin(path, f"{vec}.pkl")
@@ -38,11 +53,14 @@ def sif_filename(path, vec):
 @click.command()
 @click.argument("corpus", type=click.Path())
 @click.argument("out_path", type=click.Path())
-def train_sif(corpus, out_path):
+@click.argument("vec", required=False)
+def train_sif(corpus, out_path, vec=None):
     root, paths = get_eval_paths(corpus)
-    for vec in ["numberbatch", "fasttext", "word2vec", "triple"]:
-        pc = train_one_sif(open(paths["train"]["suptag"], "rb"), vec)
-        pickle.dump(pc, open(sif_filename(out_path, vec), "wb"))
+    if vec is None:
+        for vec in ["numberbatch", "fasttext", "word2vec", "triple", "double"]:
+            train_one_sif_outer(paths, vec, out_path)
+    else:
+        train_one_sif_outer(paths, vec, out_path)
 
 
 def load_sif(path, vec):
