@@ -54,7 +54,7 @@ def lesk(variety, *args):
     return run
 
 
-def ukb(use_new_dict, *variant):
+def ukb(use_new_dict, extract_extra, *variant):
     from ukb import run_inner as run_ukb
 
     def run(paths, guess_fn):
@@ -68,6 +68,7 @@ def ukb(use_new_dict, *variant):
             variant,
             "support/ukb/wn30/wn30g.bin",
             dict_fn,
+            extract_extra,
         )
 
     return run
@@ -322,22 +323,31 @@ for score_by in ["both", "defn", "lemma"]:
                     )
                 )
 
-UKB_VARIANTS = []
-for extra in [("--dict_weight",), ("--dict_noweight",)]:
-    UKB_VARIANTS.append(("--ppr_w2w",) + extra)
 
-UKB_LABELS = ["", "_nf"]
-
-for idx, variant in enumerate(UKB_VARIANTS):
-    EXPERIMENTS.append(
-        Exp(
-            "Knowledge",
-            "UKB",
-            "UKB",
-            "UKB{}".format(UKB_LABELS[idx]),
-            ukb(True, *variant),
+for use_freq in [False, True]:
+    for extract_extra in [False, True]:
+        ukb_args = ("--ppr_w2w",)
+        label_extra = ""
+        nick_extra = ""
+        if use_freq:
+            ukb_args += ("--dict_weight",)
+            label_extra = "_nf"
+            nick_extra += ".nf"
+        else:
+            ukb_args += ("--dict_noweight",)
+        if extract_extra:
+            label_extra += "+extract"
+            nick_extra += ".extract"
+        EXPERIMENTS.append(
+            Exp(
+                "Knowledge",
+                "UKB",
+                "ukb" + nick_extra,
+                "UKB{}".format(label_extra),
+                ukb(True, extract_extra, *ukb_args),
+                {"extract_extra": extract_extra, "use_freq": use_freq},
+            )
         )
-    )
 
 
 def score(gold, guess):

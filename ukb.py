@@ -23,11 +23,12 @@ def ukb():
 @click.argument("variant")
 @click.argument("graph_fn")
 @click.argument("dict_fn")
-def run(input_fn, output_fn, variant, graph_fn, dict_fn):
-    run_inner(input_fn, output_fn, variant.split(" "), graph_fn, dict_fn)
+@click.option("--extract-extra/--no-extract_extra")
+def run(input_fn, output_fn, variant, graph_fn, dict_fn, extract_extra):
+    run_inner(input_fn, output_fn, variant.split(" "), graph_fn, dict_fn, extract_extra)
 
 
-def run_inner(input_fn, output_fn, variant, graph_fn, dict_fn):
+def run_inner(input_fn, output_fn, variant, graph_fn, dict_fn, extract_extra):
     ukb_wsd = get_ukb()
     os.makedirs("guess", exist_ok=True)
     args = variant + (
@@ -39,8 +40,11 @@ def run_inner(input_fn, output_fn, variant, graph_fn, dict_fn):
         "--smooth_dict_weight",
         "1000",
     )
+    preproc_args = (__file__, "unified-to-ukb", input_fn, "-")
+    if extract_extra:
+        preproc_args += ("--extract-extra",)
     pred_pipeline = (
-        python[__file__, "unified-to-ukb", input_fn, "-"]
+        python[preproc_args]
         | ukb_wsd[args]
         | python[__file__, "clean-keyfile", "-", "-"]
         > output_fn
@@ -48,10 +52,22 @@ def run_inner(input_fn, output_fn, variant, graph_fn, dict_fn):
     pred_pipeline(stderr=sys.stderr)
 
 
+def fake_starts(toks):
+    idx = 0
+    for tok in toks:
+        yield idx
+        idx += len(tok) + 1
+
+
 @ukb.command()
 @click.argument("inf", type=click.File("rb"))
 @click.argument("outf", type=click.File("w"))
-def unified_to_ukb(inf, outf):
+@click.option("--extract-extra/--no-extract_extra")
+def unified_to_ukb(inf, outf, extract_extra):
+    from stiff.extract.fin import FinExtractor
+
+    if extract_extra:
+        extractor = FinExtractor()
     for sent_elem in iter_sentences(inf):
         bits = []
         outf.write(sent_elem.attrib["id"])
@@ -61,6 +77,30 @@ def unified_to_ukb(inf, outf):
             lemma = instance.attrib["lemma"].lower()
             pos = UNI_POS_WN_MAP[instance.attrib["pos"]]
             bits.append(f"{lemma}#{pos}#{id}#1")
+        if extract_extra:
+            elems = sent_elem.xpath("wf|instance")
+            toks = [node.text for node in elems]
+            known_idxs = {
+                idx for idx, elem in enumerate(elems) if elem.tag == "instance"
+            }
+            tagging = extractor.extract_toks(toks, list(fake_starts(toks)))
+            for tok_idx, tok in enumerate(tagging.tokens):
+                if tok_idx in known_idxs:
+                    continue
+                extra_id = 0
+                lemma_poses = set()
+                for tag in tok.tags:
+                    for wn, lemma_obj in tag.lemma_objs:
+                        lemma_name = lemma_obj.name().lower().strip()
+                        if lemma_name == "":
+                            continue
+                        lemma_pos = lemma_obj.synset().pos()
+                        if lemma_pos == "s":
+                            lemma_pos = "a"
+                        lemma_poses.add((lemma_name, lemma_pos))
+                for lemma, pos in lemma_poses:
+                    bits.append(f"{lemma}#{pos}#xT{tok_idx}N{extra_id}#0")
+                    extra_id += 1
         outf.write(" ".join(bits))
         outf.write("\n")
 

@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2422963f83a22515fca956c40c17aad8943c55246b56b43cee721dd4a6f01ca1"
+            "sha256": "cae77e572487d17314908f928ffa4cb536686d8b4944da7e47c7e597a8308169"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.7"
+            "python_version": "3.6"
         },
         "sources": [
             {
@@ -190,6 +190,14 @@
             ],
             "version": "==2.3.1"
         },
+        "dataclasses": {
+            "hashes": [
+                "sha256:454a69d788c7fda44efd71e259be79577822f5e3f53f029a22d08004e951dc9f",
+                "sha256:6988bd2b895eef432d562370bb707d540f32f7360ab13da45340101bc2307d84"
+            ],
+            "index": "pypi",
+            "version": "==0.6"
+        },
         "diskcache": {
             "hashes": [
                 "sha256:15f0179c612dca07ff98beb4b15e98fc71809f6edd36320213f19ca42724cbf3",
@@ -280,6 +288,19 @@
                 "sha256:40c9e3680616cfdf942f77429a3a9e0a76f31ce965d62f4ffbe63a83a5ef1b5a"
             ],
             "version": "==1.0.0"
+        },
+        "hfst": {
+            "hashes": [
+                "sha256:3e1fae730a930e64f980035974e3e6a74823c1c34dd7b8f00ea71abf599a0559",
+                "sha256:8884e529cb2bea9ad6389182c0b65851567c84168f0b7d8249d8711e95116057",
+                "sha256:a5423c33b026d06f726b9289fe84c183d0bb1f65529af0f488e64bbfd6d37eb7",
+                "sha256:c10c2eb06fcdd56c3112978dd768d5c8bc20f4838773f435b00453015ad54104",
+                "sha256:e8fa4434df19833c054e3b4b4d22570719afb38d0c853a3ee90f79c30a38023b",
+                "sha256:e9bca59f1ed2b4ed10ff0f017186b0f097abd89229537a68c83a73b493000030",
+                "sha256:f67516a45e71822a144361f199f7e3bdcd20014d21e44b875c5cf143badc01a3"
+            ],
+            "index": "pypi",
+            "version": "==3.15.0.0b0"
         },
         "identify": {
             "hashes": [
@@ -465,10 +486,9 @@
             "version": "==1.11.2"
         },
         "pyahocorasick": {
-            "hashes": [
-                "sha256:3d584e7836ca7b066f99d7fdb384dc6ef7af211b2b139baedbd960c7c279bb7f"
-            ],
-            "version": "==1.1.8"
+            "editable": true,
+            "git": "https://github.com/frankier/pyahocorasick.git",
+            "ref": "ca029040175eaba65719e301045dd2c9a821281e"
         },
         "pycparser": {
             "hashes": [
@@ -492,19 +512,13 @@
         },
         "pyyaml": {
             "hashes": [
-                "sha256:3d7da3009c0f3e783b2c873687652d83b1bbfd5c88e9813fb7e5b03c0dd3108b",
-                "sha256:3ef3092145e9b70e3ddd2c7ad59bdd0252a94dfe3949721633e41344de00a6bf",
-                "sha256:40c71b8e076d0550b2e6380bada1f1cd1017b882f7e16f09a65be98e017f211a",
-                "sha256:558dd60b890ba8fd982e05941927a3911dc409a63dcb8b634feaa0cda69330d3",
-                "sha256:a7c28b45d9f99102fa092bb213aa12e0aaf9a6a1f5e395d36166639c1f96c3a1",
-                "sha256:aa7dd4a6a427aed7df6fb7f08a580d68d9b118d90310374716ae90b710280af1",
-                "sha256:bc558586e6045763782014934bfaf39d48b8ae85a2713117d16c39864085c613",
-                "sha256:d46d7982b62e0729ad0175a9bc7e10a566fc07b224d2c79fafb5e032727eaa04",
-                "sha256:d5eef459e30b09f5a098b9cea68bebfeb268697f78d647bd255a085371ac7f3f",
-                "sha256:e01d3203230e1786cd91ccfdc8f8454c8069c91bee3962ad93b87a4b2860f537",
-                "sha256:e170a9e6fcfd19021dd29845af83bb79236068bf5fd4df3327c1be18182b2531"
+                "sha256:254bf6fda2b7c651837acb2c718e213df29d531eebf00edb54743d10bcb694eb",
+                "sha256:3108529b78577327d15eec243f0ff348a0640b0c3478d67ad7f5648f93bac3e2",
+                "sha256:3c17fb92c8ba2f525e4b5f7941d850e7a48c3a59b32d331e2502a3cdc6648e76",
+                "sha256:8d6d96001aa7f0a6a4a95e8143225b5d06e41b1131044913fecb8f85a125714b",
+                "sha256:c8a88edd93ee29ede719080b2be6cb2333dfee1dccba213b422a9c8e97f2967b"
             ],
-            "version": "==3.13"
+            "version": "==4.2b4"
         },
         "regex": {
             "hashes": [
@@ -636,7 +650,7 @@
         "stiff": {
             "editable": true,
             "git": "https://github.com/frankier/STIFF.git",
-            "ref": "602761c8626765b998db795e1126c14ef3ae38e0"
+            "ref": "b7f5c2146cd4d80fd897b9d1db7bd7500d3398b3"
         },
         "streamz": {
             "hashes": [
