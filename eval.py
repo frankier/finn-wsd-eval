@@ -257,7 +257,7 @@ for use_freq in [False, True]:
                         baseline_args += ["--use-freq"]
                         nick_extra += ".freq"
                         disp_extra += "+freq"
-                    nick = "lesk." + lower_vec + nick_extra
+                    nick = f"lesk.{lower_vec}.{mean}{nick_extra}"
                     mean_disp = "+" + MEAN_DISPS[mean]
                     disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
                     EXPERIMENTS.append(
