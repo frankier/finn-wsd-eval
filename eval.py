@@ -331,10 +331,10 @@ for use_freq in [False, True]:
         nick_extra = ""
         if use_freq:
             ukb_args += ("--dict_weight",)
-            label_extra = "_nf"
-            nick_extra += ".nf"
         else:
             ukb_args += ("--dict_noweight",)
+            label_extra = "_nf"
+            nick_extra += ".nf"
         if extract_extra:
             label_extra += "+extract"
             nick_extra += ".extract"
