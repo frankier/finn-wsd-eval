@@ -276,7 +276,7 @@ for use_freq in [False, True]:
                         )
                     )
 
-for vec in ["fasttext", "word2vec", "numberbatch", "triple"]:
+for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
     for mean in ALL_MEANS.keys():
         EXPERIMENTS.append(
             Exp(

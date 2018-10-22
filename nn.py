@@ -2,7 +2,7 @@ import click
 import pickle
 
 from finntk.emb.base import BothVectorSpaceAdapter, MonoVectorSpaceAdapter
-from finntk.emb.concat import ft_nb_w2v_space
+from finntk.emb.concat import ft_nb_multispace, ft_nb_w2v_space
 from finntk.emb.fasttext import multispace as fasttext_multispace
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.utils import apply_vec
@@ -20,6 +20,8 @@ def get_vec_space(vec):
         return BothVectorSpaceAdapter(MonoVectorSpaceAdapter(fasttext_multispace, "fi"))
     elif vec == "word2vec":
         return BothVectorSpaceAdapter(word2vec_space)
+    elif vec == "double":
+        return BothVectorSpaceAdapter(MonoVectorSpaceAdapter(ft_nb_multispace, "fi"))
     elif vec == "triple":
         return ft_nb_w2v_space
     else:
