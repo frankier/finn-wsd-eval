@@ -125,15 +125,14 @@ def supwsd(vec_path, use_vec, use_surrounding_words):
 
 
 def elmo(layer):
-    def run(paths, guess_fn):
+    def run(paths, guess_fn, model_path):
         from elmo import train, test
 
-        model = "models/elmo." + str(layer)
         with open(paths["train"]["sup"], "rb") as inf, open(
             paths["train"]["supkey"], "r"
-        ) as keyin, open(model, "wb") as modelout:
+        ) as keyin, open(model_path, "wb") as modelout:
             train.callback(inf, keyin, modelout, layer)
-        with open(model, "rb") as modelin, open(
+        with open(model_path, "rb") as modelin, open(
             paths["test"]["sup"], "rb"
         ) as inf, open(guess_fn, "w") as keyout:
             test.callback(modelin, inf, keyout, layer)
@@ -296,10 +295,11 @@ for layer in (-1, 0, 1, 2):
         Exp(
             "Supervised",
             "ELMo-NN",
-            "elmo_nn",
+            f"elmo_nn.{layer}",
             "ELMO-NN ({})".format(layer),
             elmo(layer),
             {"layer": layer},
+            needs_model=True,
         )
     )
 
