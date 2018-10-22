@@ -15,6 +15,7 @@ pyahocorasick = {editable = true, ref = "stiff-2018-09-20-3", git = "https://git
 dataclasses = "*"
 hfst = "*"
 finntk = {editable = true, ref = "72c50d5737a074dcebababb4c63f59256c053eef", git = "https://github.com/frankier/finntk.git"}
+torch = "==0.4.1"
 
 [dev-packages]
 
