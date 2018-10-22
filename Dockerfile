@@ -58,5 +58,9 @@ COPY ./fetchers/ctx2vec.py /app/fetchers/
 COPY ./support/context2vec /app/support/context2vec
 RUN python fetchers/ctx2vec.py
 
+# SIF
+COPY ./fetchers/sif.py /app/fetchers/
+RUN python fetchers/sif.py
+
 # Evaluation framework setup
 COPY . /app
