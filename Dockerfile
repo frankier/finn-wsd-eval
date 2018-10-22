@@ -36,7 +36,7 @@ RUN bash ./compile_scorer.sh
 
 # Pipenv requirements
 COPY ./Pipfile* /app/
-RUN set -ex && pipenv install --deploy --system
+RUN set -ex && pipenv install --deploy --system --pre
 
 # NLTK resources
 RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
