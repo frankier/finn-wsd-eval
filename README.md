@@ -4,24 +4,42 @@
 <a href="https://gitlab.com/frankier/finn-wsd-eval/pipelines"><img alt="pipeline status" src="https://gitlab.com/frankier/finn-wsd-eval/badges/master/pipeline.svg" /></a>
 </p>
 
-This directory contains the evaluation framework. The scorer program is the
-same as the one used in *Word Sense Disambiguation: A Unified Evaluation
-Framework and Empirical Comparison.*. First you need to obtain it:
+## Setup
 
-    ./get_scorer.sh
+The evaluation framework is distributed together with all systems and
+requirements as a Docker image, which can be pulled like so:
 
-## Running the baselines
+    $ docker pull registry.gitlab.com/frankier/stiff:latest
 
-    ./run_eval_baselines.sh /path/to/eval.xml /path/to/eval.key
+And run like so:
 
-## Running the UKB experiments
+    $ docker -v /path/to/working/dir/:/work/ run python eval.py /work/results.json /work/eurosense.eval/
 
-First set the environment variable UKB_PATH to where your compiled copy of UKB
-is located.
+For CUDA accelerated experiments, you can use
+[nvidia-docker](https://github.com/NVIDIA/nvidia-docker). For running in shared
+computing environments, in which you don't have root access, I recommend
+[udocker](https://github.com/indigo-dc/udocker).
 
-    cd ukb-eval && ./prepare_wn30graph.sh && cd ..
-    pipenv run python mkwndict.py --en-synset-ids > wndict.en.txt
-    pipenv run python ukb.py run_all /path/to/eval/corpus.xml ukb-eval/wn30/wn30g.bin wndict.txt /path/to/eval/corpus.key
+You can also set up requirements manually. See the `Dockerfile` for the list of
+commands to run.
+
+## Evaluation corpus
+
+The one requirement which is not included in the Docker image is the evaluation
+corpus. Please follow [the instructions in the STIFF
+README](https://github.com/frankier/STIFF#eurosense-pipeline).
+
+## Filtering experiments with `eval.py`
+
+You can run a subset of experiments by passing filters to `eval.py`, e.g.
+
+    $ python eval.py /work/results.json /work/eurosense.eval/ Knowledge 'Cross-lingual Lesk' mean=pre_sif_mean
+
+## Making tables with `table.py`
+
+You can make LaTeX tables with `table.py`, e.g.
+
+    $ python table.py results.json --filter='Knowledge;Cross-lingual Lesk' --table='use_freq;vec:fasttext,numberbatch,double;mean expand;wn_filter'
 
 ## Licenses ##
 
