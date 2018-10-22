@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 stiff = {editable = true, ref = "b7f5c2146cd4d80fd897b9d1db7bd7500d3398b3", git = "https://github.com/frankier/STIFF.git"}
 nltk = {editable = true, ref = "e1b3fda3768288ba96309dd92fd1ee7943cc43f9", git = "https://github.com/nltk/nltk"}
-elmoformanylangs = {editable = true, ref = "01f66b22d52cfb7b304c71261eee61cc498e1dcf", git = "https://github.com/frankier/ELMoForManyLangs.git"}
+elmoformanylangs = {editable = true, ref = "36ec6987e2d00baee6c364d151cd43b813c374a7", git = "https://github.com/frankier/ELMoForManyLangs.git"}
 tinydb = "*"
 tinyrecord = "*"
 black = "==18.9b0"

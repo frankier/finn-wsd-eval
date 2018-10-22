@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e8ea376de8ecdb9d832e3f9e2aba8b8722a8ae085cfd3e4ee42faf5e3c647604"
+            "sha256": "b209f028ccfb3c547f2ab11903db5a1d958d107542dbfc324bb9de2c35d5c9c0"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -216,7 +216,7 @@
         "elmoformanylangs": {
             "editable": true,
             "git": "https://github.com/frankier/ELMoForManyLangs.git",
-            "ref": "01f66b22d52cfb7b304c71261eee61cc498e1dcf"
+            "ref": "36ec6987e2d00baee6c364d151cd43b813c374a7"
         },
         "finntk": {
             "editable": true,
