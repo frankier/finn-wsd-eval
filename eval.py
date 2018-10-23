@@ -277,7 +277,7 @@ for use_freq in [False, True]:
                     )
 
 for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
-    for mean in ALL_MEANS.keys():
+    for mean in list(ALL_MEANS.keys()) + ["sif_mean"]:
         EXPERIMENTS.append(
             Exp(
                 "Supervised",
