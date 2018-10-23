@@ -53,7 +53,7 @@ def train(vec, mean, inf, keyin, model):
     Train nearest neighbour classifier.
     """
     space = get_vec_space(vec)
-    aggf = get_mean(mean)
+    aggf = get_mean(mean, vec)
     classifier = train_vec_nn(
         mk_training_examples(iter_inst_ctxs(inf, aggf, space), keyin)
     )
@@ -72,7 +72,7 @@ def test(vec, mean, model, inf, keyout):
     Test nearest neighbour classifier.
     """
     space = get_vec_space(vec)
-    aggf = get_mean(mean)
+    aggf = get_mean(mean, vec)
     classifier = pickle.load(model)
     test_vec_nn(classifier, iter_inst_ctxs(inf, aggf, space), keyout)
 
