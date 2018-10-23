@@ -7,7 +7,7 @@ from finntk.emb.fasttext import multispace as fasttext_multispace
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.utils import apply_vec
 from finntk.emb.word2vec import space as word2vec_space
-from means import ALL_MEANS
+from means import get_mean
 from vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
 
 
@@ -53,7 +53,7 @@ def train(vec, mean, inf, keyin, model):
     Train nearest neighbour classifier.
     """
     space = get_vec_space(vec)
-    aggf = ALL_MEANS[mean]
+    aggf = get_mean(mean)
     classifier = train_vec_nn(
         mk_training_examples(iter_inst_ctxs(inf, aggf, space), keyin)
     )
@@ -72,7 +72,7 @@ def test(vec, mean, model, inf, keyout):
     Test nearest neighbour classifier.
     """
     space = get_vec_space(vec)
-    aggf = ALL_MEANS[mean]
+    aggf = get_mean(mean)
     classifier = pickle.load(model)
     test_vec_nn(classifier, iter_inst_ctxs(inf, aggf, space), keyout)
 
