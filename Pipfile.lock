@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "77c10e5fb84046248cb87c88fd2c3b968914ea5641b518d8165dc70d15e11213"
+            "sha256": "d474eaf3fbe7a682310d261b33b6b5277d204df80599316543f9dda394b3c486"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -221,7 +221,7 @@
         "finntk": {
             "editable": true,
             "git": "https://github.com/frankier/finntk.git",
-            "ref": "72c50d5737a074dcebababb4c63f59256c053eef"
+            "ref": "69d4b3a2d36cee4c919f449c055d86b4be9a4eb0"
         },
         "gensim": {
             "hashes": [

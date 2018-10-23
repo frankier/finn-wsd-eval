@@ -14,7 +14,7 @@ pre-commit = "*"
 pyahocorasick = {editable = true, ref = "stiff-2018-09-20-3", git = "https://github.com/frankier/pyahocorasick.git"}
 dataclasses = "*"
 hfst = "*"
-finntk = {editable = true, ref = "72c50d5737a074dcebababb4c63f59256c053eef", git = "https://github.com/frankier/finntk.git"}
+finntk = {editable = true, ref = "69d4b3a2d36cee4c919f449c055d86b4be9a4eb0", git = "https://github.com/frankier/finntk.git"}
 torch = "==0.4.1"
 
 [dev-packages]
