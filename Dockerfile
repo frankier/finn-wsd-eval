@@ -26,6 +26,9 @@ RUN pip3 install pipenv
 RUN curl -s "https://get.sdkman.io" | bash
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven'
 
+# Fixup Python
+RUN ln -sf /usr/bin/python3.6 /usr/bin/python
+
 # Script driven stuff begins
 WORKDIR /app
 
