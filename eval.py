@@ -365,7 +365,8 @@ def run_exp(db, corpus, exp):
     iden = "{}.{}".format(corpus_basename, exp.nick)
     guess_fn = iden + ".key"
     guess_path = pjoin("guess", guess_fn)
-    model_path = pjoin("models", iden)
+    timestr = datetime.now().isoformat()
+    model_path = pjoin("models", f"{iden}.{timestr}")
 
     try:
         if exp.needs_model:
