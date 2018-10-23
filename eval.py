@@ -130,12 +130,10 @@ def elmo(layer):
 
         with open(paths["train"]["sup"], "rb") as inf, open(
             paths["train"]["supkey"], "r"
-        ) as keyin, open(model_path, "wb") as modelout:
-            train.callback(inf, keyin, modelout, layer)
-        with open(model_path, "rb") as modelin, open(
-            paths["test"]["sup"], "rb"
-        ) as inf, open(guess_fn, "w") as keyout:
-            test.callback(modelin, inf, keyout, layer)
+        ) as keyin:
+            train.callback(inf, keyin, model_path, layer)
+        with open(paths["test"]["sup"], "rb") as inf, open(guess_fn, "w") as keyout:
+            test.callback(model_path, inf, keyout, layer)
 
     return run
 
@@ -146,12 +144,10 @@ def nn(vec, mean):
 
         with open(paths["train"]["suptag"], "rb") as inf, open(
             paths["train"]["supkey"], "r"
-        ) as keyin, open(model_path, "wb") as modelout:
-            train.callback(vec, mean, inf, keyin, modelout)
-        with open(model_path, "rb") as modelin, open(
-            paths["test"]["suptag"], "rb"
-        ) as inf, open(guess_fn, "w") as keyout:
-            test.callback(vec, mean, modelin, inf, keyout)
+        ) as keyin:
+            train.callback(vec, mean, inf, keyin, model_path)
+        with open(paths["test"]["suptag"], "rb") as inf, open(guess_fn, "w") as keyout:
+            test.callback(vec, mean, model_path, inf, keyout)
 
     return inner
 

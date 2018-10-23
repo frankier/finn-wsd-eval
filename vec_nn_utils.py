@@ -1,4 +1,5 @@
 from sup_corpus import next_key
+from itertools import groupby
 
 
 def mk_training_examples(instances, keyin):
@@ -8,31 +9,29 @@ def mk_training_examples(instances, keyin):
         yield inst_id, item, vec, synset_ids[0]
 
 
-def train_vec_nn(training_examples):
-    from finntk.wsd.nn import WsdNn
+def train_vec_nn(manager, training_examples):
+    from finntk.wsd.nn import WordExpert
 
-    classifier = WsdNn()
-
-    prev_item = None
-    for inst_id, item, vec, synset_id in training_examples:
-        if vec is not None:
-            classifier.add_word(item, vec, synset_id)
-
-        if prev_item is not None and item != prev_item:
-            classifier.fit_word(prev_item)
-        prev_item = item
-    classifier.fit_word(prev_item)
-    return classifier
+    for item, group in groupby(training_examples, lambda x: x[1]):
+        clf = WordExpert()
+        for inst_id, item, vec, synset_id in group:
+            if vec is None:
+                continue
+            clf.add_word(vec, synset_id)
+        clf.fit()
+        manager.dump_expert(".".join(item), clf)
 
 
-def test_vec_nn(classifier, instances, keyout):
-    for inst_id, item, vec in instances:
-        prediction = None
-        if vec is not None:
-            try:
-                prediction = classifier.predict(item, vec)
-            except KeyError:
-                pass
-        if prediction is None:
-            prediction = "U"
-        keyout.write("{} {}\n".format(inst_id, prediction))
+def test_vec_nn(manager, instances, keyout):
+    for item, group in groupby(instances, lambda x: x[1]):
+        clf = manager.load_expert(".".join(item))
+        for inst_id, item, vec in group:
+            prediction = None
+            if vec is not None:
+                try:
+                    prediction = clf.predict(vec)
+                except KeyError:
+                    pass
+            if prediction is None:
+                prediction = "U"
+            keyout.write("{} {}\n".format(inst_id, prediction))

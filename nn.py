@@ -1,5 +1,4 @@
 import click
-import pickle
 
 from finntk.emb.base import BothVectorSpaceAdapter, MonoVectorSpaceAdapter
 from finntk.emb.concat import ft_nb_multispace, ft_nb_w2v_space
@@ -9,6 +8,7 @@ from finntk.emb.utils import apply_vec
 from finntk.emb.word2vec import space as word2vec_space
 from means import get_mean
 from vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
+from finntk.wsd.nn import WordExpertManager
 
 
 def get_vec_space(vec):
@@ -47,24 +47,23 @@ def iter_inst_ctxs(inf, aggf, space):
 @click.argument("mean")
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyin", type=click.File("r"))
-@click.argument("model", type=click.File("wb"))
+@click.argument("model", type=click.Path())
 def train(vec, mean, inf, keyin, model):
     """
     Train nearest neighbour classifier.
     """
     space = get_vec_space(vec)
     aggf = get_mean(mean, vec)
-    classifier = train_vec_nn(
-        mk_training_examples(iter_inst_ctxs(inf, aggf, space), keyin)
+    train_vec_nn(
+        WordExpertManager(model, "w"),
+        mk_training_examples(iter_inst_ctxs(inf, aggf, space), keyin),
     )
-
-    pickle.dump(classifier, model)
 
 
 @nn.command("test")
 @click.argument("vec")
 @click.argument("mean")
-@click.argument("model", type=click.File("rb"))
+@click.argument("model", type=click.Path())
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
 def test(vec, mean, model, inf, keyout):
@@ -73,8 +72,7 @@ def test(vec, mean, model, inf, keyout):
     """
     space = get_vec_space(vec)
     aggf = get_mean(mean, vec)
-    classifier = pickle.load(model)
-    test_vec_nn(classifier, iter_inst_ctxs(inf, aggf, space), keyout)
+    test_vec_nn(WordExpertManager(model), iter_inst_ctxs(inf, aggf, space), keyout)
 
 
 if __name__ == "__main__":

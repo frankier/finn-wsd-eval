@@ -1,7 +1,7 @@
 import os
 import click
-import pickle
 from vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
+from finntk.wsd.nn import WordExpertManager
 
 
 def get_batch_size():
@@ -46,21 +46,20 @@ def iter_inst_vecs(inf, output_layer, batch_size=None):
 @elmo.command("train")
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyin", type=click.File("r"))
-@click.argument("model", type=click.File("wb"))
+@click.argument("model", type=click.Path())
 @click.argument("output_layer", type=int)
 def train(inf, keyin, model, output_layer):
     """
     Train nearest neighbour classifier with ELMo.
     """
-    classifier = train_vec_nn(
-        mk_training_examples(iter_inst_vecs(inf, output_layer), keyin)
+    train_vec_nn(
+        WordExpertManager(model, "w"),
+        mk_training_examples(iter_inst_vecs(inf, output_layer), keyin),
     )
-
-    pickle.dump(classifier, model)
 
 
 @elmo.command("test")
-@click.argument("model", type=click.File("rb"))
+@click.argument("model", type=click.Path())
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
 @click.argument("output_layer", type=int)
@@ -68,6 +67,4 @@ def test(model, inf, keyout, output_layer):
     """
     Test nearest neighbour classifier.
     """
-    classifier = pickle.load(model)
-
-    test_vec_nn(classifier, iter_inst_vecs(inf, output_layer), keyout)
+    test_vec_nn(WordExpertManager(model), iter_inst_vecs(inf, output_layer), keyout)
