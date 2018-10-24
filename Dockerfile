@@ -65,5 +65,8 @@ RUN python fetchers/ctx2vec.py
 COPY ./fetchers/sif.py /app/fetchers/
 RUN python fetchers/sif.py
 
+# STIFF post_install
+RUN python -m stiff.scripts.post_install
+
 # Evaluation framework setup
 COPY . /app
