@@ -55,7 +55,7 @@ def lesk(variety, *args):
 
 
 def ukb(use_new_dict, extract_extra, *variant):
-    from ukb import run_inner as run_ukb
+    from wsdeval.systems.ukb import run_inner as run_ukb
 
     def run(paths, guess_fn):
         if use_new_dict:
@@ -76,7 +76,7 @@ def ukb(use_new_dict, extract_extra, *variant):
 
 def ctx2vec(ctx2vec_model, seg):
     def run(paths, guess_fn):
-        from ctx2vec import test as ctx2vec_test
+        from wsdeval.systems.ctx2vec import test as ctx2vec_test
 
         ctx2vec_model_path = local.env["CTX2VEC_MODEL_PATH"]
         full_model_path = pjoin(ctx2vec_model_path, ctx2vec_model, "model.params")
@@ -101,7 +101,7 @@ def ctx2vec(ctx2vec_model, seg):
 
 def supwsd(vec_path, use_vec, use_surrounding_words):
     def run(paths, guess_fn, model_path):
-        from supwsd import conf, train, test
+        from wsdeval.systems.supwsd import conf, train, test
         from wsdeval.utils import proc_supwsd
 
         if exists(model_path):
@@ -126,7 +126,7 @@ def supwsd(vec_path, use_vec, use_surrounding_words):
 
 def elmo(layer):
     def run(paths, guess_fn, model_path):
-        from elmo import train, test
+        from wsdeval.systems.elmo import train, test
 
         with open(paths["train"]["sup"], "rb") as inf, open(
             paths["train"]["supkey"], "r"
@@ -140,7 +140,7 @@ def elmo(layer):
 
 def nn(vec, mean):
     def inner(paths, guess_fn, model_path):
-        from nn import train, test
+        from wsdeval.systems.nn import train, test
 
         with open(paths["train"]["suptag"], "rb") as inf, open(
             paths["train"]["supkey"], "r"
