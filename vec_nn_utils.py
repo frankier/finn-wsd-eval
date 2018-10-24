@@ -27,11 +27,8 @@ def test_vec_nn(manager, instances, keyout):
         clf = manager.load_expert(".".join(item))
         for inst_id, item, vec in group:
             prediction = None
-            if vec is not None:
-                try:
-                    prediction = clf.predict(vec)
-                except KeyError:
-                    pass
+            if clf is not None and vec is not None:
+                prediction = clf.predict(vec)
             if prediction is None:
                 prediction = "U"
             keyout.write("{} {}\n".format(inst_id, prediction))

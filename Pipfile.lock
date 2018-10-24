@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d474eaf3fbe7a682310d261b33b6b5277d204df80599316543f9dda394b3c486"
+            "sha256": "836dc32ea2808a713ab927df5b47763ac73fc1085d0685846f0f736b7db1cef1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -69,17 +69,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:137d8bf453c7daa794aa8fe094e0365287260062db88b0edc53eb061c1a2f655",
-                "sha256:aff5297d37130097e04c33dd65d885906e4012dfa2863b228b21335857d7b4e8"
+                "sha256:1837a4eaaa6705e69fa24ebf4387eb1c9ab6ccf554d672291479d6ebc497a885",
+                "sha256:3b782268ebf09ae6ea811ba8b8bdfc38a58d27f4f7fc554658f07c11ddc4165d"
             ],
-            "version": "==1.9.29"
+            "version": "==1.9.30"
         },
         "botocore": {
             "hashes": [
-                "sha256:494b351c6d1b55f6f334bd86b1a3bd2e7a10d935ae6e6eaac0a72a46b524a17d",
-                "sha256:a255db27a0b550736f684e767e263dd0bfe09e9f4a71720e6dcb78a0c5223ad0"
+                "sha256:5b371508cbb8511592b754d542bd128194585125b4f41914097abb689d135575",
+                "sha256:5e1210f096637479061ebeb3640d0ba5bcdbfe385e36bd3132289d2d26ae83f6"
             ],
-            "version": "==1.12.29"
+            "version": "==1.12.30"
         },
         "bz2file": {
             "hashes": [
@@ -221,7 +221,7 @@
         "finntk": {
             "editable": true,
             "git": "https://github.com/frankier/finntk.git",
-            "ref": "69d4b3a2d36cee4c919f449c055d86b4be9a4eb0"
+            "ref": "2eb22a24678614254c91b8406f2b8f68c642e9af"
         },
         "gensim": {
             "hashes": [
