@@ -6,8 +6,8 @@ from finntk.wsd.lesk_pp import LeskPP
 from finntk.emb.utils import cosine_sim
 from stiff.utils.xml import iter_sentences
 import click
-from means import ALL_MEANS
-from utils import lemmas_from_instance, write_lemma
+from wsdeval.means import ALL_MEANS
+from wsdeval.utils import lemmas_from_instance, write_lemma
 
 
 @click.command("lesk-pp")

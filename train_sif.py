@@ -5,7 +5,7 @@ from os import makedirs
 from os.path import join as pjoin
 
 from stiff.eval import get_eval_paths
-from sup_corpus import iter_instances, norm_wf_lemma_of_tokens
+from wsdeval.sup_corpus import iter_instances, norm_wf_lemma_of_tokens
 from finntk.emb.utils import apply_vec, compute_pc
 from stiff.utils.xml import iter_blocks
 from finntk.emb.base import MonoVectorSpaceAdapter

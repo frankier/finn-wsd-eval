@@ -1,6 +1,6 @@
 import os
 import click
-from vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
+from wsdeval.vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
 from finntk.wsd.nn import WordExpertManager
 
 
@@ -14,7 +14,7 @@ def elmo():
 
 
 def iter_inst_vecs(inf, output_layer, batch_size=None):
-    from sup_corpus import iter_instances
+    from wsdeval.sup_corpus import iter_instances
     from finntk.emb.elmo import vecs
     from finntk.vendor.elmo import embed_sentences
 

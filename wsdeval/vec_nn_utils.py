@@ -1,4 +1,4 @@
-from sup_corpus import next_key
+from wsdeval.sup_corpus import next_key
 from itertools import groupby
 
 

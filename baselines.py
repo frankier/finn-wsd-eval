@@ -1,6 +1,6 @@
 import click
 from finntk.wordnet.reader import fiwn, fiwn_encnt
-from utils import unigram
+from wsdeval.utils import unigram
 
 
 @click.group()

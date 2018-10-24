@@ -9,7 +9,7 @@ from os import makedirs
 from os.path import abspath, join as pjoin, basename, exists
 from stiff.eval import get_eval_paths
 import shutil
-from means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
+from wsdeval.means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
 from tinydb import TinyDB
 from tinyrecord import transaction
 
@@ -102,7 +102,7 @@ def ctx2vec(ctx2vec_model, seg):
 def supwsd(vec_path, use_vec, use_surrounding_words):
     def run(paths, guess_fn, model_path):
         from supwsd import conf, train, test
-        from utils import proc_supwsd
+        from wsdeval.utils import proc_supwsd
 
         if exists(model_path):
             timestr = datetime.now().isoformat()

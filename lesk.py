@@ -5,8 +5,8 @@ from finntk.emb.concat import ft_nb_multispace
 from finntk.emb.fasttext import multispace as fasttext_multispace
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.wsd.lesk_emb import MultilingualLesk
-from means import get_mean
-from utils import write_lemma
+from wsdeval.means import get_mean
+from wsdeval.utils import write_lemma
 
 
 @click.command()
@@ -32,7 +32,7 @@ def lesk(vec, mean, inf, keyout, wn_filter, expand, use_freq):
 
 
 def wordvec_lesk(aggf, multispace, wn_filter, expand, use_freq, inf, keyout):
-    from sup_corpus import iter_instances, norm_wf_lemma_of_tokens
+    from wsdeval.sup_corpus import iter_instances, norm_wf_lemma_of_tokens
 
     lesk = MultilingualLesk(multispace, aggf, wn_filter, expand, use_freq)
     for inst_id, lemma_pos, (be, he, af) in iter_instances(inf):
