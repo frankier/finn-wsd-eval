@@ -75,3 +75,5 @@ vendorized from UKB, and therefore licensed under the GPL. The scorer in
    babelnet-lookup fork to obtain `BABEL2WN_MAP`.
  * [FinnWordNet](https://github.com/frankier/fiwn): Temporary fixes to
    FinnWordNet 2.0.
+ * [Eurosense](https://github.com/frankier/eurosense): Attempted fixes to
+   Eurosense.
