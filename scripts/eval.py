@@ -2,7 +2,7 @@ import time
 import click
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 from plumbum import local
 from plumbum.cmd import python, java
 from os import makedirs
@@ -20,7 +20,7 @@ class Exp:
     subcat: str
     nick: str
     disp: str
-    run: Callable[[str, str, str], None]
+    run_func: Optional[Callable[[str, str, str], None]] = None
     opts: Dict[str, any] = field(default_factory=dict)
     lex_group: bool = False
     needs_model: bool = False
@@ -34,6 +34,71 @@ class Exp:
         }
         info.update(self.opts)
         return info
+
+    def run(self, *args, **kwargs):
+        return self.run_func(*args, **kwargs)
+
+
+def mk_nick(*inbits):
+    outbits = []
+    for bit in inbits:
+        if isinstance(bit, str):
+            outbits.append(bit)
+        elif bit is None:
+            continue
+        elif isinstance(bit, tuple):
+            val, fmt = bit
+            if isinstance(val, bool):
+                if isinstance(fmt, str):
+                    outbits.append(fmt if val else "no" + fmt)
+                else:
+                    outbits.append(fmt[val])
+            else:
+                assert False
+        else:
+            assert False
+    return ".".join(outbits)
+
+
+class SupWSD(Exp):
+    def __init__(self, vec, sur_words):
+        vec_path = "support/emb/{}.txt".format(vec) if vec is not None else ""
+        no_sur = "-s" if not sur_words else ""
+        disp = f"SupWSD\\textsubscript{{{vec}{no_sur}}}"
+
+        self.vec_path = vec_path
+        self.use_vec = vec is not None
+        self.sur_words = sur_words
+        super().__init__(
+            "Supervised",
+            "SupWSD",
+            mk_nick("supwsd", vec, (sur_words, "sur")),
+            disp,
+            None,
+            {"vec": vec, "sur_words": sur_words},
+            needs_model=True,
+        )
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.supwsd import conf, train, test
+        from wsdeval.utils import proc_supwsd
+
+        if exists(model_path):
+            timestr = datetime.now().isoformat()
+            shutil.move(model_path, "{}.{}".format(model_path, timestr))
+        makedirs(model_path, exist_ok=True)
+        conf.callback(
+            work_dir=abspath(model_path),
+            vec_path=abspath(self.vec_path),
+            use_vec=self.use_vec,
+            use_surrounding_words=self.sur_words,
+        )
+        train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
+        test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
+        with open(paths["test"]["unikey"]) as goldkey, open(
+            pjoin(model_path, "scores/plain.result"), "rb"
+        ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
+            proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
 
 
 def baseline(*args):
@@ -95,31 +160,6 @@ def ctx2vec(ctx2vec_model, seg):
             paths["test"]["sup3key"],
             guess_fn,
         )
-
-    return run
-
-
-def supwsd(vec_path, use_vec, use_surrounding_words):
-    def run(paths, guess_fn, model_path):
-        from wsdeval.systems.supwsd import conf, train, test
-        from wsdeval.utils import proc_supwsd
-
-        if exists(model_path):
-            timestr = datetime.now().isoformat()
-            shutil.move(model_path, "{}.{}".format(model_path, timestr))
-        makedirs(model_path, exist_ok=True)
-        conf.callback(
-            work_dir=abspath(model_path),
-            vec_path=abspath(vec_path),
-            use_vec=use_vec,
-            use_surrounding_words=use_surrounding_words,
-        )
-        train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
-        test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
-        with open(paths["test"]["unikey"]) as goldkey, open(
-            pjoin(model_path, "scores/plain.result"), "rb"
-        ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
-            proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
 
     return run
 
@@ -199,31 +239,7 @@ for vec, sur_words in [
     ("fasttext", False),
     ("fasttext", True),
 ]:
-    if vec is not None:
-        vec_path = "support/emb/{}.txt".format(vec)
-        use_vec = True
-        nick_extra = vec
-    else:
-        vec_path = ""
-        use_vec = False
-        nick_extra = ""
-    no_sur = "-s" if not sur_words else ""
-    if sur_words:
-        nick_extra += ".sur"
-    else:
-        nick_extra += ".nosur"
-    disp = f"SupWSD\\textsubscript{{{vec}{no_sur}}}"
-    EXPERIMENTS.append(
-        Exp(
-            "Supervised",
-            "SupWSD",
-            "supwsd." + nick_extra,
-            disp,
-            supwsd(vec_path, use_vec, sur_words),
-            {"vec": vec, "sur_words": sur_words},
-            needs_model=True,
-        )
-    )
+    EXPERIMENTS.append(SupWSD(vec, sur_words))
 
 
 LESK_MEANS = list(ALL_MEANS.keys())
