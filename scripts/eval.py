@@ -12,6 +12,7 @@ import shutil
 from wsdeval.means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
 from tinydb import TinyDB
 from tinyrecord import transaction
+import os
 
 
 @dataclass(frozen=True)
@@ -37,6 +38,46 @@ class Exp:
 
     def run(self, *args, **kwargs):
         return self.run_func(*args, **kwargs)
+
+    def get_iden(self, corpus):
+        return mk_iden(corpus, self)
+
+    def get_paths(self, corpus):
+        root, paths = get_eval_paths(corpus)
+        iden = self.get_iden(corpus)
+        guess_path = mk_guess_path(iden)
+        model_path = mk_model_path(iden)
+        if self.lex_group:
+            gold = paths["test"]["supkey"]
+        else:
+            gold = paths["test"]["unikey"]
+        return paths, guess_path, model_path, gold
+
+    def run_exp(self, db, corpus):
+        paths, guess_path, model_path, gold = self.get_paths(corpus)
+        try:
+            if self.needs_model:
+                self.run(paths, guess_path, model_path)
+            else:
+                self.run(paths, guess_path)
+        except Exception:
+            import traceback
+
+            traceback.print_exc()
+            return
+        return self.proc_score(db, corpus, gold, guess_path)
+
+    def proc_score(self, db, corpus, gold, guess):
+        measures = score(gold, guess)
+
+        result = self.info()
+        result.update(measures)
+        result["corpus"] = corpus
+        result["time"] = time.time()
+
+        with transaction(db) as tr:
+            tr.insert(result)
+        return measures
 
 
 def mk_nick(*inbits):
@@ -99,6 +140,114 @@ class SupWSD(Exp):
             pjoin(model_path, "scores/plain.result"), "rb"
         ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
             proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
+
+    def run_exp(self, db, corpus):
+        self.corpus = corpus
+        return super().run_exp(db, corpus)
+
+
+class Elmo(Exp):
+    def __init__(self, layer):
+        self.layer = layer
+
+        super().__init__(
+            "Supervised",
+            "ELMo-NN",
+            f"elmo_nn.{layer}",
+            "ELMO-NN ({})".format(layer),
+            None,
+            {"layer": layer},
+            needs_model=True,
+        )
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.elmo import train, test
+
+        with open(paths["train"]["sup"], "rb") as inf, open(
+            paths["train"]["supkey"], "r"
+        ) as keyin:
+            train.callback(inf, keyin, model_path, self.layer)
+        with open(paths["test"]["sup"], "rb") as inf, open(guess_fn, "w") as keyout:
+            test.callback(model_path, inf, keyout, self.layer)
+
+
+class ExpGroup:
+    def __init__(self, exps):
+        self.exps = exps
+
+    def filter_exps(self, filter_l1, filter_l2, opt_dict):
+        return [
+            exp
+            for exp in self.exps
+            if self.exp_included(exp, filter_l1, filter_l2, opt_dict)
+        ]
+
+    def exp_included(self, exp, filter_l1, filter_l2, opt_dict):
+        return (
+            (filter_l1 is None or exp.category == filter_l1)
+            and (filter_l2 is None or exp.subcat == filter_l2)
+            and (
+                not opt_dict
+                or all((exp.opts[opt] == opt_dict[opt] for opt in opt_dict))
+            )
+        )
+
+    def run_all(self, db, corpus, filter_l1, filter_l2, opt_dict):
+        for exp in self.filter_exps(filter_l1, filter_l2, opt_dict):
+            print("Running", exp)
+            measures = exp.run_exp(db, corpus)
+            print("Got", measures)
+
+
+class ElmoAllExpGroup(ExpGroup):
+    LAYERS = [-1, 0, 1, 2]
+
+    def __init__(self):
+        super().__init__([Elmo(layer) for layer in self.LAYERS])
+
+    def run_all(self, db, corpus, filter_l1, filter_l2, opt_dict):
+        from wsdeval.systems.elmo import train_all, test_all
+
+        model_paths = []
+        guess_paths = []
+        keyouts = []
+        golds = []
+        included = []
+
+        for exp in self.exps:
+            if self.exp_included(exp, filter_l1, filter_l2, opt_dict):
+                paths, guess_path, model_path, gold = exp.get_paths(corpus)
+                included.append(True)
+            else:
+                model_path = "/dev/null"
+                guess_path = "/dev/null"
+                included.append(False)
+            model_paths.append(model_path)
+            guess_paths.append(guess_path)
+            keyouts.append(open(guess_path, "w"))
+            golds.append(gold)
+
+        print("Running ELMO all")
+        try:
+            with open(paths["train"]["sup"], "rb") as inf, open(
+                paths["train"]["supkey"], "r"
+            ) as keyin:
+                train_all.callback(inf, keyin, model_paths)
+            with open(paths["test"]["sup"], "rb") as inf:
+                test_all.callback(inf, zip(model_paths, keyouts))
+        except Exception:
+            import traceback
+
+            traceback.print_exc()
+            return
+
+        for keyout in keyouts:
+            keyout.close()
+
+        for exp, gold, guess_path in zip(self.exps, golds, guess_paths):
+            print("Measuring", exp)
+            measures = exp.proc_score(db, corpus, gold, guess_path)
+            print("Got", measures)
 
 
 def baseline(*args):
@@ -164,20 +313,6 @@ def ctx2vec(ctx2vec_model, seg):
     return run
 
 
-def elmo(layer):
-    def run(paths, guess_fn, model_path):
-        from wsdeval.systems.elmo import train, test
-
-        with open(paths["train"]["sup"], "rb") as inf, open(
-            paths["train"]["supkey"], "r"
-        ) as keyin:
-            train.callback(inf, keyin, model_path, layer)
-        with open(paths["test"]["sup"], "rb") as inf, open(guess_fn, "w") as keyout:
-            test.callback(model_path, inf, keyout, layer)
-
-    return run
-
-
 def nn(vec, mean):
     def inner(paths, guess_fn, model_path):
         from wsdeval.systems.nn import train, test
@@ -213,25 +348,34 @@ def lesk_pp(mean, do_expand, exclude_cand, score_by):
 
 
 EXPERIMENTS = [
-    Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
-    Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
-    Exp(
-        "Supervised",
-        "Context2Vec",
-        "ctx2vec.noseg.b100",
-        "Context2Vec\\textsubscript{noseg}",
-        ctx2vec("model_noseg_b100", False),
+    ExpGroup(
+        [
+            Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
+            Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
+        ]
     ),
-    Exp(
-        "Supervised",
-        "Context2Vec",
-        "ctx2vec.seg.b100",
-        "Context2Vec\\textsubscript{seg}",
-        ctx2vec("model_seg_b100", True),
+    ExpGroup(
+        [
+            Exp(
+                "Supervised",
+                "Context2Vec",
+                "ctx2vec.noseg.b100",
+                "Context2Vec\\textsubscript{noseg}",
+                ctx2vec("model_noseg_b100", False),
+            ),
+            Exp(
+                "Supervised",
+                "Context2Vec",
+                "ctx2vec.seg.b100",
+                "Context2Vec\\textsubscript{seg}",
+                ctx2vec("model_seg_b100", True),
+            ),
+        ]
     ),
 ]
 
 
+supwsd_exps = []
 for vec, sur_words in [
     (None, True),
     ("word2vec", False),
@@ -239,7 +383,8 @@ for vec, sur_words in [
     ("fasttext", False),
     ("fasttext", True),
 ]:
-    EXPERIMENTS.append(SupWSD(vec, sur_words))
+    supwsd_exps.append(SupWSD(vec, sur_words))
+EXPERIMENTS.append(ExpGroup(supwsd_exps))
 
 
 LESK_MEANS = list(ALL_MEANS.keys())
@@ -247,6 +392,7 @@ LESK_MEANS.remove("normalized_mean")
 LESK_MEANS.append("sif_mean")
 
 
+xlingual_lesk = []
 for use_freq in [False, True]:
     for do_expand in [False, True]:
         for vec in ["fasttext", "numberbatch", "double"]:
@@ -271,7 +417,7 @@ for use_freq in [False, True]:
                     nick = f"lesk.{lower_vec}.{mean}{nick_extra}"
                     mean_disp = "+" + MEAN_DISPS[mean]
                     disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
-                    EXPERIMENTS.append(
+                    xlingual_lesk.append(
                         Exp(
                             "Knowledge",
                             "Cross-lingual Lesk",
@@ -287,10 +433,12 @@ for use_freq in [False, True]:
                             },
                         )
                     )
+EXPERIMENTS.append(ExpGroup(xlingual_lesk))
 
+awe_nn_exps = []
 for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
     for mean in list(ALL_MEANS.keys()) + ["sif_mean"]:
-        EXPERIMENTS.append(
+        awe_nn_exps.append(
             Exp(
                 "Supervised",
                 "AWE-NN",
@@ -301,25 +449,24 @@ for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
                 needs_model=True,
             )
         )
+EXPERIMENTS.append(ExpGroup(awe_nn_exps))
 
-for layer in (-1, 0, 1, 2):
-    EXPERIMENTS.append(
-        Exp(
-            "Supervised",
-            "ELMo-NN",
-            f"elmo_nn.{layer}",
-            "ELMO-NN ({})".format(layer),
-            elmo(layer),
-            {"layer": layer},
-            needs_model=True,
-        )
-    )
 
+if os.environ.get("USE_SINGLE_LAYER_ELMO"):
+    elmo_exps = []
+    for layer in (-1, 0, 1, 2):
+        elmo_exps.append(Elmo(layer))
+    EXPERIMENTS.append(ExpGroup(elmo_exps))
+else:
+    EXPERIMENTS.append(ElmoAllExpGroup())
+
+
+lesk_pp_exps = []
 for score_by in ["both", "defn", "lemma"]:
     for exclude_cand in [False, True]:
         for do_expand in [False, True]:
             for mean in NON_EXPANDING_MEANS:
-                EXPERIMENTS.append(
+                lesk_pp_exps.append(
                     Exp(
                         "Knowledge",
                         "Lesk++",
@@ -334,8 +481,10 @@ for score_by in ["both", "defn", "lemma"]:
                         },
                     )
                 )
+EXPERIMENTS.append(ExpGroup(lesk_pp_exps))
 
 
+ukb_exps = []
 for use_freq in [False, True]:
     for extract_extra in [False, True]:
         ukb_args = ("--ppr_w2w",)
@@ -350,7 +499,7 @@ for use_freq in [False, True]:
         if extract_extra:
             label_extra += "+extract"
             nick_extra += ".extract"
-        EXPERIMENTS.append(
+        ukb_exps.append(
             Exp(
                 "Knowledge",
                 "UKB",
@@ -360,6 +509,7 @@ for use_freq in [False, True]:
                 {"extract_extra": extract_extra, "use_freq": use_freq},
             )
         )
+EXPERIMENTS.append(ExpGroup(ukb_exps))
 
 
 def score(gold, guess):
@@ -375,41 +525,19 @@ def score(gold, guess):
     return measures
 
 
-def run_exp(db, corpus, exp):
-    root, paths = get_eval_paths(corpus)
-    corpus_basename = basename(corpus.rstrip("/"))
-    iden = "{}.{}".format(corpus_basename, exp.nick)
+def mk_guess_path(iden):
     guess_fn = iden + ".key"
-    guess_path = pjoin("guess", guess_fn)
+    return pjoin("guess", guess_fn)
+
+
+def mk_model_path(iden):
     timestr = datetime.now().isoformat()
-    model_path = pjoin("models", f"{iden}.{timestr}")
+    return pjoin("models", f"{iden}.{timestr}")
 
-    try:
-        if exp.needs_model:
-            exp.run(paths, guess_path, model_path)
-        else:
-            exp.run(paths, guess_path)
-    except Exception:
-        import traceback
 
-        traceback.print_exc()
-        return
-
-    if exp.lex_group:
-        gold = paths["test"]["supkey"]
-    else:
-        gold = paths["test"]["unikey"]
-
-    measures = score(gold, guess_path)
-
-    result = exp.info()
-    result.update(measures)
-    result["corpus"] = corpus
-    result["time"] = time.time()
-
-    with transaction(db) as tr:
-        tr.insert(result)
-    return measures
+def mk_iden(corpus, exp):
+    corpus_basename = basename(corpus.rstrip("/"))
+    return "{}.{}".format(corpus_basename, exp.nick)
 
 
 def parse_opts(opts):
@@ -443,17 +571,8 @@ def main(db_path, corpus, filter_l1=None, filter_l2=None, opts=None):
         opt_dict = parse_opts(opts)
     else:
         opt_dict = {}
-    experiments = [
-        exp
-        for exp in EXPERIMENTS
-        if (filter_l1 is None or exp.category == filter_l1)
-        and (filter_l2 is None or exp.subcat == filter_l2)
-        and (not opts or all((exp.opts[opt] == opt_dict[opt] for opt in opt_dict)))
-    ]
-    for exp in experiments:
-        print("Running", exp)
-        measures = run_exp(db, corpus, exp)
-        print("Got", measures)
+    for exp_group in EXPERIMENTS:
+        exp_group.run_all(db, corpus, filter_l1, filter_l2, opt_dict)
 
 
 if __name__ == "__main__":
