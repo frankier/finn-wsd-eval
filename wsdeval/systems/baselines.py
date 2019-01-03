@@ -1,6 +1,20 @@
+import sys
 import click
 from finntk.wordnet.reader import fiwn, fiwn_encnt
-from wsdeval.utils import unigram
+from stiff.utils.xml import iter_sentences
+from wsdeval.format.wordnet import lemmas_from_instance, write_lemma
+
+
+def unigram(inf, keyout, wn):
+    for sent in iter_sentences(inf):
+        for instance in sent.xpath("instance"):
+            inst_id = instance.attrib["id"]
+            word, pos, lemmas = lemmas_from_instance(wn, instance)
+            if not len(lemmas):
+                sys.stderr.write("No lemma found for {} {}\n".format(word, pos))
+                continue
+            lemma = lemmas[0]
+            write_lemma(keyout, inst_id, lemma)
 
 
 @click.group()

@@ -1,4 +1,4 @@
-from wsdeval.sup_corpus import next_key
+from wsdeval.formats.sup_corpus import next_key
 from itertools import groupby
 from finntk.wsd.nn import WordExpert
 

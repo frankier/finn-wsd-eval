@@ -1,6 +1,6 @@
 import os
 import click
-from wsdeval.vec_nn_utils import (
+from wsdeval.tools.vec_nn import (
     mk_training_examples,
     train_vec_nn,
     test_vec_nn,

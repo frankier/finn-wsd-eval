@@ -6,8 +6,8 @@ from finntk.emb.fasttext import multispace as fasttext_multispace
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.utils import apply_vec
 from finntk.emb.word2vec import space as word2vec_space
-from wsdeval.means import get_mean
-from wsdeval.vec_nn_utils import mk_training_examples, train_vec_nn, test_vec_nn
+from wsdeval.tools.means import get_mean
+from wsdeval.tools.vec_nn import mk_training_examples, train_vec_nn, test_vec_nn
 from finntk.wsd.nn import WordExpertManager
 
 
@@ -34,7 +34,7 @@ def nn():
 
 
 def iter_inst_ctxs(inf, aggf, space):
-    from wsdeval.sup_corpus import iter_instances, norm_wf_lemma_of_tokens
+    from wsdeval.formats.sup_corpus import iter_instances, norm_wf_lemma_of_tokens
 
     for inst_id, item_pos, (be, he, af) in iter_instances(inf):
         ctx = norm_wf_lemma_of_tokens(be + af)

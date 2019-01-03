@@ -9,7 +9,7 @@ from os import makedirs
 from os.path import abspath, join as pjoin, basename, exists
 from stiff.eval import get_eval_paths
 import shutil
-from wsdeval.means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
+from wsdeval.tools.means import ALL_MEANS, NON_EXPANDING_MEANS, MEAN_DISPS
 from tinydb import TinyDB
 from tinyrecord import transaction
 import os
@@ -122,7 +122,7 @@ class SupWSD(Exp):
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.supwsd import conf, train, test
-        from wsdeval.utils import proc_supwsd
+        from wsdeval.formats.supwsd import proc_supwsd
 
         if exists(model_path):
             timestr = datetime.now().isoformat()
