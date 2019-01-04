@@ -22,8 +22,12 @@ def train_many_vec_nn(managers, training_examples):
             if vecs is None:
                 continue
             for clf, vec in zip(clfs, vecs):
+                if clf is None:
+                    continue
                 clf.add_word(vec, synset_id)
         for manager, clf in zip(managers, clfs):
+            if clf is None:
+                continue
             clf.fit()
             manager.dump_expert(iden, clf)
 
@@ -50,9 +54,11 @@ def pred_write(inst_id, clf, vec, keyout):
 
 def test_many_vec_nn(managers, instances, keyouts):
     for iden, group in lemma_group(instances):
-        clfs = [manager.load_expert(iden) for manager in managers]
+        clfs = [manager.load_expert(iden) if manager else None for manager in managers]
         for inst_id, _, vecs in group:
             for clf, vec, keyout in zip(clfs, vecs, keyouts):
+                if clf is not None:
+                    pass
                 pred_write(inst_id, clf, vec, keyout)
 
 

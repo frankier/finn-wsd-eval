@@ -14,13 +14,13 @@ pre-commit = "*"
 pyahocorasick = {editable = true, ref = "stiff-2018-09-20-3", git = "https://github.com/frankier/pyahocorasick.git"}
 dataclasses = "*"
 hfst = "*"
-finntk = {editable = true, ref = "2eb22a24678614254c91b8406f2b8f68c642e9af", git = "https://github.com/frankier/finntk.git"}
-torch = "==0.4.1"
+finntk = {editable = true, ref = "6656abb6467d65ce61ef95e579a1cab2b9cfebdc", git = "https://github.com/frankier/finntk.git"}
+torch = "==1.0.0"
 
 [dev-packages]
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
 
 [pipenv]
 allow_prereleases = true

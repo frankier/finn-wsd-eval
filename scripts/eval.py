@@ -171,6 +171,21 @@ class Elmo(Exp):
             test.callback(model_path, inf, keyout, self.layer)
 
 
+class Bert(Exp):
+    def __init__(self, layer):
+        self.layer = layer
+
+        super().__init__(
+            "Supervised",
+            "BERT-NN",
+            f"bert_nn.{layer}",
+            "BERT-NN ({})".format(layer),
+            None,
+            {"layer": layer},
+            needs_model=True,
+        )
+
+
 class ExpGroup:
     def __init__(self, exps):
         self.exps = exps
@@ -199,15 +214,15 @@ class ExpGroup:
             print("Got", measures)
 
 
-class ElmoAllExpGroup(ExpGroup):
-    LAYERS = [-1, 0, 1, 2]
-
-    def __init__(self):
-        super().__init__([Elmo(layer) for layer in self.LAYERS])
-
+class SesameAllExpGroup(ExpGroup):
     def run_all(self, db, corpus, filter_l1, filter_l2, opt_dict):
-        from wsdeval.systems.elmo import train_all, test_all
-
+        if not any(
+            (
+                self.exp_included(exp, filter_l1, filter_l2, opt_dict)
+                for exp in self.exps
+            )
+        ):
+            return
         model_paths = []
         guess_paths = []
         keyouts = []
@@ -215,8 +230,8 @@ class ElmoAllExpGroup(ExpGroup):
         included = []
 
         for exp in self.exps:
+            _, guess_path, model_path, gold = exp.get_paths(corpus)
             if self.exp_included(exp, filter_l1, filter_l2, opt_dict):
-                paths, guess_path, model_path, gold = exp.get_paths(corpus)
                 included.append(True)
             else:
                 model_path = "/dev/null"
@@ -227,14 +242,16 @@ class ElmoAllExpGroup(ExpGroup):
             keyouts.append(open(guess_path, "w"))
             golds.append(gold)
 
-        print("Running ELMO all")
+        _, paths = get_eval_paths(corpus)
+
+        print(f"Running {self.NAME} all")
         try:
             with open(paths["train"]["sup"], "rb") as inf, open(
                 paths["train"]["supkey"], "r"
             ) as keyin:
-                train_all.callback(inf, keyin, model_paths)
+                self.train_all.callback(inf, keyin, model_paths)
             with open(paths["test"]["sup"], "rb") as inf:
-                test_all.callback(inf, zip(model_paths, keyouts))
+                self.test_all.callback(inf, zip(model_paths, keyouts))
         except Exception:
             import traceback
 
@@ -248,6 +265,32 @@ class ElmoAllExpGroup(ExpGroup):
             print("Measuring", exp)
             measures = exp.proc_score(db, corpus, gold, guess_path)
             print("Got", measures)
+
+
+class ElmoAllExpGroup(SesameAllExpGroup):
+    from wsdeval.systems.sesame import train_elmo_all, test_elmo_all
+
+    train_all = staticmethod(train_elmo_all)
+    test_all = staticmethod(test_elmo_all)
+
+    NAME = "ELMo"
+    LAYERS = [-1, 0, 1, 2]
+
+    def __init__(self):
+        super().__init__([Elmo(layer) for layer in self.LAYERS])
+
+
+class BertAllExpGroup(SesameAllExpGroup):
+    from wsdeval.systems.sesame import train_bert_all, test_bert_all
+
+    train_all = staticmethod(train_bert_all)
+    test_all = staticmethod(test_bert_all)
+
+    NAME = "BERT"
+    LAYERS = list(range(12))
+
+    def __init__(self):
+        super().__init__([Bert(layer) for layer in self.LAYERS])
 
 
 def baseline(*args):
@@ -459,6 +502,8 @@ if os.environ.get("USE_SINGLE_LAYER_ELMO"):
     EXPERIMENTS.append(ExpGroup(elmo_exps))
 else:
     EXPERIMENTS.append(ElmoAllExpGroup())
+
+EXPERIMENTS.append(BertAllExpGroup())
 
 
 lesk_pp_exps = []
