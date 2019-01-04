@@ -1,1 +1,1 @@
-pipenv run black *.py
+pipenv run black scripts wsdeval
