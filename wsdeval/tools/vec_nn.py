@@ -57,8 +57,6 @@ def test_many_vec_nn(managers, instances, keyouts):
         clfs = [manager.load_expert(iden) if manager else None for manager in managers]
         for inst_id, _, vecs in group:
             for clf, vec, keyout in zip(clfs, vecs, keyouts):
-                if clf is not None:
-                    pass
                 pred_write(inst_id, clf, vec, keyout)
 
 
