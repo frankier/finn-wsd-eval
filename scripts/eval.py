@@ -1,3 +1,4 @@
+import traceback
 import time
 import click
 from dataclasses import dataclass, field
@@ -14,6 +15,15 @@ from tinydb import TinyDB
 from tinyrecord import transaction
 import os
 
+DEFAULT_WORK_BASE = "work"
+
+
+@dataclass(frozen=True)
+class ExpPathInfo:
+    corpus: str
+    guess: str
+    models: str
+
 
 @dataclass(frozen=True)
 class Exp:
@@ -24,7 +34,6 @@ class Exp:
     run_func: Optional[Callable[[str, str, str], None]] = None
     opts: Dict[str, any] = field(default_factory=dict)
     lex_group: bool = False
-    needs_model: bool = False
 
     def info(self):
         info = {
@@ -39,45 +48,52 @@ class Exp:
     def run(self, *args, **kwargs):
         return self.run_func(*args, **kwargs)
 
-    def get_iden(self, corpus):
-        return mk_iden(corpus, self)
+    def get_iden(self, path_info):
+        return mk_iden(path_info, self)
 
-    def get_paths(self, corpus):
-        root, paths = get_eval_paths(corpus)
-        iden = self.get_iden(corpus)
-        guess_path = mk_guess_path(iden)
-        model_path = mk_model_path(iden)
+    def get_paths(self, path_info):
+        root, paths = get_eval_paths(path_info.corpus)
+        iden = self.get_iden(path_info)
+        guess_path = mk_guess_path(path_info, iden)
+        model_path = mk_model_path(path_info, iden)
         if self.lex_group:
             gold = paths["test"]["supkey"]
         else:
             gold = paths["test"]["unikey"]
         return paths, guess_path, model_path, gold
 
-    def run_exp(self, db, corpus):
-        paths, guess_path, model_path, gold = self.get_paths(corpus)
-        try:
-            if self.needs_model:
-                self.run(paths, guess_path, model_path)
-            else:
-                self.run(paths, guess_path)
-        except Exception:
-            import traceback
+    def run_dispatch(self, paths, guess_path, model_path):
+        return self.run(paths, guess_path)
 
+    def run_and_score(self, db, path_info):
+        paths, guess_path, model_path, gold = self.get_paths(path_info)
+        try:
+            self.run_dispatch(paths, guess_path, model_path)
+        except Exception:
             traceback.print_exc()
             return
-        return self.proc_score(db, corpus, gold, guess_path)
+        return self.proc_score(db, path_info, gold, guess_path)
 
-    def proc_score(self, db, corpus, gold, guess):
+    def proc_score(self, db, path_info, gold, guess):
         measures = score(gold, guess)
 
         result = self.info()
         result.update(measures)
-        result["corpus"] = corpus
+        result["corpus"] = path_info.corpus
         result["time"] = time.time()
 
         with transaction(db) as tr:
             tr.insert(result)
         return measures
+
+
+class SupExp(Exp):
+    def train_model(self, path_info):
+        paths, guess_path, model_path, gold = self.get_paths(path_info)
+        self.train(paths, model_path)
+
+    def run_dispatch(self, paths, guess_path, model_path):
+        return self.run(paths, guess_path, model_path)
 
 
 def mk_nick(*inbits):
@@ -101,7 +117,7 @@ def mk_nick(*inbits):
     return ".".join(outbits)
 
 
-class SupWSD(Exp):
+class SupWSD(SupExp):
     def __init__(self, vec, sur_words):
         vec_path = "support/emb/{}.txt".format(vec) if vec is not None else ""
         no_sur = "-s" if not sur_words else ""
@@ -117,36 +133,43 @@ class SupWSD(Exp):
             disp,
             None,
             {"vec": vec, "sur_words": sur_words},
-            needs_model=True,
         )
 
-    def run(self, paths, guess_fn, model_path):
-        from wsdeval.systems.supwsd import conf, train, test
-        from wsdeval.formats.supwsd import proc_supwsd
+    def conf(self, model_path):
+        from wsdeval.systems.supwsd import conf
 
-        if exists(model_path):
-            timestr = datetime.now().isoformat()
-            shutil.move(model_path, "{}.{}".format(model_path, timestr))
-        makedirs(model_path, exist_ok=True)
         conf.callback(
             work_dir=abspath(model_path),
             vec_path=abspath(self.vec_path),
             use_vec=self.use_vec,
             use_surrounding_words=self.sur_words,
         )
+
+    def train(self, paths, model_path):
+        from wsdeval.systems.supwsd import train
+
+        self.conf(model_path)
+
+        if exists(model_path):
+            timestr = datetime.now().isoformat()
+            shutil.move(model_path, "{}.{}".format(model_path, timestr))
+        makedirs(model_path, exist_ok=True)
         train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.supwsd import test
+        from wsdeval.formats.supwsd import proc_supwsd
+
+        self.conf(model_path)
+
         test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
         with open(paths["test"]["unikey"]) as goldkey, open(
             pjoin(model_path, "scores/plain.result"), "rb"
         ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
             proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
 
-    def run_exp(self, db, corpus):
-        self.corpus = corpus
-        return super().run_exp(db, corpus)
 
-
-class Elmo(Exp):
+class Elmo(SupExp):
     def __init__(self, layer):
         self.layer = layer
 
@@ -157,16 +180,19 @@ class Elmo(Exp):
             "ELMO-NN ({})".format(layer),
             None,
             {"layer": layer},
-            needs_model=True,
         )
 
-    def run(self, paths, guess_fn, model_path):
-        from wsdeval.systems.elmo import train, test
+    def train(self, paths, model_path):
+        from wsdeval.systems.elmo import train
 
         with open(paths["train"]["sup"], "rb") as inf, open(
             paths["train"]["supkey"], "r"
         ) as keyin:
             train.callback(inf, keyin, model_path, self.layer)
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.elmo import test
+
         with open(paths["test"]["sup"], "rb") as inf, open(guess_fn, "w") as keyout:
             test.callback(model_path, inf, keyout, self.layer)
 
@@ -182,7 +208,6 @@ class Bert(Exp):
             "BERT-NN ({})".format(layer),
             None,
             {"layer": layer},
-            needs_model=True,
         )
 
 
@@ -207,54 +232,92 @@ class ExpGroup:
             )
         )
 
-    def run_all(self, db, corpus, filter_l1, filter_l2, opt_dict):
-        for exp in self.filter_exps(filter_l1, filter_l2, opt_dict):
-            print("Running", exp)
-            measures = exp.run_exp(db, corpus)
-            print("Got", measures)
-
-
-class SesameAllExpGroup(ExpGroup):
-    def run_all(self, db, corpus, filter_l1, filter_l2, opt_dict):
-        if not any(
+    def group_included(self, filter_l1, filter_l2, opt_dict):
+        return any(
             (
                 self.exp_included(exp, filter_l1, filter_l2, opt_dict)
                 for exp in self.exps
             )
-        ):
-            return
+        )
+
+    def train_all(self, path_info, filter_l1, filter_l2, opt_dict):
+        for exp in self.filter_exps(filter_l1, filter_l2, opt_dict):
+            if isinstance(exp, SupExp):
+                print("Training", exp)
+                exp.train(path_info)
+
+    def run_all(self, db, path_info, filter_l1, filter_l2, opt_dict):
+        for exp in self.filter_exps(filter_l1, filter_l2, opt_dict):
+            print("Running", exp)
+            measures = exp.run_exp(db, path_info)
+            print("Got", measures)
+
+
+class SesameAllExpGroup(ExpGroup):
+    def get_paths(self, path_info, filter_l1, filter_l2, opt_dict):
         model_paths = []
-        guess_paths = []
-        keyouts = []
-        golds = []
         included = []
 
         for exp in self.exps:
-            _, guess_path, model_path, gold = exp.get_paths(corpus)
+            _, _, model_path, _ = exp.get_paths(path_info)
             if self.exp_included(exp, filter_l1, filter_l2, opt_dict):
                 included.append(True)
             else:
                 model_path = "/dev/null"
-                guess_path = "/dev/null"
                 included.append(False)
             model_paths.append(model_path)
+
+        _, paths = get_eval_paths(path_info.corpus)
+        return paths, model_paths, included
+
+    def get_eval_paths(self, path_info, filter_l1, filter_l2, opt_dict):
+        guess_paths = []
+        keyouts = []
+        golds = []
+        for exp in self.exps:
+            _, guess_path, _, gold = exp.get_paths(path_info)
+            if not self.exp_included(exp, filter_l1, filter_l2, opt_dict):
+                guess_path = "/dev/null"
             guess_paths.append(guess_path)
             keyouts.append(open(guess_path, "w"))
             golds.append(gold)
+        return guess_paths, keyouts, golds
 
-        _, paths = get_eval_paths(corpus)
+    def train_all(self, path_info, filter_l1, filter_l2, opt_dict):
+        if not self.group_included(filter_l1, filter_l2, opt_dict):
+            return
 
-        print(f"Running {self.NAME} all")
+        paths, model_paths, included = self.get_paths(
+            path_info, filter_l1, filter_l2, opt_dict
+        )
+
+        print(f"Training {self.NAME} all")
+
         try:
             with open(paths["train"]["sup"], "rb") as inf, open(
                 paths["train"]["supkey"], "r"
             ) as keyin:
-                self.train_all.callback(inf, keyin, model_paths)
-            with open(paths["test"]["sup"], "rb") as inf:
-                self.test_all.callback(inf, zip(model_paths, keyouts))
+                self.train_all_impl.callback(inf, keyin, model_paths)
         except Exception:
-            import traceback
+            traceback.print_exc()
+            return
 
+    def run_all(self, db, path_info, filter_l1, filter_l2, opt_dict):
+        if not self.group_included(filter_l1, filter_l2, opt_dict):
+            return
+
+        paths, model_paths, included = self.get_paths(
+            path_info, filter_l1, filter_l2, opt_dict
+        )
+        guess_paths, keyouts, golds = self.get_eval_paths(
+            path_info, filter_l1, filter_l2, opt_dict
+        )
+
+        print(f"Running {self.NAME} all")
+        try:
+            with open(paths["test"]["sup"], "rb") as inf:
+                self.test_all_impl.callback(inf, zip(model_paths, keyouts))
+        except Exception:
             traceback.print_exc()
             return
 
@@ -263,15 +326,15 @@ class SesameAllExpGroup(ExpGroup):
 
         for exp, gold, guess_path in zip(self.exps, golds, guess_paths):
             print("Measuring", exp)
-            measures = exp.proc_score(db, corpus, gold, guess_path)
+            measures = exp.proc_score(db, path_info, gold, guess_path)
             print("Got", measures)
 
 
 class ElmoAllExpGroup(SesameAllExpGroup):
     from wsdeval.systems.sesame import train_elmo_all, test_elmo_all
 
-    train_all = staticmethod(train_elmo_all)
-    test_all = staticmethod(test_elmo_all)
+    train_all_impl = staticmethod(train_elmo_all)
+    test_all_impl = staticmethod(test_elmo_all)
 
     NAME = "ELMo"
     LAYERS = [-1, 0, 1, 2]
@@ -283,8 +346,8 @@ class ElmoAllExpGroup(SesameAllExpGroup):
 class BertAllExpGroup(SesameAllExpGroup):
     from wsdeval.systems.sesame import train_bert_all, test_bert_all
 
-    train_all = staticmethod(train_bert_all)
-    test_all = staticmethod(test_bert_all)
+    train_all_impl = staticmethod(train_bert_all)
+    test_all_impl = staticmethod(test_bert_all)
 
     NAME = "BERT"
     LAYERS = list(range(12))
@@ -489,7 +552,6 @@ for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
                 "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]),
                 nn(vec, mean),
                 {"vec": vec, "mean": mean},
-                needs_model=True,
             )
         )
 EXPERIMENTS.append(ExpGroup(awe_nn_exps))
@@ -570,18 +632,17 @@ def score(gold, guess):
     return measures
 
 
-def mk_guess_path(iden):
+def mk_guess_path(path_info, iden):
     guess_fn = iden + ".key"
-    return pjoin("guess", guess_fn)
+    return pjoin(path_info.guess, guess_fn)
 
 
-def mk_model_path(iden):
-    timestr = datetime.now().isoformat()
-    return pjoin("models", f"{iden}.{timestr}")
+def mk_model_path(path_info, iden):
+    return pjoin(path_info.models, iden)
 
 
-def mk_iden(corpus, exp):
-    corpus_basename = basename(corpus.rstrip("/"))
+def mk_iden(path_info, exp):
+    corpus_basename = basename(path_info.corpus.rstrip("/"))
     return "{}.{}".format(corpus_basename, exp.nick)
 
 
@@ -604,20 +665,44 @@ def parse_opts(opts):
 
 @click.command()
 @click.argument("db_path", type=click.Path())
-@click.argument("corpus", type=click.Path())
 @click.argument("filter_l1", required=False)
 @click.argument("filter_l2", required=False)
 @click.argument("opts", nargs=-1)
-def main(db_path, corpus, filter_l1=None, filter_l2=None, opts=None):
-    makedirs("guess", exist_ok=True)
-    makedirs("models", exist_ok=True)
+@click.option("--train", type=click.Path())
+@click.option("--test", type=click.Path())
+@click.option("--work-base", type=click.Path(), default=DEFAULT_WORK_BASE)
+@click.option("--add-timestamp/--no-add-timestamp", default=True)
+def main(
+    db_path,
+    work_base,
+    add_timestamp,
+    filter_l1=None,
+    filter_l2=None,
+    opts=None,
+    train=None,
+    test=None,
+):
+    if add_timestamp:
+        timestr = datetime.now().isoformat()
+        base = pjoin(work_base, timestr)
+    else:
+        base = work_base
+    guess = pjoin(base, "guess")
+    models = pjoin(base, "models")
+    makedirs(guess, exist_ok=True)
+    makedirs(models, exist_ok=True)
     db = TinyDB(db_path).table("results")
     if opts:
         opt_dict = parse_opts(opts)
     else:
         opt_dict = {}
     for exp_group in EXPERIMENTS:
-        exp_group.run_all(db, corpus, filter_l1, filter_l2, opt_dict)
+        if train is not None:
+            path_info = ExpPathInfo(train, guess, models)
+            exp_group.train_all(path_info, filter_l1, filter_l2, opt_dict)
+        if test is not None:
+            path_info = ExpPathInfo(test, guess, models)
+            exp_group.run_all(db, path_info, filter_l1, filter_l2, opt_dict)
 
 
 if __name__ == "__main__":
