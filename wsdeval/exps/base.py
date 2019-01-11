@@ -55,14 +55,17 @@ class Exp:
     def run_dispatch(self, paths, guess_path, model_path):
         return self.run(paths, guess_path)
 
-    def run_and_score(self, db, path_info):
+    def run_and_score(self, db, path_info, score=True):
         paths, guess_path, model_path, gold = self.get_paths(path_info)
         try:
             self.run_dispatch(paths, guess_path, model_path)
         except Exception:
             traceback.print_exc()
             return
-        return self.proc_score(db, path_info, gold, guess_path)
+        if score:
+            return self.proc_score(db, path_info, gold, guess_path)
+        else:
+            return guess_path
 
     def proc_score(self, db, path_info, gold, guess):
         measures = score(gold, guess)
@@ -121,8 +124,8 @@ class ExpGroup:
                 print("Training", exp)
                 exp.train_model(path_info)
 
-    def run_all(self, db, path_info, filter_l1, filter_l2, opt_dict):
+    def run_all(self, db, path_info, filter_l1, filter_l2, opt_dict, score=True):
         for exp in self.filter_exps(filter_l1, filter_l2, opt_dict):
             print("Running", exp)
-            measures = exp.run_and_score(db, path_info)
+            measures = exp.run_and_score(db, path_info, score=score)
             print("Got", measures)
