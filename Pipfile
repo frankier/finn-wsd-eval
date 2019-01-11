@@ -4,18 +4,19 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-stiff = {editable = true, ref = "328ec1dd752e09b84407686b957c38c688234391", git = "https://github.com/frankier/STIFF.git"}
-nltk = {editable = true, ref = "e1b3fda3768288ba96309dd92fd1ee7943cc43f9", git = "https://github.com/nltk/nltk"}
-elmoformanylangs = {editable = true, ref = "36ec6987e2d00baee6c364d151cd43b813c374a7", git = "https://github.com/frankier/ELMoForManyLangs.git"}
+stiff = {git = "https://github.com/frankier/STIFF.git",ref = "725825ff618d3fa2a9bfb750255302f12bdb0f56"}
+nltk = {editable = true,ref = "e1b3fda3768288ba96309dd92fd1ee7943cc43f9",git = "https://github.com/nltk/nltk"}
+elmoformanylangs = {editable = true,ref = "36ec6987e2d00baee6c364d151cd43b813c374a7",git = "https://github.com/frankier/ELMoForManyLangs.git"}
 tinydb = "*"
 tinyrecord = "*"
 black = "==18.9b0"
 pre-commit = "*"
-pyahocorasick = {editable = true, ref = "stiff-2018-09-20-3", git = "https://github.com/frankier/pyahocorasick.git"}
+pyahocorasick = {editable = true,ref = "stiff-2018-09-20-3",git = "https://github.com/frankier/pyahocorasick.git"}
 dataclasses = "*"
 hfst = "*"
-finntk = {editable = true, ref = "6656abb6467d65ce61ef95e579a1cab2b9cfebdc", git = "https://github.com/frankier/finntk.git"}
+finntk = {editable = true,ref = "6656abb6467d65ce61ef95e579a1cab2b9cfebdc",git = "https://github.com/frankier/finntk.git"}
 torch = "==1.0.0"
+wsdeval = {editable = true,path = "."}
 
 [dev-packages]
 
