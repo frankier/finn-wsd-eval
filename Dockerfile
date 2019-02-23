@@ -6,11 +6,11 @@ ENV LANG=C.UTF-8
 # Apt-get requirements
 RUN apt-get update && apt-get install -y \
     # Pipenv
-        python3 python3.6 python3-pip \
+        python3 python3.7 python3-pip \
     # UKB
         libboost-all-dev libboost-program-options-dev \
     # Python build requirements
-        python3-dev python3.6-dev build-essential libffi-dev \
+        python3-dev python3.7-dev build-essential libffi-dev \
     # Build requirements for HFST + Omorfi
         git autoconf automake libtool file \
     # Build requirements for HFST
@@ -27,7 +27,7 @@ RUN curl -s "https://get.sdkman.io" | bash
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven'
 
 # Fixup Python
-RUN ln -sf /usr/bin/python3.6 /usr/bin/python
+RUN ln -sf /usr/bin/python3.7 /usr/bin/python
 
 # Script driven stuff begins
 WORKDIR /app
