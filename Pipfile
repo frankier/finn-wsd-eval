@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-stiff = {git = "https://github.com/frankier/STIFF.git",ref = "725825ff618d3fa2a9bfb750255302f12bdb0f56"}
+stiff = {git = "https://github.com/frankier/STIFF.git",ref = "e885a7c0d5ab10e12205ddc5ec1ff5abe954ec97"}
 nltk = {editable = true,ref = "e1b3fda3768288ba96309dd92fd1ee7943cc43f9",git = "https://github.com/nltk/nltk"}
 elmoformanylangs = {editable = true,ref = "36ec6987e2d00baee6c364d151cd43b813c374a7",git = "https://github.com/frankier/ELMoForManyLangs.git"}
 tinydb = "*"

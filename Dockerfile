@@ -40,6 +40,7 @@ RUN bash ./compile_scorer.sh
 # Pipenv requirements
 COPY ./Pipfile* /app/
 COPY ./setup.py /app/
+RUN pip3 install --upgrade pip
 RUN set -ex && pipenv install --deploy --system --pre
 
 # NLTK resources
