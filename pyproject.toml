@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "wsdeval"
+version = "0.0.2"
+description = "WSD system evaluation Finnish"
+authors = ["Frankie Robertson <frankie@robertson.name>"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+stiff = {git = "https://github.com/frankier/STIFF.git",rev = "2a5d03a227379aff907240920b0ef557249cbdc6"}
+nltk = "==3.4"
+elmoformanylangs = {git = "https://github.com/frankier/ELMoForManyLangs.git",rev = "36ec6987e2d00baee6c364d151cd43b813c374a7"}
+tinydb = "*"
+tinyrecord = "*"
+dataclasses = "*"
+hfst = {version = "*", allows-prereleases = true}
+finntk = "==0.0.33"
+torch = "==1.0.0"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.5.0"
+black = "==18.9b0"
+pre-commit = "^1.10.2"
+pytest = "^4.1.1"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

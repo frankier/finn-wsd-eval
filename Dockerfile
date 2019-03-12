@@ -19,7 +19,9 @@ RUN apt-get update && apt-get install -y \
         curl wget unzip zip openjdk-11-jdk
 
 
-# Pipenv
+# Poetry + Pipenv
+RUN set -ex && curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python3
+RUN ~/.poetry/bin/poetry config settings.virtualenvs.create false
 RUN pip3 install pipenv
 
 # Java stuff for Scorer + IMS
@@ -38,10 +40,10 @@ COPY ./support/scorer /app/support/scorer
 RUN bash ./compile_scorer.sh
 
 # Pipenv requirements
-COPY ./Pipfile* /app/
-COPY ./setup.py /app/
+COPY ./pyproject.toml /app/
+COPY ./poetry.lock /app/
 RUN pip3 install --upgrade pip
-RUN set -ex && pipenv install --deploy --system --pre
+RUN ~/.poetry/bin/poetry install
 
 # NLTK resources
 RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
