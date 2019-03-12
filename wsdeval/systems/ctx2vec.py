@@ -24,12 +24,12 @@ def get_xml_key_pair(xml_path, key_path):
 @click.argument("keyin")
 @click.argument("testin")
 @click.argument("resultout")
-def test(modelin, trainin, keyin, testin, testkeyin, resultout):
+def full_wsd_main(modelin, trainin, keyin, testin, testkeyin, resultout):
     train_path = get_xml_key_pair(trainin, keyin)
     test_path = get_xml_key_pair(testin, testkeyin)
     tempdir = tempfile.mkdtemp(prefix="ctx2vec")
     result_path = pjoin(tempdir, "results")
-    with local.cwd("systems/context2vec"):
+    with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
         pipenv(
             "run",
             "python",
@@ -41,6 +41,44 @@ def test(modelin, trainin, keyin, testin, testkeyin, resultout):
             "1",
         )
     python(__file__, "context2vec-key-to-unified", result_path, resultout)
+
+
+@ctx2vec.command()
+@click.argument("inf", type=click.Path())
+@click.argument("keyin", type=click.Path())
+@click.argument("model", type=click.Path())
+def train(inf, keyin, model):
+    train_path = get_xml_key_pair(inf, keyin)
+    with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
+        pipenv(
+            "run",
+            "python",
+            "context2vec/eval/wsd/train.py",
+            train_path,
+            "model.params",
+            model,
+        )
+
+
+@click.argument("model", type=click.Path())
+@click.argument("inf", type=click.Path())
+@click.argument("keyin", type=click.Path())
+@click.argument("keyout", type=click.Path())
+def test(model, inf, keyin, keyout):
+    test_path = get_xml_key_pair(inf, keyin)
+    tempdir = tempfile.mkdtemp(prefix="ctx2vec")
+    result_path = pjoin(tempdir, "results")
+    with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
+        pipenv(
+            "run",
+            "python",
+            "context2vec/eval/wsd/test.py",
+            test_path,
+            "model.params",
+            model,
+            result_path,
+        )
+    python(__file__, "context2vec-key-to-unified", result_path, keyout)
 
 
 @ctx2vec.command("context2vec-key-to-unified")

@@ -8,7 +8,7 @@ from .exps import (
     baseline,
     lesk_pp,
     ukb,
-    ctx2vec,
+    Ctx2Vec,
     lesk,
     nn,
 )
@@ -22,24 +22,7 @@ EXPERIMENTS = [
             Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
         ]
     ),
-    ExpGroup(
-        [
-            Exp(
-                "Supervised",
-                "Context2Vec",
-                "ctx2vec.noseg.b100",
-                "Context2Vec\\textsubscript{noseg}",
-                ctx2vec("model_noseg_b100", False),
-            ),
-            Exp(
-                "Supervised",
-                "Context2Vec",
-                "ctx2vec.seg.b100",
-                "Context2Vec\\textsubscript{seg}",
-                ctx2vec("model_seg_b100", True),
-            ),
-        ]
-    ),
+    ExpGroup([Ctx2Vec()]),
 ]
 
 

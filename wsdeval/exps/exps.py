@@ -1,9 +1,8 @@
 import os
-from plumbum import local
 from plumbum.cmd import python
 from .base import Exp, SupExp, ExpGroup
 from .utils import mk_nick
-from stiff.eval import get_eval_paths
+from stiff.eval import get_partition_paths
 import traceback
 import datetime
 from os import makedirs
@@ -50,7 +49,7 @@ class SupWSD(SupExp):
             timestr = datetime.now().isoformat()
             shutil.move(model_path, "{}.{}".format(model_path, timestr))
         makedirs(model_path, exist_ok=True)
-        train.callback(paths["train"]["suptag"], paths["train"]["supkey"])
+        train.callback(paths["suptag"], paths["supkey"])
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.supwsd import test
@@ -58,8 +57,8 @@ class SupWSD(SupExp):
 
         self.conf(model_path)
 
-        test.callback(paths["test"]["suptag"], paths["test"]["supkey"])
-        with open(paths["test"]["unikey"]) as goldkey, open(
+        test.callback(paths["suptag"], paths["supkey"])
+        with open(paths["unikey"]) as goldkey, open(
             pjoin(model_path, "scores/plain.result"), "rb"
         ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
             proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
@@ -81,15 +80,13 @@ class Elmo(SupExp):
     def train(self, paths, model_path):
         from wsdeval.systems.elmo import train
 
-        with open(paths["train"]["sup"], "rb") as inf, open(
-            paths["train"]["supkey"], "r"
-        ) as keyin:
+        with open(paths["sup"], "rb") as inf, open(paths["supkey"], "r") as keyin:
             train.callback(inf, keyin, model_path, self.layer)
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.elmo import test
 
-        with open(paths["test"]["sup"], "rb") as inf, open(guess_fn, "w") as keyout:
+        with open(paths["sup"], "rb") as inf, open(guess_fn, "w") as keyout:
             test.callback(model_path, inf, keyout, self.layer)
 
 
@@ -121,7 +118,7 @@ class SesameAllExpGroup(ExpGroup):
                 included.append(False)
             model_paths.append(model_path)
 
-        _, paths = get_eval_paths(path_info.corpus)
+        paths = get_partition_paths(path_info.corpus, "corpus")
         return paths, model_paths, included
 
     def get_eval_paths(self, path_info, filter_l1, filter_l2, opt_dict):
@@ -148,9 +145,7 @@ class SesameAllExpGroup(ExpGroup):
         print(f"Training {self.NAME} all")
 
         try:
-            with open(paths["train"]["sup"], "rb") as inf, open(
-                paths["train"]["supkey"], "r"
-            ) as keyin:
+            with open(paths["sup"], "rb") as inf, open(paths["supkey"], "r") as keyin:
                 self.train_all_impl.callback(inf, keyin, model_paths)
         except Exception:
             traceback.print_exc()
@@ -169,7 +164,7 @@ class SesameAllExpGroup(ExpGroup):
 
         print(f"Running {self.NAME} all")
         try:
-            with open(paths["test"]["sup"], "rb") as inf:
+            with open(paths["sup"], "rb") as inf:
                 self.test_all_impl.callback(inf, zip(model_paths, keyouts))
         except Exception:
             traceback.print_exc()
@@ -212,7 +207,7 @@ class BertAllExpGroup(SesameAllExpGroup):
 
 def baseline(*args):
     def run(paths, guess_fn):
-        all_args = ["baselines.py"] + list(args) + [paths["test"]["unified"], guess_fn]
+        all_args = ["baselines.py"] + list(args) + [paths["unified"], guess_fn]
         os.chdir(SYSTEMS_DIR)
         python(*all_args)
 
@@ -221,9 +216,7 @@ def baseline(*args):
 
 def lesk(variety, *args):
     def run(paths, guess_fn):
-        all_args = (
-            ["lesk.py", variety] + list(args) + [paths["test"]["suptag"], guess_fn]
-        )
+        all_args = ["lesk.py", variety] + list(args) + [paths["suptag"], guess_fn]
         os.chdir(SYSTEMS_DIR)
         python(*all_args)
 
@@ -239,7 +232,7 @@ def ukb(use_new_dict, extract_extra, *variant):
         else:
             dict_fn = "support/ukb/wn30/wn30_dict.txt"
         run_ukb(
-            paths["test"]["unified"],
+            paths["unified"],
             guess_fn,
             variant,
             "support/ukb/wn30/wn30g.bin",
@@ -250,29 +243,21 @@ def ukb(use_new_dict, extract_extra, *variant):
     return run
 
 
-def ctx2vec(ctx2vec_model, seg):
-    def run(paths, guess_fn):
-        from wsdeval.systems.ctx2vec import test as ctx2vec_test
-
-        ctx2vec_model_path = local.env["CTX2VEC_MODEL_PATH"]
-        full_model_path = pjoin(ctx2vec_model_path, ctx2vec_model, "model.params")
-        if seg:
-            train_corpus = paths["train"]["supseg"]
-            test_corpus = paths["test"]["supseg"]
-        else:
-            train_corpus = paths["train"]["sup"]
-            test_corpus = paths["test"]["sup"]
-
-        ctx2vec_test.callback(
-            full_model_path,
-            train_corpus,
-            paths["train"]["sup3key"],
-            test_corpus,
-            paths["test"]["sup3key"],
-            guess_fn,
+class Ctx2Vec(SupExp):
+    def __init__(self):
+        super().__init__(
+            "Supervised", "Context2Vec", "ctx2vec", "Context2Vec", None, {}
         )
 
-    return run
+    def train(self, paths, model_path):
+        from wsdeval.systems.ctx2vec import train
+
+        train.callback(paths["sup"], paths["sup3key"], model_path)
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.ctx2vec import test
+
+        test.callback(model_path, paths["sup"], paths["sup3key"], guess_fn)
 
 
 def nn(vec, mean):
@@ -283,7 +268,7 @@ def nn(vec, mean):
             paths["train"]["supkey"], "r"
         ) as keyin:
             train.callback(vec, mean, inf, keyin, model_path)
-        with open(paths["test"]["suptag"], "rb") as inf, open(guess_fn, "w") as keyout:
+        with open(paths["suptag"], "rb") as inf, open(guess_fn, "w") as keyout:
             test.callback(vec, mean, model_path, inf, keyout)
 
     return inner
@@ -294,7 +279,7 @@ def lesk_pp(mean, do_expand, exclude_cand, score_by):
         args = [
             "lesk_pp.py",
             mean,
-            paths["test"]["unified"],
+            paths["unified"],
             guess_fn,
             "--include-wfs",
             "--score-by",

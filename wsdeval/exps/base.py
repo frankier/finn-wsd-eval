@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Dict, Optional
 from tinyrecord import transaction
 from .utils import score
-from stiff.eval import get_eval_paths
+from stiff.eval import get_partition_paths
 from wsdeval.exps.utils import mk_iden, mk_guess_path, mk_model_path
 
 
@@ -42,14 +42,14 @@ class Exp:
         return mk_iden(path_info, self)
 
     def get_paths(self, path_info):
-        root, paths = get_eval_paths(path_info.corpus)
+        paths = get_partition_paths(path_info.corpus, "corpus")
         iden = self.get_iden(path_info)
         guess_path = mk_guess_path(path_info, iden)
         model_path = mk_model_path(path_info, iden)
         if self.lex_group:
-            gold = paths["test"]["supkey"]
+            gold = paths["supkey"]
         else:
-            gold = paths["test"]["unikey"]
+            gold = paths["unikey"]
         return paths, guess_path, model_path, gold
 
     def run_dispatch(self, paths, guess_path, model_path):
@@ -82,7 +82,7 @@ class Exp:
 
 class SupExp(Exp):
     def train_model(self, path_info):
-        paths, guess_path, model_path, gold = self.get_paths(path_info)
+        paths, _, model_path, _ = self.get_paths(path_info)
         self.train(paths, model_path)
 
     def run_dispatch(self, paths, guess_path, model_path):

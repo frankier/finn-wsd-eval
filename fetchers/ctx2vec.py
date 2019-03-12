@@ -3,6 +3,8 @@ from plumbum import local
 from plumbum.cmd import git, pipenv
 from shutil import copyfile
 import os
+from finntk.utils import urlretrieve
+from zipfile import ZipFile
 
 
 @click.command()
@@ -19,8 +21,23 @@ def ctx2vec(gpu):
             "systems/context2vec/{}".format(fn),
         )
 
-    with local.cwd("systems/context2vec"):
+    for fn in ["test.py", "train.py"]:
+        copyfile(
+            "support/context2vec/{}".format(fn),
+            "systems/context2vec/context2vec/eval/wsd/{}".format(fn),
+        )
+
+    with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
         pipenv("install")
+
+        tmp_zipped_model_fn = urlretrieve(
+            "https://archive.org/download/ctx2vec-b100-3epoch/ctx2vec-b100-3epoch.zip"
+        )
+        try:
+            tmp_zip = ZipFile(tmp_zipped_model_fn)
+            tmp_zip.extractall(".")
+        finally:
+            os.remove(tmp_zipped_model_fn)
 
 
 if __name__ == "__main__":
