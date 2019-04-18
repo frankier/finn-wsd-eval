@@ -5,3 +5,5 @@
 /systems/
 /support/emb/
 __pycache__/
+/wsdeval.egg-info/
+/.snakemake/
