@@ -1,4 +1,5 @@
 import click
+from itertools import starmap
 
 from finntk.emb.base import BothVectorSpaceAdapter, MonoVectorSpaceAdapter
 from finntk.emb.concat import ft_nb_multispace, ft_nb_w2v_space
@@ -34,12 +35,19 @@ def nn():
 
 
 def iter_inst_ctxs(inf, aggf, space):
-    from wsdeval.formats.sup_corpus import iter_instances, norm_wf_lemma_of_tokens
+    from wsdeval.formats.sup_corpus import (
+        iter_instances_grouped,
+        norm_wf_lemma_of_tokens,
+    )
 
-    for inst_id, item_pos, (be, he, af) in iter_instances(inf):
+    def calc_vec(inst_id, texts):
+        (be, he, af) = texts
         ctx = norm_wf_lemma_of_tokens(be + af)
         ctx_vec = apply_vec(aggf, space, ctx, "fi") if ctx else None
-        yield inst_id, item_pos, ctx_vec
+        return inst_id, ctx_vec
+
+    for item_pos, cnt, it in iter_instances_grouped(inf):
+        yield ".".join(item_pos), cnt, starmap(calc_vec, it)
 
 
 @nn.command("train")

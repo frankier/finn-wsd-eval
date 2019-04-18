@@ -1,6 +1,7 @@
 import os
 from .base import Exp, ExpGroup
 from .exps import (
+    AweNn,
     SupWSD,
     Elmo,
     ElmoAllExpGroup,
@@ -10,7 +11,6 @@ from .exps import (
     ukb,
     Ctx2Vec,
     lesk,
-    nn,
 )
 from wsdeval.tools.means import ALL_MEANS, MEAN_DISPS, NON_EXPANDING_MEANS
 
@@ -89,16 +89,7 @@ EXPERIMENTS.append(ExpGroup(xlingual_lesk))
 awe_nn_exps = []
 for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
     for mean in list(ALL_MEANS.keys()) + ["sif_mean"]:
-        awe_nn_exps.append(
-            Exp(
-                "Supervised",
-                "AWE-NN",
-                "awe_nn",
-                "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]),
-                nn(vec, mean),
-                {"vec": vec, "mean": mean},
-            )
-        )
+        awe_nn_exps.append(AweNn(vec, mean))
 EXPERIMENTS.append(ExpGroup(awe_nn_exps))
 
 

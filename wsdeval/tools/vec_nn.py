@@ -1,23 +1,22 @@
+from itertools import starmap
+
 from wsdeval.formats.sup_corpus import next_key
-from itertools import groupby
-from finntk.wsd.nn import WordExpert
+from finntk.wsd.nn import FixedWordExpert
 
 
 def mk_training_examples(instances, keyin):
-    for inst_id, item, vec in instances:
+    def add_gold(inst_id, vec):
         key_id, synset_ids = next_key(keyin)
         assert inst_id == key_id
-        yield inst_id, item, vec, synset_ids[0]
+        return inst_id, vec, synset_ids[0]
 
-
-def lemma_group(instances):
-    for item, group in groupby(instances, lambda x: x[1]):
-        yield ".".join(item), group
+    for item, cnt, it in instances:
+        yield item, cnt, starmap(add_gold, it)
 
 
 def train_many_vec_nn(managers, training_examples):
-    for iden, group in lemma_group(training_examples):
-        clfs = [WordExpert() for _ in managers]
+    for iden, cnt, group in training_examples:
+        clfs = [FixedWordExpert(cnt) for _ in managers]
         for _, _, vecs, synset_id in group:
             if vecs is None:
                 continue
@@ -33,9 +32,9 @@ def train_many_vec_nn(managers, training_examples):
 
 
 def train_vec_nn(manager, training_examples):
-    for iden, group in lemma_group(training_examples):
-        clf = WordExpert()
-        for _, _, vec, synset_id in group:
+    for iden, cnt, group in training_examples:
+        clf = FixedWordExpert(cnt)
+        for _, vec, synset_id in group:
             if vec is None:
                 continue
             clf.add_word(vec, synset_id)
@@ -53,15 +52,15 @@ def pred_write(inst_id, clf, vec, keyout):
 
 
 def test_many_vec_nn(managers, instances, keyouts):
-    for iden, group in lemma_group(instances):
+    for iden, cnt, group in instances:
         clfs = [manager.load_expert(iden) if manager else None for manager in managers]
-        for inst_id, _, vecs in group:
+        for inst_id, vecs in group:
             for clf, vec, keyout in zip(clfs, vecs, keyouts):
                 pred_write(inst_id, clf, vec, keyout)
 
 
 def test_vec_nn(manager, instances, keyout):
-    for iden, group in lemma_group(instances):
+    for iden, cnt, group in instances:
         clf = manager.load_expert(iden)
-        for inst_id, _, vec in group:
+        for inst_id, vec in group:
             pred_write(inst_id, clf, vec, keyout)

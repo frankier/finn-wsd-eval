@@ -1,12 +1,8 @@
 import click
-from datetime import datetime
 from os import makedirs
-from os.path import join as pjoin
 from tinydb import TinyDB
 from wsdeval.exps.base import ExpPathInfo
 from wsdeval.exps.confs import EXPERIMENTS
-
-DEFAULT_WORK_BASE = "work"
 
 
 def parse_opts(opts):
@@ -26,47 +22,53 @@ def parse_opts(opts):
     return opt_dict
 
 
-@click.command()
-@click.argument("db_path", type=click.Path())
-@click.argument("filter_l1", required=False)
-@click.argument("filter_l2", required=False)
-@click.argument("opts", nargs=-1)
-@click.option("--train", type=click.Path())
-@click.option("--test", type=click.Path())
-@click.option("--work-base", type=click.Path(), default=DEFAULT_WORK_BASE)
-@click.option("--add-timestamp/--no-add-timestamp", default=True)
-def main(
-    db_path,
-    work_base,
-    add_timestamp,
-    filter_l1=None,
-    filter_l2=None,
-    opts=None,
-    train=None,
-    test=None,
-):
-    if add_timestamp:
-        timestr = datetime.now().isoformat()
-        base = pjoin(work_base, timestr)
-    else:
-        base = work_base
-    guess = pjoin(base, "guess")
-    models = pjoin(base, "models")
-    makedirs(guess, exist_ok=True)
-    makedirs(models, exist_ok=True)
-    db = TinyDB(db_path).table("results")
-    if opts:
-        opt_dict = parse_opts(opts)
-    else:
-        opt_dict = {}
+class TinyDBParam(click.Path):
+    def convert(self, value, param, ctx):
+        if isinstance(value, TinyDB):
+            return value
+        path = super().convert(value, param, ctx)
+        return TinyDB(path).table("results")
+
+
+@click.group(chain=True)
+@click.pass_context
+@click.option("--filter")
+def eval(ctx, filter):
+    filter_l1, filter_l2, opts = None, None, {}
+    filter_bits = filter.split(" ")
+    if len(filter_bits) >= 1:
+        filter_l1 = filter_bits[0]
+    if len(filter_bits) >= 2:
+        filter_l2 = filter_bits[1]
+    if len(filter_bits) >= 3:
+        opts = parse_opts(filter_bits[2:])
+    ctx.ensure_object(dict)
+    ctx.obj["filter"] = (filter_l1, filter_l2, opts)
+
+
+@eval.command("train")
+@click.pass_context
+@click.argument("train_corpus", type=click.Path())
+@click.argument("models_dir", type=click.Path())
+def train(ctx, train_corpus, models_dir):
+    makedirs(models_dir, exist_ok=True)
     for exp_group in EXPERIMENTS:
-        if train is not None:
-            path_info = ExpPathInfo(train, guess, models)
-            exp_group.train_all(path_info, filter_l1, filter_l2, opt_dict)
-        if test is not None:
-            path_info = ExpPathInfo(test, guess, models)
-            exp_group.run_all(db, path_info, filter_l1, filter_l2, opt_dict)
+        path_info = ExpPathInfo(train_corpus, "", models_dir)
+        exp_group.train_all(path_info, *ctx.obj["filter"])
+
+
+@eval.command("test")
+@click.pass_context
+@click.argument("test_corpus", type=click.Path())
+@click.argument("db", type=TinyDBParam())
+@click.argument("guess_dir", type=click.Path())
+@click.argument("models_dir", type=click.Path(), required=False)
+def test(ctx, test_corpus, db, guess_dir, models_dir):
+    makedirs(guess_dir, exist_ok=True)
+    for exp_group in EXPERIMENTS:
+        path_info = ExpPathInfo(test_corpus, guess_dir, models_dir)
+        exp_group.run_all(db, path_info, *ctx.obj["filter"])
 
 
 if __name__ == "__main__":
-    main()
+    eval()

@@ -8,6 +8,7 @@ import datetime
 from os import makedirs
 from os.path import abspath, exists, join as pjoin
 import shutil
+from wsdeval.tools.means import MEAN_DISPS
 
 SYSTEMS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../systems")
 
@@ -260,18 +261,30 @@ class Ctx2Vec(SupExp):
         test.callback(model_path, paths["sup"], paths["sup3key"], guess_fn)
 
 
-def nn(vec, mean):
-    def inner(paths, guess_fn, model_path):
-        from wsdeval.systems.nn import train, test
+class AweNn(SupExp):
+    def __init__(self, vec, mean):
+        self.vec = vec
+        self.mean = mean
+        super().__init__(
+            "Supervised",
+            "AWE-NN",
+            mk_nick("awe_nn", vec, mean),
+            "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]),
+            None,
+            {"vec": vec, "mean": mean},
+        )
 
-        with open(paths["train"]["suptag"], "rb") as inf, open(
-            paths["train"]["supkey"], "r"
-        ) as keyin:
-            train.callback(vec, mean, inf, keyin, model_path)
+    def train(self, paths, model_path):
+        from wsdeval.systems.nn import train
+
+        with open(paths["suptag"], "rb") as inf, open(paths["supkey"], "r") as keyin:
+            train.callback(self.vec, self.mean, inf, keyin, model_path)
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.nn import test
+
         with open(paths["suptag"], "rb") as inf, open(guess_fn, "w") as keyout:
-            test.callback(vec, mean, model_path, inf, keyout)
-
-    return inner
+            test.callback(self.vec, self.mean, model_path, inf, keyout)
 
 
 def lesk_pp(mean, do_expand, exclude_cand, score_by):
