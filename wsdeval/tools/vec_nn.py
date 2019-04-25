@@ -7,6 +7,7 @@ from finntk.wsd.nn import FixedWordExpert
 def mk_training_examples(instances, keyin):
     def add_gold(inst_id, vec):
         key_id, synset_ids = next_key(keyin)
+
         assert inst_id == key_id
         return inst_id, vec, synset_ids[0]
 

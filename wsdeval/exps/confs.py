@@ -1,5 +1,5 @@
 import os
-from .base import Exp, ExpGroup
+from expcomb.models import Exp, ExpGroup
 from .exps import (
     AweNn,
     SupWSD,
@@ -18,8 +18,8 @@ from wsdeval.tools.means import ALL_MEANS, MEAN_DISPS, NON_EXPANDING_MEANS
 EXPERIMENTS = [
     ExpGroup(
         [
-            Exp("Baseline", None, "first", "FiWN 1st sense", baseline("first")),
-            Exp("Baseline", None, "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
+            Exp(["Baseline"], "first", "FiWN 1st sense", baseline("first")),
+            Exp(["Baseline"], "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
         ]
     ),
     ExpGroup([Ctx2Vec()]),
@@ -70,8 +70,7 @@ for use_freq in [False, True]:
                     disp = f"Lesk\\textsubscript{{{vec}{disp_extra}{mean_disp}}}"
                     xlingual_lesk.append(
                         Exp(
-                            "Knowledge",
-                            "Cross-lingual Lesk",
+                            ["Knowledge", "Cross-lingual Lesk"],
                             nick,
                             disp,
                             lesk(*baseline_args),
@@ -111,8 +110,7 @@ for score_by in ["both", "defn", "lemma"]:
             for mean in NON_EXPANDING_MEANS:
                 lesk_pp_exps.append(
                     Exp(
-                        "Knowledge",
-                        "Lesk++",
+                        ["Knowledge", "Lesk++"],
                         "lesk_pp",
                         "Lesk++ ({} {})".format(MEAN_DISPS[mean], do_expand),
                         lesk_pp(mean, do_expand, exclude_cand, score_by),
@@ -144,8 +142,7 @@ for use_freq in [False, True]:
             nick_extra += ".extract"
         ukb_exps.append(
             Exp(
-                "Knowledge",
-                "UKB",
+                ["Knowledge", "UKB"],
                 "ukb" + nick_extra,
                 "UKB{}".format(label_extra),
                 ukb(True, extract_extra, *ukb_args),

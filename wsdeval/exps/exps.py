@@ -1,6 +1,6 @@
 import os
 from plumbum.cmd import python
-from .base import Exp, SupExp, ExpGroup
+from expcomb.models import Exp, SupExp, ExpGroup
 from .utils import mk_nick
 from stiff.eval import get_partition_paths
 import traceback
@@ -23,8 +23,7 @@ class SupWSD(SupExp):
         self.use_vec = vec is not None
         self.sur_words = sur_words
         super().__init__(
-            "Supervised",
-            "SupWSD",
+            ["Supervised", "SupWSD"],
             mk_nick("supwsd", vec, (sur_words, "sur")),
             disp,
             None,
@@ -70,8 +69,7 @@ class Elmo(SupExp):
         self.layer = layer
 
         super().__init__(
-            "Supervised",
-            "ELMo-NN",
+            ["Supervised", "ELMo-NN"],
             f"elmo_nn.{layer}",
             "ELMO-NN ({})".format(layer),
             None,
@@ -96,8 +94,7 @@ class Bert(Exp):
         self.layer = layer
 
         super().__init__(
-            "Supervised",
-            "BERT-NN",
+            ["Supervised", "BERT-NN"],
             f"bert_nn.{layer}",
             "BERT-NN ({})".format(layer),
             None,
@@ -106,13 +103,13 @@ class Bert(Exp):
 
 
 class SesameAllExpGroup(ExpGroup):
-    def get_paths(self, path_info, filter_l1, filter_l2, opt_dict):
+    def get_paths(self, path_info, path, opt_dict):
         model_paths = []
         included = []
 
         for exp in self.exps:
             _, _, model_path, _ = exp.get_paths(path_info)
-            if self.exp_included(exp, filter_l1, filter_l2, opt_dict):
+            if self.exp_included(exp, path, opt_dict):
                 included.append(True)
             else:
                 model_path = "/dev/null"
@@ -122,26 +119,24 @@ class SesameAllExpGroup(ExpGroup):
         paths = get_partition_paths(path_info.corpus, "corpus")
         return paths, model_paths, included
 
-    def get_eval_paths(self, path_info, filter_l1, filter_l2, opt_dict):
+    def get_eval_paths(self, path_info, path, opt_dict):
         guess_paths = []
         keyouts = []
         golds = []
         for exp in self.exps:
             _, guess_path, _, gold = exp.get_paths(path_info)
-            if not self.exp_included(exp, filter_l1, filter_l2, opt_dict):
+            if not self.exp_included(exp, path, opt_dict):
                 guess_path = "/dev/null"
             guess_paths.append(guess_path)
             keyouts.append(open(guess_path, "w"))
             golds.append(gold)
         return guess_paths, keyouts, golds
 
-    def train_all(self, path_info, filter_l1, filter_l2, opt_dict):
-        if not self.group_included(filter_l1, filter_l2, opt_dict):
+    def train_all(self, path_info, path, opt_dict):
+        if not self.group_included(path, opt_dict):
             return
 
-        paths, model_paths, included = self.get_paths(
-            path_info, filter_l1, filter_l2, opt_dict
-        )
+        paths, model_paths, included = self.get_paths(path_info, path, opt_dict)
 
         print(f"Training {self.NAME} all")
 
@@ -152,16 +147,12 @@ class SesameAllExpGroup(ExpGroup):
             traceback.print_exc()
             return
 
-    def run_all(self, db, path_info, filter_l1, filter_l2, opt_dict):
-        if not self.group_included(filter_l1, filter_l2, opt_dict):
+    def run_all(self, path_info, path, opt_dict):
+        if not self.group_included(path, opt_dict):
             return
 
-        paths, model_paths, included = self.get_paths(
-            path_info, filter_l1, filter_l2, opt_dict
-        )
-        guess_paths, keyouts, golds = self.get_eval_paths(
-            path_info, filter_l1, filter_l2, opt_dict
-        )
+        paths, model_paths, included = self.get_paths(path_info, path, opt_dict)
+        guess_paths, keyouts, golds = self.get_eval_paths(path_info, path, opt_dict)
 
         print(f"Running {self.NAME} all")
         try:
@@ -173,11 +164,6 @@ class SesameAllExpGroup(ExpGroup):
 
         for keyout in keyouts:
             keyout.close()
-
-        for exp, gold, guess_path in zip(self.exps, golds, guess_paths):
-            print("Measuring", exp)
-            measures = exp.proc_score(db, path_info, gold, guess_path)
-            print("Got", measures)
 
 
 class ElmoAllExpGroup(SesameAllExpGroup):
@@ -247,7 +233,7 @@ def ukb(use_new_dict, extract_extra, *variant):
 class Ctx2Vec(SupExp):
     def __init__(self):
         super().__init__(
-            "Supervised", "Context2Vec", "ctx2vec", "Context2Vec", None, {}
+            ["Supervised", "Context2Vec"], "ctx2vec", "Context2Vec", None, {}
         )
 
     def train(self, paths, model_path):
@@ -266,8 +252,7 @@ class AweNn(SupExp):
         self.vec = vec
         self.mean = mean
         super().__init__(
-            "Supervised",
-            "AWE-NN",
+            ["Supervised", "AWE-NN"],
             mk_nick("awe_nn", vec, mean),
             "AWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]),
             None,

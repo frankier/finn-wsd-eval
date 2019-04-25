@@ -7,16 +7,17 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-stiff = {git = "https://github.com/frankier/STIFF.git",rev = "2f2a5ad99f573c052872f796f992e6ac063aff80"}
+stiff = {git = "https://github.com/frankier/STIFF.git",rev = "0e7aff1250c85a28d41ed4c4e86fb04a43bb14c6"}
 nltk = "==3.4"
 tinydb = "*"
 tinyrecord = "*"
 dataclasses = "*"
 hfst = {version = "*", allows-prereleases = true}
-finntk = "==0.0.34"
+finntk = "==0.0.37"
 
 torch = {version = "^1.0", optional = true}
 elmoformanylangs = {git = "https://github.com/frankier/ELMoForManyLangs.git",rev = "36ec6987e2d00baee6c364d151cd43b813c374a7", optional = true}
+expcomb = {git = "https://github.com/frankier/expcomb.git"}
 
 [tool.poetry.extras]
 gpu = ["elmoformanylangs", "torch"]
