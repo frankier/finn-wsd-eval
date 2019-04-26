@@ -10,6 +10,8 @@ from finntk.emb.utils import (
 
 from functools import partial
 import pickle
+from os.path import join as pjoin
+import os
 
 EXPANDING_MEANS = {
     "catp3_mean": partial(catp_mean, ps=CATP_3),
@@ -39,7 +41,14 @@ pcs_cache = {}
 def get_mean(mean, emb_name):
     if mean == "sif_mean":
         if emb_name not in pcs_cache:
-            vec = pickle.load(open("support/sif/{}.pkl".format(emb_name), "rb"))
+            vec = pickle.load(
+                open(
+                    pjoin(
+                        os.environ.get("WSDEVAL_SUPPORT", "support"), "sif/{}.pkl"
+                    ).format(emb_name),
+                    "rb",
+                )
+            )
             pcs_cache[emb_name] = vec[0]
         return mk_sif_mean(pcs_cache[emb_name])
     else:

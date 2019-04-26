@@ -6,12 +6,23 @@ from stiff.eval import get_partition_paths
 import traceback
 import datetime
 from os import makedirs
-from os.path import abspath, exists, join as pjoin
+from os.path import abspath, dirname, exists, join as pjoin
 import shutil
 from wsdeval.tools.means import MEAN_DISPS
 from .base import SupExpGroup
 
-SYSTEMS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../systems")
+
+def relpath(rel):
+    return pjoin(dirname(abspath(__file__)), rel)
+
+
+SYSTEMS_DIR = relpath("../systems")
+SUPPORT_DIR = relpath("../support")
+
+
+def setup_paths():
+    os.environ["WSDEVAL_SUPPORT"] = SUPPORT_DIR
+    os.chdir(SYSTEMS_DIR)
 
 
 class SupWSD(SupExp):
@@ -195,8 +206,8 @@ class BertAllExpGroup(SesameAllExpGroup):
 
 def baseline(*args):
     def run(paths, guess_fn):
-        all_args = ["baselines.py"] + list(args) + [paths["unified"], guess_fn]
-        os.chdir(SYSTEMS_DIR)
+        all_args = ["baselines.py"] + list(args) + [paths["unified"], abspath(guess_fn)]
+        setup_paths()
         python(*all_args)
 
     return run
@@ -204,8 +215,10 @@ def baseline(*args):
 
 def lesk(variety, *args):
     def run(paths, guess_fn):
-        all_args = ["lesk.py", variety] + list(args) + [paths["suptag"], guess_fn]
-        os.chdir(SYSTEMS_DIR)
+        all_args = (
+            ["lesk.py", variety] + list(args) + [paths["suptag"], abspath(guess_fn)]
+        )
+        setup_paths()
         python(*all_args)
 
     return run
@@ -288,7 +301,7 @@ def lesk_pp(mean, do_expand, exclude_cand, score_by):
             args.append("--expand")
         if exclude_cand:
             args.append("--exclude-cand")
-        os.chdir(SYSTEMS_DIR)
+        setup_paths()
         python(*args)
 
     return inner
