@@ -9,7 +9,7 @@ from os import makedirs
 from os.path import abspath, dirname, exists, join as pjoin
 import shutil
 from wsdeval.tools.means import MEAN_DISPS
-from .base import SupExpGroup
+from .base import SupGpuExpGroup
 
 
 def relpath(rel):
@@ -114,7 +114,7 @@ class Bert(Exp):
         )
 
 
-class SesameAllExpGroup(SupExpGroup):
+class SesameAllExpGroup(SupGpuExpGroup):
     def get_paths(self, path_info, path, opt_dict):
         model_paths = []
         included = []

@@ -1,6 +1,6 @@
 import os
 from expcomb.models import Exp
-from .base import ExpGroup, SupExpGroup
+from .base import ExpGroup, SupExpGroup, SupGpuExpGroup
 from .exps import (
     AweNn,
     SupWSD,
@@ -23,7 +23,7 @@ EXPERIMENTS = [
             Exp(["Baseline"], "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
         ]
     ),
-    SupExpGroup([Ctx2Vec()]),
+    SupGpuExpGroup([Ctx2Vec()]),
 ]
 
 
@@ -97,7 +97,7 @@ if os.environ.get("USE_SINGLE_LAYER_ELMO"):
     elmo_exps = []
     for layer in (-1, 0, 1, 2):
         elmo_exps.append(Elmo(layer))
-    EXPERIMENTS.append(SupExpGroup(elmo_exps))
+    EXPERIMENTS.append(SupGpuExpGroup(elmo_exps))
 else:
     EXPERIMENTS.append(ElmoAllExpGroup())
 

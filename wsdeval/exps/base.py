@@ -29,9 +29,14 @@ class ExpPathInfo:
 
 
 class ExpGroup(ExpGroupBase):
-    group_attrs = ("sup",)
+    group_attrs = ("sup", "gpu")
     sup = False
+    gpu = False
 
 
 class SupExpGroup(ExpGroup):
     sup = True
+
+
+class SupGpuExpGroup(SupExpGroup):
+    gpu = True
