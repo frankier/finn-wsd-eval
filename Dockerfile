@@ -41,7 +41,7 @@ RUN bash ./compile_scorer.sh
 # Pipenv requirements
 COPY ./pyproject.toml /app/
 COPY ./poetry.lock /app/
-RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade pip==19.0.3
 RUN ~/.poetry/bin/poetry install
 
 # NLTK resources
