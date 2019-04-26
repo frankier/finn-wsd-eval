@@ -44,8 +44,9 @@ def get_mean(mean, emb_name):
             vec = pickle.load(
                 open(
                     pjoin(
-                        os.environ.get("WSDEVAL_SUPPORT", "support"), "sif/{}.pkl"
-                    ).format(emb_name),
+                        os.environ.get("WSDEVAL_SUPPORT", "support"),
+                        "sif/{}.pkl".format(emb_name),
+                    ),
                     "rb",
                 )
             )

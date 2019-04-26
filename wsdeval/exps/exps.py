@@ -1,5 +1,6 @@
 import os
 from plumbum.cmd import python
+from plumbum import local
 from expcomb.models import Exp, SupExp
 from .utils import mk_nick
 from stiff.eval import get_partition_paths
@@ -17,11 +18,11 @@ def relpath(rel):
 
 
 SYSTEMS_DIR = relpath("../systems")
-SUPPORT_DIR = relpath("../support")
+SUPPORT_DIR = relpath("../../support")
 
 
 def setup_paths():
-    os.environ["WSDEVAL_SUPPORT"] = SUPPORT_DIR
+    local.env["WSDEVAL_SUPPORT"] = SUPPORT_DIR
     os.chdir(SYSTEMS_DIR)
 
 
