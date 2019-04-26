@@ -29,9 +29,6 @@ CORPUS_DIR_MAP = {
     "eurosense": lambda: config["EUROSENSEEVAL"],
 }
 
-# Result db
-cnf("DB", "db.json")
-
 # Utility functions
 def all_results():
     extra_filter = parse_filter(FILTER)
