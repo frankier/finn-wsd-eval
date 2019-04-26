@@ -31,12 +31,18 @@ CORPUS_DIR_MAP = {
 
 # Utility functions
 def all_results():
-    extra_filter = parse_filter(FILTER)
-    for nick in SnakeMake.get_nicks(*extra_filter):
+    path, opt_dict = parse_filter(FILTER)
+    for nick in SnakeMake.get_nicks(path, {"sup": True, **opt_dict}):
         yield from expand(
             WORK + "/results/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
             train_corpus=CORPUS_NAMES,
             train_seg=TRAIN_SEGMENT,
+            test_corpus=CORPUS_NAMES,
+            test_seg=TEST_SEGMENT
+        )
+    for nick in SnakeMake.get_nicks(path, {"sup": False, **opt_dict}):
+        yield from expand(
+            WORK + "/results/" + nick + "/{test_corpus}-{test_seg}.db",
             test_corpus=CORPUS_NAMES,
             test_seg=TEST_SEGMENT
         )
@@ -68,6 +74,14 @@ rule test_sup:
         WORK + "/guess/{nick}/{train_corpus}-{train_seg}/{corpus}-{seg}"
     shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
 
+# Testing unsupervised models
+rule test_unsup:
+    input:
+        test = get_corpus_seg,
+    output:
+        WORK + "/guess/{nick}/{corpus}-{seg}"
+    shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" test {input.test} {output}"
+
 ## Scoring
 
 # Scoring supervised models
@@ -78,3 +92,12 @@ rule eval_sup:
     output:
         WORK + "/results/{nick}/{train_corpus}-{train_seg}/{corpus}-{seg}.db"
     shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} train-corpus={wildcards.train_corpus}-{wildcards.train_seg} test-corpus={wildcards.corpus}-{wildcards.seg}"
+
+# Scoring unsupervised models
+rule eval_unsup:
+    input:
+        test = get_corpus_seg,
+        guess = WORK + "/guess/{nick}/{corpus}-{seg}"
+    output:
+        WORK + "/results/{nick}/{corpus}-{seg}.db"
+    shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} test-corpus={wildcards.corpus}-{wildcards.seg}"

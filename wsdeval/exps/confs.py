@@ -1,5 +1,6 @@
 import os
-from expcomb.models import Exp, ExpGroup
+from expcomb.models import Exp
+from .base import ExpGroup, SupExpGroup
 from .exps import (
     AweNn,
     SupWSD,
@@ -22,7 +23,7 @@ EXPERIMENTS = [
             Exp(["Baseline"], "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
         ]
     ),
-    ExpGroup([Ctx2Vec()]),
+    SupExpGroup([Ctx2Vec()]),
 ]
 
 
@@ -35,7 +36,7 @@ for vec, sur_words in [
     ("fasttext", True),
 ]:
     supwsd_exps.append(SupWSD(vec, sur_words))
-EXPERIMENTS.append(ExpGroup(supwsd_exps))
+EXPERIMENTS.append(SupExpGroup(supwsd_exps))
 
 
 LESK_MEANS = list(ALL_MEANS.keys())
@@ -89,14 +90,14 @@ awe_nn_exps = []
 for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
     for mean in list(ALL_MEANS.keys()) + ["sif_mean"]:
         awe_nn_exps.append(AweNn(vec, mean))
-EXPERIMENTS.append(ExpGroup(awe_nn_exps))
+EXPERIMENTS.append(SupExpGroup(awe_nn_exps))
 
 
 if os.environ.get("USE_SINGLE_LAYER_ELMO"):
     elmo_exps = []
     for layer in (-1, 0, 1, 2):
         elmo_exps.append(Elmo(layer))
-    EXPERIMENTS.append(ExpGroup(elmo_exps))
+    EXPERIMENTS.append(SupExpGroup(elmo_exps))
 else:
     EXPERIMENTS.append(ElmoAllExpGroup())
 

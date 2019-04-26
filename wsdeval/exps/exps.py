@@ -1,6 +1,6 @@
 import os
 from plumbum.cmd import python
-from expcomb.models import Exp, SupExp, ExpGroup
+from expcomb.models import Exp, SupExp
 from .utils import mk_nick
 from stiff.eval import get_partition_paths
 import traceback
@@ -9,6 +9,7 @@ from os import makedirs
 from os.path import abspath, exists, join as pjoin
 import shutil
 from wsdeval.tools.means import MEAN_DISPS
+from .base import SupExpGroup
 
 SYSTEMS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../systems")
 
@@ -102,7 +103,7 @@ class Bert(Exp):
         )
 
 
-class SesameAllExpGroup(ExpGroup):
+class SesameAllExpGroup(SupExpGroup):
     def get_paths(self, path_info, path, opt_dict):
         model_paths = []
         included = []

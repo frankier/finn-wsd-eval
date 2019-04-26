@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from os.path import join as pjoin
 from stiff.eval import get_partition_paths
 from typing import Optional
+from expcomb.models import ExpGroup as ExpGroupBase
 
 
 @dataclass(frozen=True)
@@ -25,3 +26,12 @@ class ExpPathInfo:
             else (pjoin(self.models, iden) if self.models else self.models)
         )
         return paths, guess_path, model_path, self.corpus
+
+
+class ExpGroup(ExpGroupBase):
+    group_attrs = ("sup",)
+    sup = False
+
+
+class SupExpGroup(ExpGroup):
+    sup = True
