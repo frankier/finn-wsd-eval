@@ -2,7 +2,7 @@ import sys
 import click
 from finntk.wordnet.reader import fiwn, fiwn_encnt
 from stiff.utils.xml import iter_sentences
-from wsdeval.format.wordnet import lemmas_from_instance, write_lemma
+from wsdeval.formats.wordnet import lemmas_from_instance, write_lemma
 
 
 def unigram(inf, keyout, wn):

@@ -6,7 +6,7 @@ from finntk.emb.fasttext import multispace as fasttext_multispace
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.wsd.lesk_emb import MultilingualLesk
 from wsdeval.tools.means import get_mean
-from wsdeval.format.wordnet import write_lemma
+from wsdeval.formats.wordnet import write_lemma
 
 
 @click.command()
