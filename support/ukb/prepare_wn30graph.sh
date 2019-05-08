@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euxo pipefail
 
 # Do not change anything below
 abspath_to_ukb=$(realpath ${UKB_PATH})
