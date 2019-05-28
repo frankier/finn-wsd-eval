@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     # Pipenv
         python3 python3.7 python3-pip \
     # UKB
-        libboost-all-dev libboost-program-options-dev \
+        libboost-all-dev libboost-program-options-dev libxml-libxml-perl \
     # Python build requirements
         python3-dev python3.7-dev build-essential libffi-dev \
     # Build requirements for HFST + Omorfi
