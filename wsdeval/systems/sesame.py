@@ -6,7 +6,6 @@ from wsdeval.tools.vec_nn import (
     train_many_vec_nn,
     test_many_vec_nn,
 )
-from wsdeval.tools.ctx_embedder import bert_embedder, elmo_embedder
 from finntk.wsd.nn import WordExpertManager
 
 LAYERS = [-1, 0, 1, 2]
@@ -50,6 +49,7 @@ def train_elmo(inf, keyin, model, output_layer):
     """
     Train nearest neighbour classifier with ELMo for one layer.
     """
+    from wsdeval.tools.ctx_embedder import elmo_embedder
 
     inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=output_layer)
     training_examples = mk_training_examples(inst_it, keyin)
@@ -64,6 +64,8 @@ def train_elmo_all(inf, keyin, models):
     """
     Train nearest neighbour classifier with ELMo for all layers.
     """
+    from wsdeval.tools.ctx_embedder import elmo_embedder
+
     inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=-2)
     train_sesame_all(inst_it, keyin, models)
 
@@ -76,6 +78,8 @@ def train_bert_all(inf, keyin, models):
     """
     Train nearest neighbour classifier with BERT for all layers.
     """
+    from wsdeval.tools.ctx_embedder import bert_embedder
+
     inst_it = bert_embedder.iter_inst_vecs(inf)
     train_sesame_all(inst_it, keyin, models)
 
@@ -89,6 +93,8 @@ def test_elmo(model, inf, keyout, output_layer):
     """
     Test nearest neighbour ELMo classifier for one layer.
     """
+    from wsdeval.tools.ctx_embedder import elmo_embedder
+
     inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=output_layer)
     test_vec_nn(WordExpertManager(model, "w"), inst_it, keyout)
 
@@ -100,6 +106,8 @@ def test_elmo_all(inf, model_keyouts):
     """
     Test nearest neighbour ELMo classifier for all layers.
     """
+    from wsdeval.tools.ctx_embedder import elmo_embedder
+
     inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=-2)
     test_sesame_all(inst_it, model_keyouts)
 
@@ -111,5 +119,7 @@ def test_bert_all(inf, model_keyouts):
     """
     Test nearest neighbour BERT classifier for all layers.
     """
+    from wsdeval.tools.ctx_embedder import bert_embedder
+
     inst_it = bert_embedder.iter_inst_vecs(inf)
     test_sesame_all(inst_it, model_keyouts)
