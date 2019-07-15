@@ -26,7 +26,10 @@ RUN pip3 install pipenv
 
 # Java stuff for Scorer + IMS
 RUN curl -s "https://get.sdkman.io" | bash
-RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven'
+RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && \
+        sdk install maven' && \
+        sdk flush archives && \
+        sdk flush temp
 
 # Fixup Python
 RUN ln -sf /usr/bin/python3.7 /usr/bin/python
