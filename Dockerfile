@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y \
         flex bison libglib2.0-0 libglib2.0-dev \
     # Java stuff for Scorer + IMS
         curl wget unzip zip openjdk-11-jdk
+    # STIFF/opencc
+        libopencc-dev
 
 
 # Poetry + Pipenv
