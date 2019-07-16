@@ -59,7 +59,7 @@ rule all:
 # Train supervised models
 rule train:
     input: get_corpus_seg
-    output: directory(WORK + "/models/{corpus}-{seg}/{nick}")
+    output: directory(WORK + "/models/{corpus,[^/]+}-{seg,[^/]+}/{nick,[^/]+}")
     shell:
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" train {input} {output}"
 
@@ -71,7 +71,7 @@ rule test_sup:
         test = get_corpus_seg,
         model = WORK + "/models/{train_corpus}-{train_seg}/{nick}",
     output: 
-        WORK + "/guess/{nick}/{train_corpus}-{train_seg}/{corpus}-{seg}"
+        WORK + "/guess/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
 
 # Testing unsupervised models
@@ -79,7 +79,7 @@ rule test_unsup:
     input:
         test = get_corpus_seg,
     output:
-        WORK + "/guess/{nick}/{corpus}-{seg}"
+        WORK + "/guess/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" test {input.test} {output}"
 
 ## Scoring
@@ -90,7 +90,7 @@ rule eval_sup:
         test = get_corpus_seg,
         guess = WORK + "/guess/{nick}/{train_corpus}-{train_seg}/{corpus}-{seg}"
     output:
-        WORK + "/results/{nick}/{train_corpus}-{train_seg}/{corpus}-{seg}.db"
+        WORK + "/results/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} train-corpus={wildcards.train_corpus}-{wildcards.train_seg} test-corpus={wildcards.corpus}-{wildcards.seg}"
 
 # Scoring unsupervised models
@@ -99,5 +99,5 @@ rule eval_unsup:
         test = get_corpus_seg,
         guess = WORK + "/guess/{nick}/{corpus}-{seg}"
     output:
-        WORK + "/results/{nick}/{corpus}-{seg}.db"
+        WORK + "/results/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell: "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} test-corpus={wildcards.corpus}-{wildcards.seg}"
