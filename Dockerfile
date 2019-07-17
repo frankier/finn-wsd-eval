@@ -79,3 +79,6 @@ RUN python -m stiff.scripts.post_install
 
 # Evaluation framework setup
 COPY . /app
+
+# Set up Python path
+RUN echo "/app/" > "/usr/local/lib/python3.7/dist-packages/wsdeval.pth"
