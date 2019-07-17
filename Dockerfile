@@ -48,7 +48,7 @@ RUN bash ./compile_scorer.sh
 COPY ./pyproject.toml /app/
 COPY ./poetry.lock /app/
 RUN pip3 install --upgrade pip==19.0.3
-RUN ~/.poetry/bin/poetry install
+RUN ~/.poetry/bin/poetry install --no-interaction
 
 # NLTK resources
 RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
