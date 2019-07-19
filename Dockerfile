@@ -53,6 +53,9 @@ RUN ~/.poetry/bin/poetry install --no-interaction
 # NLTK resources
 RUN python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
 
+# FinnTK resources
+RUN python -m finntk.scripts.bootstrap_all
+
 RUN mkdir /app/fetchers
 
 # UKB
