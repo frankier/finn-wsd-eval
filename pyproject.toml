@@ -6,8 +6,8 @@ authors = ["Frankie Robertson <frankie@robertson.name>"]
 license = "Apache-2.0"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-stiff = {git = "https://github.com/frankier/STIFF.git",rev = "005e730f91458d81b83d6fff4381960919753110"}
+python = "^3.6"
+stiff = {git = "https://github.com/frankier/STIFF.git",rev = "51a18af928fa55edf18dd6afa7af160f175f95aa"}
 nltk = "==3.4"
 tinydb = "*"
 tinyrecord = "*"
