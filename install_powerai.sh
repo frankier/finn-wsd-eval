@@ -39,6 +39,8 @@ sed -i '/torch/d' requirements.txt
 sed -i '/scikit-learn/d' requirements.txt
 sed -i '/scipy/d' requirements.txt
 sed -i '/numpy/d' requirements.txt
+sed -i '/gensim/d' requirements.txt
+sed -i '/h5py/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
 sed -i '/STIFF/d' requirements.txt
