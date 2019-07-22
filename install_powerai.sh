@@ -19,9 +19,9 @@ cpip() {
 }
 
 # Add channels
-conda config --add channels defaults
-conda config --add channels bioconda
-conda config --add channels conda-forge
+conda config --prepend channels conda-forge
+conda config --prepend channels bioconda
+conda config --prepend channels defaults
 conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda/
 
 ## Install
