@@ -59,8 +59,5 @@ cpip install --no-deps --pre -r requirements.txt
 ## Init
 $PYTHON -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
 $PYTHON -m finntk.scripts.bootstrap_all
-$PYTHON fetchers/ukb.py fetch
-bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && conda run $PYTHON fetchers/supwsd.py'
 $PYTHON fetchers/ctx2vec.py
-$PYTHON fetchers/sif.py
 $PYTHON -m stiff.scripts.post_install
