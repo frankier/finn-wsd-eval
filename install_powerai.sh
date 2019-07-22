@@ -44,6 +44,7 @@ sed -i '/h5py/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
 sed -i '/STIFF/d' requirements.txt
+sed -ie '/expcomb/s/^-e //' requirements.txt
 
 cpip install --no-deps --pre -r requirements.txt
 
