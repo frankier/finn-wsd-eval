@@ -29,12 +29,16 @@ conda install -y powerai
 conda install -y pip
 cpip install --pre poetry
 conda run poetry export --without-hashes -f requirements.txt
+
 # Obviously not compatible
 sed -i '/pypiwin32/d' requirements.txt
 sed -i '/pywin32/d' requirements.txt
 # Already installed
 sed -i '/sklearn/d' requirements.txt
 sed -i '/torch/d' requirements.txt
+# Apparently not compatible
+sed -i '/hfst/d' requirements.txt
+
 cpip install --pre -r requirements.txt
 
 ## Init
