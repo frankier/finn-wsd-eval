@@ -19,6 +19,11 @@ def relpath(rel):
 
 SYSTEMS_DIR = relpath("../systems")
 SUPPORT_DIR = relpath("../../support")
+orig_cwd = os.getcwd()
+
+
+def cwd_relpath(rel):
+    return pjoin(orig_cwd, rel)
 
 
 def setup_paths():
@@ -73,7 +78,7 @@ class SupWSD(SupExp):
         test.callback(paths["suptag"], paths["supkey"])
         with open(paths["unikey"]) as goldkey, open(
             pjoin(model_path, "scores/plain.result"), "rb"
-        ) as supwsd_result_fp, open(guess_fn, "w") as guess_fp:
+        ) as supwsd_result_fp, open(cwd_relpath(guess_fn), "w") as guess_fp:
             proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
 
 
@@ -98,7 +103,9 @@ class Elmo(SupExp):
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.elmo import test
 
-        with open(paths["sup"], "rb") as inf, open(guess_fn, "w") as keyout:
+        with open(paths["sup"], "rb") as inf, open(
+            cwd_relpath(guess_fn), "w"
+        ) as keyout:
             test.callback(model_path, inf, keyout, self.layer)
 
 
@@ -207,7 +214,9 @@ class BertAllExpGroup(SesameAllExpGroup):
 
 def baseline(*args):
     def run(paths, guess_fn):
-        all_args = ["baselines.py"] + list(args) + [paths["unified"], abspath(guess_fn)]
+        all_args = (
+            ["baselines.py"] + list(args) + [paths["unified"], cwd_relpath(guess_fn)]
+        )
         setup_paths()
         python(*all_args)
 
@@ -217,7 +226,7 @@ def baseline(*args):
 def lesk(variety, *args):
     def run(paths, guess_fn):
         all_args = (
-            ["lesk.py", variety] + list(args) + [paths["suptag"], abspath(guess_fn)]
+            ["lesk.py", variety] + list(args) + [paths["suptag"], cwd_relpath(guess_fn)]
         )
         setup_paths()
         python(*all_args)
@@ -235,7 +244,7 @@ def ukb(use_new_dict, extract_extra, *variant):
             dict_fn = "support/ukb/wn30/wn30_dict.txt"
         run_ukb(
             paths["unified"],
-            guess_fn,
+            cwd_relpath(guess_fn),
             variant,
             "support/ukb/wn30/wn30g.bin",
             dict_fn,
@@ -259,7 +268,7 @@ class Ctx2Vec(SupExp):
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.ctx2vec import test
 
-        test.callback(model_path, paths["sup"], paths["sup3key"], guess_fn)
+        test.callback(model_path, paths["sup"], paths["sup3key"], cwd_relpath(guess_fn))
 
 
 class AweNn(SupExp):
@@ -283,7 +292,9 @@ class AweNn(SupExp):
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.nn import test
 
-        with open(paths["suptag"], "rb") as inf, open(guess_fn, "w") as keyout:
+        with open(paths["suptag"], "rb") as inf, open(
+            cwd_relpath(guess_fn), "w"
+        ) as keyout:
             test.callback(self.vec, self.mean, model_path, inf, keyout)
 
 
@@ -293,7 +304,7 @@ def lesk_pp(mean, do_expand, exclude_cand, score_by):
             "lesk_pp.py",
             mean,
             paths["unified"],
-            abspath(guess_fn),
+            cwd_relpath(guess_fn),
             "--include-wfs",
             "--score-by",
             score_by,
