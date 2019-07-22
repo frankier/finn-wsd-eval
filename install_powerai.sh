@@ -49,9 +49,10 @@ sed -i '/gensim/d' requirements.txt
 sed -i '/h5py/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
-sed -i '/STIFF/d' requirements.txt
-sed -ie '/expcomb/s/^-e //' requirements.txt
 sed -i '/wrapt/d' requirements.txt
+# These need to be installed in non-editable mode since they're pyproject.toml based
+sed -ie '/STIFF/s/^-e //' requirements.txt
+sed -ie '/expcomb/s/^-e //' requirements.txt
 
 rm -rf "$CONDA_PREFIX/src/" || true
 cpip install --no-deps --pre -r requirements.txt
