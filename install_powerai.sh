@@ -27,8 +27,12 @@ conda config --prepend channels defaults
 conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda/
 
 ## Install
-conda install -y powerai
 conda install -y pip
+
+# Binary packages that will be filtered out of requirements
+conda install -y powerai
+conda install -y gensim
+
 cpip install --pre poetry
 conda run poetry export --without-hashes -f requirements.txt
 
