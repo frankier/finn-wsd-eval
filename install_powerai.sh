@@ -24,6 +24,7 @@ cpip() {
 conda config --prepend channels conda-forge
 conda config --prepend channels bioconda
 conda config --prepend channels defaults
+conda config --prepend channels https://oplab9.parqtec.unicamp.br/pub/ppc64el/power-ai/linux-ppc64le/
 conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda/
 
 ## Install
@@ -31,6 +32,8 @@ conda install -y pip
 
 # Binary packages that will be filtered out of requirements
 conda install -y powerai
+conda install -y cupy
+conda install -y chainer
 conda install -y gensim
 
 cpip install --pre poetry
