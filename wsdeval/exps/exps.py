@@ -293,7 +293,7 @@ def lesk_pp(mean, do_expand, exclude_cand, score_by):
             "lesk_pp.py",
             mean,
             paths["unified"],
-            guess_fn,
+            abspath(guess_fn),
             "--include-wfs",
             "--score-by",
             score_by,
