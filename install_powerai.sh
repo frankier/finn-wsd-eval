@@ -51,11 +51,15 @@ sed -i '/h5py/d' requirements.txt
 sed -i '/hfst/d' requirements.txt
 sed -i '/wrapt/d' requirements.txt
 # These need to be installed in non-editable mode since they're pyproject.toml based
-sed -ie '/STIFF/s/^-e //' requirements.txt
+sed -i '/STIFF/d' requirements.txt
 sed -ie '/expcomb/s/^-e //' requirements.txt
 
 rm -rf "$CONDA_PREFIX/src/" || true
 cpip install --no-deps --pre -r requirements.txt
+
+# STIFF is very resistant to being installed normally - manual install
+git clone -q https://github.com/frankier/STIFF.git $CONDA_PREFIX/src/STIFF
+echo "$CONDA_PREFIX/src/STIFF" > $CONDA_PREFIX/lib/python3.6/site-packages/stiff.pth
 
 ## Init
 $PYTHON -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
