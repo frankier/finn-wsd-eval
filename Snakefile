@@ -61,7 +61,7 @@ rule train:
     input: get_corpus_seg
     output: directory(WORK + "/models/{corpus,[^/]+}-{seg,[^/]+}/{nick,[^/]+}")
     shell:
-        "mkdir -p " + WORK + "/models/{wildcards.corpus}-{wildcards.seg}/"
+        "mkdir -p " + WORK + "/models/{wildcards.corpus}-{wildcards.seg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" train {input} {output}"
 
 ## Testing
@@ -74,7 +74,7 @@ rule test_sup:
     output: 
         WORK + "/guess/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
-        "mkdir -p " + WORK + "/guess/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/"
+        "mkdir -p " + WORK + "/guess/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
 
 # Testing unsupervised models
@@ -84,7 +84,7 @@ rule test_unsup:
     output:
         WORK + "/guess/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
-        "mkdir -p " + WORK + "/guess/{wildcards.nick}/"
+        "mkdir -p " + WORK + "/guess/{wildcards.nick}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test {input.test} {output}"
 
 ## Scoring
@@ -97,7 +97,7 @@ rule eval_sup:
     output:
         WORK + "/results/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell:
-        "mkdir -p " + WORK + "/results/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/"
+        "mkdir -p " + WORK + "/results/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} train-corpus={wildcards.train_corpus}-{wildcards.train_seg} test-corpus={wildcards.corpus}-{wildcards.seg}"
 
 # Scoring unsupervised models
@@ -108,5 +108,5 @@ rule eval_unsup:
     output:
         WORK + "/results/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell:
-        "mkdir -p " + WORK + "/results/{wildcards.nick}/"
+        "mkdir -p " + WORK + "/results/{wildcards.nick}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} test-corpus={wildcards.corpus}-{wildcards.seg}"
