@@ -41,6 +41,7 @@ sed -i '/scipy/d' requirements.txt
 sed -i '/numpy/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
+sed -i '/STIFF/d' requirements.txt
 
 cpip install --no-deps --pre -r requirements.txt
 
