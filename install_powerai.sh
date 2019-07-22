@@ -26,7 +26,7 @@ conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/soft
 ## Install
 conda install -y powerai
 conda install -y pip
-conda run cpip install poetry
+conda run cpip install --pre poetry
 conda run poetry export --without-hashes -f requirements.txt
 # Obviously not compatible
 sed -i '/pypiwin32/d' requirements.txt
