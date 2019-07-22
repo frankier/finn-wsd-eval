@@ -9,17 +9,19 @@ from zipfile import ZipFile
 
 @click.command()
 @click.option("--gpu/--no-gpu")
-def ctx2vec(gpu):
+@click.option("--skip-pip/--no-skip-pip")
+def ctx2vec(gpu, skip_pip):
     os.makedirs("systems", exist_ok=True)
     with local.cwd("systems"):
         git("clone", "https://github.com/orenmel/context2vec.git")
 
-    subdir = "gpu" if gpu else "nogpu"
-    for fn in ["Pipfile", "Pipfile.lock"]:
-        copyfile(
-            "support/context2vec/{}/{}".format(subdir, fn),
-            "systems/context2vec/{}".format(fn),
-        )
+    if not skip_pip:
+        subdir = "gpu" if gpu else "nogpu"
+        for fn in ["Pipfile", "Pipfile.lock"]:
+            copyfile(
+                "support/context2vec/{}/{}".format(subdir, fn),
+                "systems/context2vec/{}".format(fn),
+            )
 
     for fn in ["test.py", "train.py"]:
         copyfile(
@@ -28,7 +30,8 @@ def ctx2vec(gpu):
         )
 
     with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
-        pipenv("install")
+        if not skip_pip:
+            pipenv("install")
 
         tmp_zipped_model_fn = urlretrieve(
             "https://archive.org/download/ctx2vec-b100-3epoch/ctx2vec-b100-3epoch.zip"

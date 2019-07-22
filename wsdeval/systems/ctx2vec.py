@@ -3,6 +3,7 @@ import click
 from plumbum import local
 from plumbum.cmd import python, pipenv, ln
 from os.path import join as pjoin
+import os
 
 
 @click.group()
@@ -18,6 +19,13 @@ def get_xml_key_pair(xml_path, key_path):
     return pair_path
 
 
+def pipenv_python(*args):
+    if os.environ.get("NO_CTX2VEC_PIPENV"):
+        python(*args)
+    else:
+        pipenv("run", "python", *args)
+
+
 @ctx2vec.command()
 @click.argument("modelin")
 @click.argument("trainin")
@@ -30,9 +38,7 @@ def full_wsd_main(modelin, trainin, keyin, testin, testkeyin, resultout):
     tempdir = tempfile.mkdtemp(prefix="ctx2vec")
     result_path = pjoin(tempdir, "results")
     with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
-        pipenv(
-            "run",
-            "python",
+        pipenv_python(
             "context2vec/eval/wsd/wsd_main.py",
             train_path,
             test_path,
@@ -50,13 +56,8 @@ def full_wsd_main(modelin, trainin, keyin, testin, testkeyin, resultout):
 def train(inf, keyin, model):
     train_path = get_xml_key_pair(inf, keyin)
     with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
-        pipenv(
-            "run",
-            "python",
-            "context2vec/eval/wsd/train.py",
-            train_path,
-            "model.params",
-            model,
+        pipenv_python(
+            "context2vec/eval/wsd/train.py", train_path, "model.params", model
         )
 
 
@@ -69,9 +70,7 @@ def test(model, inf, keyin, keyout):
     tempdir = tempfile.mkdtemp(prefix="ctx2vec")
     result_path = pjoin(tempdir, "results")
     with local.cwd("systems/context2vec"), local.env(PIPENV_IGNORE_VIRTUALENVS="1"):
-        pipenv(
-            "run",
-            "python",
+        pipenv_python(
             "context2vec/eval/wsd/test.py",
             test_path,
             "model.params",
