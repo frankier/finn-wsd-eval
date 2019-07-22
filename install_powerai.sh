@@ -26,7 +26,7 @@ conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/soft
 ## Install
 conda install -y powerai
 conda install -y pip
-conda run cpip install --pre poetry
+cpip install --pre poetry
 conda run poetry export --without-hashes -f requirements.txt
 # Obviously not compatible
 sed -i '/pypiwin32/d' requirements.txt
@@ -34,7 +34,7 @@ sed -i '/pywin32/d' requirements.txt
 # Already installed
 sed -i '/sklearn/d' requirements.txt
 sed -i '/torch/d' requirements.txt
-conda run cpip install --pre -r requirements.txt
+cpip install --pre -r requirements.txt
 
 ## Init
 conda run python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
