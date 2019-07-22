@@ -137,7 +137,7 @@ class SesameAllExpGroup(SupGpuExpGroup):
         keyouts = []
         golds = []
         for exp in self.exps:
-            _, guess_path, _, gold = self.get_paths_from_path_info(path_info)
+            _, guess_path, _, gold = exp.get_paths_from_path_info(path_info)
             if not self.exp_included(exp, path, opt_dict):
                 guess_path = "/dev/null"
             guess_paths.append(guess_path)
