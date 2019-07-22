@@ -36,6 +36,9 @@ sed -i '/pywin32/d' requirements.txt
 # Already installed
 sed -i '/sklearn/d' requirements.txt
 sed -i '/torch/d' requirements.txt
+sed -i '/scikit-learn/d' requirements.txt
+sed -i '/scipy/d' requirements.txt
+sed -i '/numpy/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
 
