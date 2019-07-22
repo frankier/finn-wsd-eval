@@ -39,7 +39,7 @@ sed -i '/torch/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
 
-cpip install --pre -r requirements.txt
+cpip install --no-deps --pre -r requirements.txt
 
 ## Init
 conda run python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
