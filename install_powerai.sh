@@ -13,8 +13,9 @@ cpip() {
 
     [ -e "$CONDA_PREFIX/bin/pip" ] || (echo "$ERROR_MSG" && return 2)
 
+    mkdir -p "$CONDA_PREFIX/src"
     PIP="$CONDA_PREFIX/bin/pip"
-    "$PIP" "$@"
+    PIP_SRC="$CONDA_PREFIX/src" "$PIP" "$@"
 }
 
 # Add channels
