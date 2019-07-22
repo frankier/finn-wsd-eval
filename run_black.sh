@@ -1,1 +1,1 @@
-pipenv run black scripts wsdeval
+poetry run black scripts wsdeval
