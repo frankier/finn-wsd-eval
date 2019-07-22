@@ -46,7 +46,7 @@ sed -i '/hfst/d' requirements.txt
 sed -i '/STIFF/d' requirements.txt
 sed -ie '/expcomb/s/^-e //' requirements.txt
 
-rm -r "$CONDA_PREFIX/src/" || true
+rm -rf "$CONDA_PREFIX/src/" || true
 cpip install --no-deps --pre -r requirements.txt
 
 ## Init
