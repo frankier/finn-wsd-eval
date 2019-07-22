@@ -1,5 +1,7 @@
 set -euxo pipefail
 
+PYTHON="$CONDA_PREFIX/bin/python"
+
 cpip() {
     ERROR_MSG="Not in a conda environment."
     ERROR_MSG="$ERROR_MSG\nUse \`source activate ENV\`"
@@ -51,10 +53,10 @@ rm -rf "$CONDA_PREFIX/src/" || true
 cpip install --no-deps --pre -r requirements.txt
 
 ## Init
-conda run python -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
-conda run python -m finntk.scripts.bootstrap_all
-conda run python fetchers/ukb.py fetch
-bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && conda run python fetchers/supwsd.py'
-conda run python fetchers/ctx2vec.py
-conda run python fetchers/sif.py
-conda run python -m stiff.scripts.post_install
+$PYTHON -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
+$PYTHON -m finntk.scripts.bootstrap_all
+$PYTHON fetchers/ukb.py fetch
+bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && conda run $PYTHON fetchers/supwsd.py'
+$PYTHON fetchers/ctx2vec.py
+$PYTHON fetchers/sif.py
+$PYTHON -m stiff.scripts.post_install
