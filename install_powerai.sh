@@ -72,5 +72,5 @@ echo "`pwd`" > $CONDA_PREFIX/lib/python3.6/site-packages/wsdeval.pth
 ## Init
 $PYTHON -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
 $PYTHON -m finntk.scripts.bootstrap_all
-$PYTHON fetchers/ctx2vec.py --skip-pip
 $PYTHON -m stiff.scripts.post_install
+$PYTHON fetchers/ctx2vec.py --skip-pip
