@@ -19,16 +19,30 @@ expc, SnakeMake = mk_expcomb(EXPERIMENTS, eval, extra_pk)
 @expc.mk_train
 @click.argument("train_corpus", type=click.Path())
 @click.argument("model", type=click.Path())
-def train(train_corpus, model):
-    return ExpPathInfo(corpus=train_corpus, model_full=model)
+@click.option("--multi/--single")
+def train(train_corpus, model, multi):
+    kwargs = {}
+    if multi:
+        kwargs["models"] = model
+    else:
+        kwargs["model_full"] = model
+    return ExpPathInfo(corpus=train_corpus, **kwargs)
 
 
 @expc.mk_test
 @click.argument("test_corpus", type=click.Path())
 @click.argument("guess", type=click.Path())
 @click.option("--model", type=click.Path())
-def test(test_corpus, guess, model):
-    return ExpPathInfo(corpus=test_corpus, guess_full=guess, model_full=model)
+@click.option("--multi/--single")
+def test(test_corpus, guess, model, multi):
+    kwargs = {}
+    if multi:
+        kwargs["models"] = model
+        kwargs["guess"] = guess
+    else:
+        kwargs["model_full"] = model
+        kwargs["guess_full"] = guess
+    return ExpPathInfo(corpus=test_corpus, **kwargs)
 
 
 @expc.exp_apply_cmd

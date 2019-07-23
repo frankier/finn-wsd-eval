@@ -123,12 +123,14 @@ class Bert(Exp):
 
 
 class SesameAllExpGroup(SupGpuExpGroup):
+    group_at_once = True
+
     def get_paths(self, path_info, path, opt_dict):
         model_paths = []
         included = []
 
         for exp in self.exps:
-            _, _, model_path, _ = path_info.get_paths(path_info, self)
+            _, _, model_path, _ = exp.get_paths_from_path_info(path_info)
             if self.exp_included(exp, path, opt_dict):
                 included.append(True)
             else:

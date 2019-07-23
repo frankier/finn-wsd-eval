@@ -18,8 +18,8 @@ pyahocorasick = { git = "https://github.com/frankier/pyahocorasick.git", branch 
 torch = {version = "1.1.0", optional = true}
 elmoformanylangs = {git = "https://github.com/frankier/ELMoForManyLangs.git",rev = "36ec6987e2d00baee6c364d151cd43b813c374a7", optional = true}
 pytorch-pretrained-bert = {version = "*", optional = true}
-expcomb = {git = "https://github.com/frankier/expcomb.git"}
 snakemake = "^5.5"
+expcomb = {path = "/home/frankier/code/expcomb/", rev = "28cf127b1ccae2e2d0c2ecf8f06ed9c06b49eef8"}
 
 [tool.poetry.extras]
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]

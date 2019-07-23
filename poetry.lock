@@ -326,9 +326,10 @@ tinydb = "*"
 tinyrecord = "*"
 
 [package.source]
-reference = "1d3156203bb65507a76479f01a67c22826bd64ef"
-type = "git"
-url = "https://github.com/frankier/expcomb.git"
+reference = ""
+type = "directory"
+url = "/home/frankier/code/expcomb"
+
 [[package]]
 category = "main"
 description = "Finnish NLP toolkit"
@@ -1165,7 +1166,7 @@ description = "Virtual Python Environment builder"
 name = "virtualenv"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "16.6.2"
+version = "16.7.0"
 
 [[package]]
 category = "dev"
@@ -1219,7 +1220,7 @@ version = "0.5.2"
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]
 
 [metadata]
-content-hash = "9ea480eb96ebdf96c611cfa7c1acb77440fdee5a0f5b8372212788a2c5faffe3"
+content-hash = "d8c4da6733b46f48be0210e26867a26c1ed1fbfb4734a304734d84c061d611d2"
 python-versions = "^3.6"
 
 [metadata.hashes]
@@ -1332,7 +1333,7 @@ torch = ["12387aa96653004d9ad7d9e5d3eadc98b15e51f5f4d168808cb5d81bffe70618", "2e
 tornado = ["349884248c36801afa19e342a77cc4458caca694b0eda633f5878e458a44cb2c", "398e0d35e086ba38a0427c3b37f4337327231942e731edaa6e9fd1865bbd6f60", "4e73ef678b1a859f0cb29e1d895526a20ea64b5ffd510a2307b5998c7df24281", "559bce3d31484b665259f50cd94c5c28b961b09315ccd838f284687245f416e5", "abbe53a39734ef4aba061fca54e30c6b4639d3e1f59653f0da37a0003de148c7", "c845db36ba616912074c5b1ee897f8e0124df269468f25e4fe21fe72f6edd7a9", "c9399267c926a4e7c418baa5cbe91c7d1cf362d505a1ef898fde44a07c9dd8a5"]
 tqdm = ["14a285392c32b6f8222ecfbcd217838f88e11630affe9006cd0e94c7eff3cb61", "25d4c0ea02a305a688e7e9c2cdc8f862f989ef2a4701ab28ee963295f5b109ab"]
 urllib3 = ["b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1", "dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"]
-virtualenv = ["861bbce3a418110346c70f5c7a696fdcf23a261424e1d28aa4f9362fc2ccbc19", "ba8ce6a961d842320681fb90a3d564d0e5134f41dacd0e2bae7f02441dde2d52"]
+virtualenv = ["50e062b385b6e5fc6e5644ffe14e226550109a4c65e725b47ae7e3b978d320b5", "fb528e20ecfce349de1dc2c8cbb394d1189b3f9507aea7273fbfb1c2167a4a4e"]
 wcwidth = ["3df37372226d6e63e1b1e1eda15c594bca98a22d33a23832a90998faa96bc65e", "f4ebe71925af7b40a864553f761ed559b43544f8f71746c2d756c7fe788ade7c"]
 wordfreq = ["15e85da56abd458909a514860219b91b16512cadc81aefe76e87141669dd72ca", "7cc7058859b8ef195110f8dae0764706cf33e4d0e72a7ed6a9f6adf89cb109d5"]
 wrapt = ["565a021fd19419476b9362b05eeaa094178de64f8361e44468f9e9d7843901e1"]

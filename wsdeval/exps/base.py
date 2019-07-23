@@ -18,7 +18,7 @@ class ExpPathInfo:
         guess_path = (
             self.guess_full
             if self.guess_full
-            else (pjoin(self.guess, iden) if self.guess else None)
+            else (self.guess.replace("__NICK__", iden) if self.guess else None)
         )
         model_path = (
             self.model_full

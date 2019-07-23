@@ -47,8 +47,48 @@ def all_results():
             test_seg=TEST_SEGMENT
         )
 
+
+def group_at_onces():
+    path, opt_dict = parse_filter(FILTER)
+    for exp_group in SnakeMake.get_group_at_once_groups(path, {"sup": True, **opt_dict}):
+        # XXX: Is this a reasonable way to filter to a whole group?
+        yield " ".join(exp_group.exps[0].path), exp_group
+
+
+def group_at_once_nicks():
+    path, opt_dict = parse_filter(FILTER)
+    return SnakeMake.get_group_at_once_nicks(path, {"sup": True, **opt_dict})
+
+
+def group_models(exp_group, use_dir=False):
+    def dir(x):
+        if use_dir:
+            return directory(x)
+        else:
+            return x
+    return [
+        dir(WORK + "/models/groupatonce/{corpus,[^/]+}-{seg,[^/]+}/" + exp.nick)
+        for exp in exp_group.exps
+    ]
+
+
+def group_guesses(exp_group):
+    return [
+        WORK + "/guess/groupatonce/" + exp.nick + "/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        for exp in exp_group.exps
+    ]
+
+
 def get_corpus_seg(wc):
     return pjoin(CORPUS_DIR_MAP[wc.corpus](), wc.seg)
+
+
+def get_sup_guess(wc):
+    if wc.nick in group_at_once_nicks():
+        return f"{WORK}/guess/groupatonce/{wc.nick}/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}"
+    else:
+        return f"{WORK}/guess/{wc.nick}/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}"
+
 
 ## Top levels
 rule all:
@@ -57,6 +97,15 @@ rule all:
 ## Training
 
 # Train supervised models
+for group_path, exp_group in group_at_onces():
+    rule:
+        input: get_corpus_seg
+        output: group_models(exp_group, use_dir=True)
+        shell:
+            "mkdir -p " + WORK + "/models/{wildcards.corpus}-{wildcards.seg}/ && "
+            "python scripts/expc.py --filter \"" + group_path + "\" train --multi {input} " +
+            WORK + "/models/groupatonce/{wildcards.corpus}-{wildcards.seg}/"
+
 rule train:
     input: get_corpus_seg
     output: directory(WORK + "/models/{corpus,[^/]+}-{seg,[^/]+}/{nick,[^/]+}")
@@ -67,6 +116,17 @@ rule train:
 ## Testing
 
 # Testing supervised models
+for group_path, exp_group in group_at_onces():
+    rule:
+        input:
+            test = get_corpus_seg,
+            model = group_models(exp_group),
+        output: group_guesses(exp_group)
+        shell:
+            "mkdir -p {output} && "
+            "python scripts/expc.py --filter \"" + group_path + "\" train --multi {input} " +
+            WORK + "/guess/groupatonce/__NICK__/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.corpus}-{wildcards.seg}/"
+
 rule test_sup:
     input:
         test = get_corpus_seg,
@@ -93,7 +153,7 @@ rule test_unsup:
 rule eval_sup:
     input:
         test = get_corpus_seg,
-        guess = WORK + "/guess/{nick}/{train_corpus}-{train_seg}/{corpus}-{seg}"
+        guess = get_sup_guess,
     output:
         WORK + "/results/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell:
