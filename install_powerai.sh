@@ -74,3 +74,6 @@ $PYTHON -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
 $PYTHON -m finntk.scripts.bootstrap_all
 $PYTHON -m stiff.scripts.post_install
 $PYTHON fetchers/ctx2vec.py --skip-pip
+
+# Now context2vec has to be install manually too
+echo "`pwd`/systems/context2vec/" > $CONDA_PREFIX/lib/python3.6/site-packages/context2vec.pth
