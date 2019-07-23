@@ -35,6 +35,7 @@ conda install -y powerai
 conda install -y cupy
 conda install -y chainer
 conda install -y gensim
+conda install -y -c anaconda datrie
 
 cpip install --pre poetry
 conda run poetry export --without-hashes -f requirements.txt
@@ -50,6 +51,7 @@ sed -i '/scipy/d' requirements.txt
 sed -i '/numpy/d' requirements.txt
 sed -i '/gensim/d' requirements.txt
 sed -i '/h5py/d' requirements.txt
+sed -i '/datrie/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
 sed -i '/wrapt/d' requirements.txt
