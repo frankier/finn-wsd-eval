@@ -51,7 +51,7 @@ def train_elmo(inf, keyin, model, output_layer):
     """
     from wsdeval.tools.ctx_embedder import elmo_embedder
 
-    inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=output_layer)
+    inst_it = elmo_embedder.iter_inst_vecs_grouped(inf, output_layer=output_layer)
     training_examples = mk_training_examples(inst_it, keyin)
     train_vec_nn(WordExpertManager(model, "w"), training_examples)
 
@@ -66,7 +66,7 @@ def train_elmo_all(inf, keyin, models):
     """
     from wsdeval.tools.ctx_embedder import elmo_embedder
 
-    inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=-2)
+    inst_it = elmo_embedder.iter_inst_vecs_grouped(inf, output_layer=-2)
     train_sesame_all(inst_it, keyin, models)
 
 
@@ -80,7 +80,7 @@ def train_bert_all(inf, keyin, models):
     """
     from wsdeval.tools.ctx_embedder import bert_embedder
 
-    inst_it = bert_embedder.iter_inst_vecs(inf)
+    inst_it = bert_embedder.iter_inst_vecs_grouped(inf)
     train_sesame_all(inst_it, keyin, models)
 
 
@@ -95,7 +95,7 @@ def test_elmo(model, inf, keyout, output_layer):
     """
     from wsdeval.tools.ctx_embedder import elmo_embedder
 
-    inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=output_layer)
+    inst_it = elmo_embedder.iter_inst_vecs_grouped(inf, output_layer=output_layer)
     test_vec_nn(WordExpertManager(model, "w"), inst_it, keyout)
 
 
@@ -108,7 +108,7 @@ def test_elmo_all(inf, model_keyouts):
     """
     from wsdeval.tools.ctx_embedder import elmo_embedder
 
-    inst_it = elmo_embedder.iter_inst_vecs(inf, output_layer=-2)
+    inst_it = elmo_embedder.iter_inst_vecs_grouped(inf, output_layer=-2)
     test_sesame_all(inst_it, model_keyouts)
 
 
@@ -121,5 +121,5 @@ def test_bert_all(inf, model_keyouts):
     """
     from wsdeval.tools.ctx_embedder import bert_embedder
 
-    inst_it = bert_embedder.iter_inst_vecs(inf)
+    inst_it = bert_embedder.iter_inst_vecs_grouped(inf)
     test_sesame_all(inst_it, model_keyouts)

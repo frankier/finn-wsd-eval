@@ -1,5 +1,6 @@
 import os
 from functools import partial
+from itertools import groupby
 
 
 def get_batch_size():
@@ -36,6 +37,16 @@ class CtxEmbedder:
                 )
             if is_end:
                 break
+
+    def iter_inst_vecs_grouped(self, inf, batch_size=None, **kwargs):
+        ungrouped = self.iter_inst_vecs(inf, batch_size, **kwargs)
+        for item_pos, group_iter in groupby(ungrouped, lambda tpl: tpl[1]):
+            group_list = list(group_iter)
+            yield (
+                item_pos,
+                len(group_list),
+                ((inst_id, vec) for inst_id, item_pos, vec in group_list),
+            )
 
 
 class ElmoEmbedder(CtxEmbedder):
