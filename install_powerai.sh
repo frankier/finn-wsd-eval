@@ -66,6 +66,9 @@ cpip install --no-deps --pre -r requirements.txt
 git clone -q https://github.com/frankier/STIFF.git $CONDA_PREFIX/src/STIFF
 echo "$CONDA_PREFIX/src/STIFF" > $CONDA_PREFIX/lib/python3.6/site-packages/stiff.pth
 
+# Finally install wsdeval
+echo "`pwd`" > $CONDA_PREFIX/lib/python3.6/site-packages/wsdeval.pth
+
 ## Init
 $PYTHON -c "from nltk import download as d; d('wordnet'); d('omw'); d('punkt')"
 $PYTHON -m finntk.scripts.bootstrap_all
