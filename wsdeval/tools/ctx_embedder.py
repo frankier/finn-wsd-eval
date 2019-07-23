@@ -43,7 +43,7 @@ class CtxEmbedder:
         for item_pos, group_iter in groupby(ungrouped, lambda tpl: tpl[1]):
             group_list = list(group_iter)
             yield (
-                item_pos,
+                ".".join(item_pos),
                 len(group_list),
                 ((inst_id, vec) for inst_id, item_pos, vec in group_list),
             )
