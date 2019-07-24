@@ -32,20 +32,22 @@ CORPUS_DIR_MAP = {
 # Utility functions
 def all_results():
     path, opt_dict = parse_filter(FILTER)
-    for nick in SnakeMake.get_nicks(path, {"sup": True, **opt_dict}):
-        yield from expand(
-            WORK + "/results/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
-            train_corpus=CORPUS_NAMES,
-            train_seg=TRAIN_SEGMENT,
-            test_corpus=CORPUS_NAMES,
-            test_seg=TEST_SEGMENT
-        )
-    for nick in SnakeMake.get_nicks(path, {"sup": False, **opt_dict}):
-        yield from expand(
-            WORK + "/results/" + nick + "/{test_corpus}-{test_seg}.db",
-            test_corpus=CORPUS_NAMES,
-            test_seg=TEST_SEGMENT
-        )
+    if "sup" not in opt_dict or opt_dict["sup"]:
+        for nick in SnakeMake.get_nicks(path, {"sup": True, **opt_dict}):
+            yield from expand(
+                WORK + "/results/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
+                train_corpus=CORPUS_NAMES,
+                train_seg=TRAIN_SEGMENT,
+                test_corpus=CORPUS_NAMES,
+                test_seg=TEST_SEGMENT
+            )
+    if "sup" not in opt_dict or not opt_dict["sup"]:
+        for nick in SnakeMake.get_nicks(path, {"sup": False, **opt_dict}):
+            yield from expand(
+                WORK + "/results/" + nick + "/{test_corpus}-{test_seg}.db",
+                test_corpus=CORPUS_NAMES,
+                test_seg=TEST_SEGMENT
+            )
 
 
 def group_at_onces():
