@@ -265,12 +265,21 @@ class Ctx2Vec(SupExp):
     def train(self, paths, model_path):
         from wsdeval.systems.ctx2vec import train
 
-        train.callback(paths["sup"], paths["sup3key"], model_path)
+        train.callback(
+            cwd_relpath(paths["sup"]),
+            cwd_relpath(paths["sup3key"]),
+            cwd_relpath(model_path),
+        )
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.ctx2vec import test
 
-        test.callback(model_path, paths["sup"], paths["sup3key"], cwd_relpath(guess_fn))
+        test.callback(
+            cwd_relpath(model_path),
+            cwd_relpath(paths["sup"]),
+            cwd_relpath(paths["sup3key"]),
+            cwd_relpath(guess_fn),
+        )
 
 
 class AweNn(SupExp):
