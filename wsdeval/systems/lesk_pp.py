@@ -63,7 +63,10 @@ def lesk_pp(mean, inf, keyout, include_wfs, expand, exclude_cand, score_by):
                 best_score = -2
                 for lemma in lemmas:
                     defn_vec = lesk_pp.mk_defn_vec(lemma)
-                    defn_ctx_score = cosine_sim(defn_vec, context_vec)
+                    if defn_vec is None:
+                        defn_ctx_score = 0
+                    else:
+                        defn_ctx_score = cosine_sim(defn_vec, context_vec)
                     try:
                         lemma_vec = mk_lemma_vec(lemma)
                     except KeyError:
