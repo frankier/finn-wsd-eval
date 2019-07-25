@@ -265,17 +265,22 @@ class Ctx2Vec(SupExp):
     def train(self, paths, model_path):
         from wsdeval.systems.ctx2vec import train
 
+        abs_model_path = cwd_relpath(model_path)
+        makedirs(abs_model_path, exist_ok=True)
+        full_model_path = pjoin(abs_model_path, "model")
+
         train.callback(
-            cwd_relpath(paths["sup"]),
-            cwd_relpath(paths["sup3key"]),
-            cwd_relpath(model_path),
+            cwd_relpath(paths["sup"]), cwd_relpath(paths["sup3key"]), full_model_path
         )
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.ctx2vec import test
 
+        abs_model_path = cwd_relpath(model_path)
+        full_model_path = pjoin(abs_model_path, "model")
+
         test.callback(
-            cwd_relpath(model_path),
+            full_model_path,
             cwd_relpath(paths["sup"]),
             cwd_relpath(paths["sup3key"]),
             cwd_relpath(guess_fn),
