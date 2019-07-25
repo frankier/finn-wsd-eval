@@ -23,7 +23,7 @@ EXPERIMENTS = [
             Exp(["Baseline"], "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
         ]
     ),
-    SupGpuExpGroup([Ctx2Vec()]),
+    SupExpGroup([Ctx2Vec()]),
 ]
 
 
