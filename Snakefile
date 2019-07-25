@@ -126,7 +126,9 @@ for group_path, exp_group in group_at_onces():
         output: group_guesses(exp_group)
         shell:
             "mkdir -p {output} && "
-            "python scripts/expc.py --filter \"" + group_path + "\" train --multi {input} " +
+            "python scripts/expc.py --filter \"" + group_path + "\" test --multi --model " +
+            WORK + "/models/groupatonce/{wildcards.corpus}-{wildcards.seg}/ " +
+	    "{input.test} " +
             WORK + "/guess/groupatonce/__NICK__/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.corpus}-{wildcards.seg}/"
 
 rule test_sup:
