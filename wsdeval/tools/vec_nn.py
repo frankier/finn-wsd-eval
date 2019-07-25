@@ -18,7 +18,7 @@ def mk_training_examples(instances, keyin):
 def train_many_vec_nn(managers, training_examples):
     for iden, cnt, group in training_examples:
         clfs = [FixedWordExpert(cnt) for _ in managers]
-        for _, _, vecs, synset_id in group:
+        for _, vecs, synset_id in group:
             if vecs is None:
                 continue
             for clf, vec in zip(clfs, vecs):
