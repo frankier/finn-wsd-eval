@@ -50,9 +50,24 @@ def train(inf, keyin):
         inf_path = pjoin("../../", inf)
         keyin_path = pjoin("../../", keyin)
         print(
-            "java", "-jar", SUPWSD_JAR, "train", "supconfig.xml", inf_path, keyin_path
+            "java",
+            "-jar",
+            "-Xmx512g",
+            SUPWSD_JAR,
+            "train",
+            "supconfig.xml",
+            inf_path,
+            keyin_path,
         )
-        java("-jar", SUPWSD_JAR, "train", "supconfig.xml", inf_path, keyin_path)
+        java(
+            "-jar",
+            "-Xmx512g",
+            SUPWSD_JAR,
+            "train",
+            "supconfig.xml",
+            inf_path,
+            keyin_path,
+        )
 
 
 @supwsd.command()
@@ -62,7 +77,15 @@ def test(inf, goldkey):
     with local.cwd("systems/supWSD"):
         inf_path = pjoin("../../", inf)
         goldkey_path = pjoin("../../", goldkey)
-        java("-jar", SUPWSD_JAR, "test", "supconfig.xml", inf_path, goldkey_path)
+        java(
+            "-jar",
+            "-Xmx512g",
+            SUPWSD_JAR,
+            "test",
+            "supconfig.xml",
+            inf_path,
+            goldkey_path,
+        )
 
 
 if __name__ == "__main__":
