@@ -32,10 +32,9 @@ class CtxEmbedder:
             for (inst_id, item_pos, start_idx, end_idx), sent, emb in zip(
                 infos, sents, embs
             ):
-                vec = self.proc_vec(emb, sent, start_idx, end_idx, **kwargs)
-                if vec is not None:
-                    continue
-                yield inst_id, item_pos, vec
+                yield inst_id, item_pos, self.proc_vec(
+                    emb, sent, start_idx, end_idx, **kwargs
+                )
             if is_end:
                 break
 
