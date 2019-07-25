@@ -32,9 +32,10 @@ class CtxEmbedder:
             for (inst_id, item_pos, start_idx, end_idx), sent, emb in zip(
                 infos, sents, embs
             ):
-                yield inst_id, item_pos, self.proc_vec(
-                    emb, sent, start_idx, end_idx, **kwargs
-                )
+                vec = self.proc_vec(emb, sent, start_idx, end_idx, **kwargs)
+                if vec is not None:
+                    continue
+                yield inst_id, item_pos, vec
             if is_end:
                 break
 
@@ -80,7 +81,8 @@ class BertEmbedder(CtxEmbedder):
             if idx in (0, len(tokens) - 1) or tok.startswith("##"):
                 continue
             tok_start_idxs.append(idx)
-        assert len(tok_start_idxs) == len(sent)
+        if len(tok_start_idxs) < end_idx:
+            return None
         tok_start_idxs.append(len(tokens) - 1)
         vec = emb[:, tok_start_idxs[start_idx] : tok_start_idxs[end_idx], :]
         vec = vec.reshape((vec.shape[0] * vec.shape[1], vec.shape[2]))
