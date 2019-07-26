@@ -29,6 +29,10 @@ CORPUS_DIR_MAP = {
     "eurosense": lambda: config["EUROSENSEEVAL"],
 }
 
+group_at_once_map = SnakeMake.get_group_at_once_map(*parse_filter(FILTER))
+nick_to_group_nick_map = SnakeMake.get_nick_to_group_nick_map(*parse_filter(FILTER))
+path_nick_map = SnakeMake.get_path_nick_map(*parse_filter(FILTER))
+
 # Utility functions
 def all_results():
     path, opt_dict = parse_filter(FILTER)
@@ -62,21 +66,9 @@ def group_at_once_nicks():
     return SnakeMake.get_group_at_once_nicks(path, {"sup": True, **opt_dict})
 
 
-def group_models(exp_group, use_dir=False):
-    def dir(x):
-        if use_dir:
-            return directory(x)
-        else:
-            return x
-    return [
-        dir(WORK + "/models/groupatonce/{corpus,[^/]+}-{seg,[^/]+}/" + exp.nick)
-        for exp in exp_group.exps
-    ]
-
-
 def group_guesses(exp_group):
     return [
-        WORK + "/guess/groupatonce/" + exp.nick + "/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        WORK + "/guess/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}/" + exp.nick
         for exp in exp_group.exps
     ]
 
@@ -87,7 +79,7 @@ def get_corpus_seg(wc):
 
 def get_sup_guess(wc):
     if wc.nick in group_at_once_nicks():
-        return f"{WORK}/guess/groupatonce/{wc.nick}/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}"
+        return f"{WORK}/guess/groupatonce/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}/{nick_to_group_nick_map[wc.nick]}/{wc.nick}"
     else:
         return f"{WORK}/guess/{wc.nick}/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}"
 
@@ -99,14 +91,16 @@ rule all:
 ## Training
 
 # Train supervised models
-for group_path, exp_group in group_at_onces():
-    rule:
-        input: get_corpus_seg
-        output: group_models(exp_group, use_dir=True)
-        shell:
-            "mkdir -p " + WORK + "/models/{wildcards.corpus}-{wildcards.seg}/ && "
-            "python scripts/expc.py --filter \"" + group_path + "\" train --multi {input} " +
-            WORK + "/models/groupatonce/{wildcards.corpus}-{wildcards.seg}/"
+rule train_groupatonce:
+    input: get_corpus_seg
+    output: directory(WORK + "/models/groupatonce/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}")
+    run:
+        shell(
+            "mkdir -p {output} && " +
+            "python scripts/expc.py --filter \"" + " ".join(path_nick_map[wildcards.group_nick]) + "\" train --multi " +
+            "{input} {output}"
+        )
+
 
 rule train:
     input: get_corpus_seg
@@ -118,18 +112,17 @@ rule train:
 ## Testing
 
 # Testing supervised models
-for group_path, exp_group in group_at_onces():
-    rule:
-        input:
-            test = get_corpus_seg,
-            model = group_models(exp_group),
-        output: group_guesses(exp_group)
-        shell:
-            "mkdir -p {output} && "
-            "python scripts/expc.py --filter \"" + group_path + "\" test --multi --model " +
-            WORK + "/models/groupatonce/{wildcards.corpus}-{wildcards.seg}/ " +
-	    "{input.test} " +
-            WORK + "/guess/groupatonce/__NICK__/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.corpus}-{wildcards.seg}/"
+rule test_sup_groupatonce:
+    input:
+        test = get_corpus_seg,
+        model = WORK + "/models/groupatonce/{corpus}-{seg}/{group_nick}"
+    output: directory(WORK + "/guess/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}")
+    run:
+        shell(
+            "mkdir -p {output} && " +
+            "python scripts/expc.py --filter \"" + " ".join(path_nick_map[wildcards.group_nick]) + "\" test --multi --model " +
+            "{input.model} {input.test} {output}/__NICK__"
+        )
 
 rule test_sup:
     input:
@@ -150,6 +143,14 @@ rule test_unsup:
     shell:
         "mkdir -p " + WORK + "/guess/{wildcards.nick}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test {input.test} {output}"
+
+## Fan out
+for group_nick, exp_group in group_at_once_map.items():
+    rule:
+        input: WORK + "/guess/groupatonce/{train_corpus}-{train_seg}/{corpus}-{seg}/{group_nick}"
+        output:
+            group_guesses(exp_group),
+            touch(WORK + "/guess/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}.fan-out")
 
 ## Scoring
 
