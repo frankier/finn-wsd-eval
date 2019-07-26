@@ -115,7 +115,7 @@ rule train:
 rule test_sup_groupatonce:
     input:
         test = get_corpus_seg,
-        model = WORK + "/models/groupatonce/{corpus}-{seg}/{group_nick}"
+        model = WORK + "/models/groupatonce/{train_corpus}-{train_seg}/{group_nick}"
     output: directory(WORK + "/guess/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}")
     run:
         shell(
