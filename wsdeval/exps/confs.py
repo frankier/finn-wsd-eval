@@ -12,6 +12,8 @@ from .exps import (
     ukb,
     Ctx2Vec,
     lesk,
+    Floor,
+    Ceil,
 )
 from wsdeval.tools.means import ALL_MEANS, MEAN_DISPS, NON_EXPANDING_MEANS
 
@@ -24,6 +26,8 @@ EXPERIMENTS = [
         ]
     ),
     SupExpGroup([Ctx2Vec()]),
+    ExpGroup([Floor()]),
+    SupExpGroup([Ceil()]),
 ]
 
 

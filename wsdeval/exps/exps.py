@@ -333,3 +333,35 @@ def lesk_pp(mean, do_expand, exclude_cand, score_by):
         python(*args)
 
     return inner
+
+
+class Floor(Exp):
+    def __init__(self):
+        super().__init__(["Limits", "Floor"], "floor", "Floor")
+
+    def run(self, paths, guess_fn):
+        from wsdeval.systems.limits import floor
+
+        with open(paths["suptag"], "rb") as inf, open(
+            cwd_relpath(guess_fn), "w"
+        ) as keyout:
+            floor.callback(inf, keyout)
+
+
+class Ceil(SupExp):
+    def __init__(self):
+        super().__init__(["Limits", "Ceil"], "ceil", "Ceil")
+
+    def train(self, paths, model_path):
+        from wsdeval.systems.limits import train_ceil
+
+        with open(paths["suptag"], "rb") as inf, open(paths["supkey"], "r") as keyin:
+            train_ceil.callback(inf, keyin, model_path)
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.limits import test_ceil
+
+        with open(paths["suptag"], "rb") as inf, open(
+            paths["supkey"], "r"
+        ) as keyin, open(cwd_relpath(guess_fn), "w") as keyout:
+            test_ceil.callback(model_path, inf, keyin, keyout)
