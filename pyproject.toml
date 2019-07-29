@@ -19,7 +19,7 @@ torch = {version = "1.1.0", optional = true}
 elmoformanylangs = {git = "https://github.com/frankier/ELMoForManyLangs.git",rev = "36ec6987e2d00baee6c364d151cd43b813c374a7", optional = true}
 pytorch-pretrained-bert = {version = "*", optional = true}
 snakemake = "^5.5"
-expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "556632e1ebc7aa3c86c61f9a84be0fe40b21699b"}
+expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "856a6ff62a4a9d830fa7d0cf3cc0e30572fdc12c"}
 
 [tool.poetry.extras]
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]
