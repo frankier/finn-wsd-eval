@@ -1,5 +1,6 @@
 import click
 from finntk.wordnet.reader import fiwn
+from finntk.wordnet.utils import fi2en_post
 from os.path import join as pjoin, exists
 from os import makedirs
 import pickle
@@ -59,7 +60,11 @@ def floor(inf, keyout):
         lemmas = fiwn.lemmas(word, pos=pos)
         if len(lemmas) == 1:
             for inst_id, _ in it:
-                keyout.write("{} {}\n".format(inst_id, lemmas[0]))
+                keyout.write(
+                    "{} {}\n".format(
+                        inst_id, fi2en_post(fiwn.ss2of(lemmas[0].synset()))
+                    )
+                )
         else:
             for inst_id, _ in it:
                 keyout.write("{} U\n".format(inst_id))
