@@ -61,6 +61,7 @@ def train(inf, keyin, model):
         )
 
 
+@ctx2vec.command()
 @click.argument("model", type=click.Path())
 @click.argument("inf", type=click.Path())
 @click.argument("keyin", type=click.Path())
