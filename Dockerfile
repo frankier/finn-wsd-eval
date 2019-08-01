@@ -18,7 +18,9 @@ RUN apt-get update && apt-get install -y \
     # Java stuff for Scorer + IMS
         curl wget unzip zip openjdk-11-jdk \
     # STIFF/opencc
-        libopencc-dev
+        libopencc-dev \
+    # pyGraphViz
+        graphviz graphviz-dev
 
 
 # Poetry + Pipenv
