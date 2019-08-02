@@ -1,3 +1,4 @@
+import os
 import click
 from expcomb.cmd import mk_expcomb, TinyDBParam
 from wsdeval.exps.base import ExpPathInfo
@@ -5,6 +6,9 @@ from wsdeval.exps.confs import EXPERIMENTS
 from wsdeval.exps.utils import score as eval_func
 from wsdeval.tables import TABLES
 from os.path import join as pjoin
+import logging
+
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 
 def extra_pk(doc):
