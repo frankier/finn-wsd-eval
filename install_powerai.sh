@@ -32,6 +32,7 @@ conda install -y pip
 
 # Binary packages that will be filtered out of requirements
 conda install -y graphviz
+conda install -y pygraphviz
 conda install -y powerai
 conda install -y cupy
 conda install -y chainer
@@ -53,6 +54,7 @@ sed -i '/numpy/d' requirements.txt
 sed -i '/gensim/d' requirements.txt
 sed -i '/h5py/d' requirements.txt
 sed -i '/datrie/d' requirements.txt
+sed -i '/pygraphviz/d' requirements.txt
 # Apparently not compatible
 sed -i '/hfst/d' requirements.txt
 sed -i '/wrapt/d' requirements.txt
