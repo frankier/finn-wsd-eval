@@ -61,6 +61,7 @@ sed -i '/wrapt/d' requirements.txt
 # These need to be installed in non-editable mode since they're pyproject.toml based
 sed -i '/STIFF/d' requirements.txt
 sed -ie '/expcomb/s/^-e //' requirements.txt
+sed -ie '/memory-tempfile/s/^-e //' requirements.txt
 
 rm -rf "$CONDA_PREFIX/src/" || true
 cpip install --no-deps --pre -r requirements.txt
