@@ -31,6 +31,7 @@ conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/soft
 conda install -y pip
 
 # Binary packages that will be filtered out of requirements
+conda install -y graphviz
 conda install -y powerai
 conda install -y cupy
 conda install -y chainer
