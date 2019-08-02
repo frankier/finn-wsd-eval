@@ -1,4 +1,5 @@
 import click
+import logging
 from wsdeval.tools.vec_nn import (
     mk_training_examples,
     train_vec_nn,
@@ -9,6 +10,7 @@ from wsdeval.tools.vec_nn import (
 from finntk.wsd.nn import WordExpertManager
 
 LAYERS = [-1, 0, 1, 2]
+logger = logging.getLogger(__name__)
 
 
 @click.group()
@@ -20,6 +22,7 @@ def train_sesame_all(inst_it, keyin, models):
     training_examples = mk_training_examples(inst_it, keyin)
     expert_managers = []
     for model in models:
+        logger.debug(f"train_sesame_all: model: {model}")
         if model == "/dev/null":
             expert_managers.append(None)
         else:
@@ -31,6 +34,7 @@ def test_sesame_all(inst_it, model_keyouts):
     expert_managers = []
     keyouts = []
     for model, keyout in model_keyouts:
+        logger.debug(f"test_sesame_all: model: {model}, keyout: {keyout}")
         if model == "/dev/null":
             expert_managers.append(None)
             keyouts.append(None)

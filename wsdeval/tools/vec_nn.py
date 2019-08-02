@@ -1,7 +1,11 @@
 from itertools import starmap
+import logging
 
 from wsdeval.formats.sup_corpus import next_key
 from finntk.wsd.nn import FixedWordExpert
+
+
+logger = logging.getLogger(__name__)
 
 
 def mk_training_examples(instances, keyin):
@@ -53,6 +57,8 @@ def pred_write(inst_id, clf, vec, keyout):
 
 
 def test_many_vec_nn(managers, instances, keyouts):
+    logger.debug(f"test_many_vec_nn: keyouts: {keyouts}")
+    wrote_anything = False
     for iden, cnt, group in instances:
         clfs = [manager.load_expert(iden) if manager else None for manager in managers]
         for inst_id, vecs in group:
@@ -60,6 +66,9 @@ def test_many_vec_nn(managers, instances, keyouts):
                 vecs = [None] * len(clfs)
             for clf, vec, keyout in zip(clfs, vecs, keyouts):
                 pred_write(inst_id, clf, vec, keyout)
+                wrote_anything = True
+    if wrote_anything:
+        logger.debug("Wrote at least something...")
 
 
 def test_vec_nn(manager, instances, keyout):
