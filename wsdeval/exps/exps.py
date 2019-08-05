@@ -2,6 +2,7 @@ import os
 from plumbum.cmd import python
 from plumbum import local
 from expcomb.models import Exp, SupExp
+from expcomb.filter import SimpleFilter
 from .utils import mk_nick
 from stiff.eval import get_partition_paths
 import traceback
@@ -125,13 +126,13 @@ class Bert(Exp):
 class SesameAllExpGroup(SupGpuExpGroup):
     group_at_once = True
 
-    def get_paths(self, path_info, path, opt_dict):
+    def get_paths(self, path_info, filter: SimpleFilter):
         model_paths = []
         included = []
 
         for exp in self.exps:
             _, _, model_path, _ = exp.get_paths_from_path_info(path_info)
-            if self.exp_included(exp, path, opt_dict):
+            if self.exp_included(exp, filter):
                 included.append(True)
             else:
                 model_path = "/dev/null"
@@ -141,24 +142,24 @@ class SesameAllExpGroup(SupGpuExpGroup):
         paths = get_partition_paths(path_info.corpus, "corpus")
         return paths, model_paths, included
 
-    def get_eval_paths(self, path_info, path, opt_dict):
+    def get_eval_paths(self, path_info, filter: SimpleFilter):
         guess_paths = []
         keyouts = []
         golds = []
         for exp in self.exps:
             _, guess_path, _, gold = exp.get_paths_from_path_info(path_info)
-            if not self.exp_included(exp, path, opt_dict):
+            if not self.exp_included(exp, filter):
                 guess_path = "/dev/null"
             guess_paths.append(guess_path)
             keyouts.append(open(guess_path, "w"))
             golds.append(gold)
         return guess_paths, keyouts, golds
 
-    def train_all(self, path_info, path, opt_dict):
-        if not self.group_included(path, opt_dict):
+    def train_all(self, path_info, filter: SimpleFilter):
+        if not self.group_included(filter):
             return
 
-        paths, model_paths, included = self.get_paths(path_info, path, opt_dict)
+        paths, model_paths, included = self.get_paths(path_info, filter)
 
         print(f"Training {self.NAME} all")
 
@@ -169,12 +170,12 @@ class SesameAllExpGroup(SupGpuExpGroup):
             traceback.print_exc()
             return
 
-    def run_all(self, path_info, path, opt_dict):
-        if not self.group_included(path, opt_dict):
+    def run_all(self, path_info, filter: SimpleFilter):
+        if not self.group_included(filter):
             return
 
-        paths, model_paths, included = self.get_paths(path_info, path, opt_dict)
-        guess_paths, keyouts, golds = self.get_eval_paths(path_info, path, opt_dict)
+        paths, model_paths, included = self.get_paths(path_info, filter)
+        guess_paths, keyouts, golds = self.get_eval_paths(path_info, filter)
 
         print(f"Running {self.NAME} all")
         try:

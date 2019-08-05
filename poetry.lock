@@ -327,7 +327,7 @@ tinydb = "*"
 tinyrecord = "*"
 
 [package.source]
-reference = "856a6ff62a4a9d830fa7d0cf3cc0e30572fdc12c"
+reference = "887c30a2f1ffbfa312ea6b3c777584fe8274f68d"
 type = "git"
 url = "https://github.com/frankier/expcomb.git"
 [[package]]
@@ -1265,7 +1265,7 @@ version = "0.5.2"
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]
 
 [metadata]
-content-hash = "455f095d4de8dd7f7d25bbe459fa69023c34983b383b570b591001d4535363cd"
+content-hash = "119bef0b243afad290996cae7034c4881b45a051a8531cff8e2dd40a176b1346"
 python-versions = "^3.6"
 
 [metadata.hashes]
