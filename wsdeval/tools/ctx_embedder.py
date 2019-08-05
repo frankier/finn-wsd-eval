@@ -1,3 +1,4 @@
+import numpy
 import os
 from functools import partial
 from itertools import groupby
@@ -28,7 +29,28 @@ class CtxEmbedder:
                 if (idx + 1) == batch_size:
                     is_end = False
                     break
-            embs = self.embed_sentences(model, sents, **kwargs)
+            try:
+                embs = self.embed_sentences(model, sents, **kwargs)
+            except MemoryError:
+                # Try once more
+                import gc
+
+                gc.collect()
+                try:
+                    embs = self.embed_sentences(model, sents, **kwargs)
+                except MemoryError:
+                    # Output some debugging info
+                    print("Whoops! Out of memory!")
+                    from pympler import muppy, summary
+
+                    all_objects = muppy.get_objects()
+                    summary = summary.summarize(all_objects)
+                    summary.print_(summary)
+                    for ao in all_objects:
+                        if not isinstance(ao, numpy.ndarry):
+                            continue
+                        print(ao.dtype, ao.shape)
+                    raise
             for (inst_id, item_pos, start_idx, end_idx), sent, emb in zip(
                 infos, sents, embs
             ):
