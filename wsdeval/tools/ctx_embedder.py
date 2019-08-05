@@ -77,6 +77,7 @@ class BertEmbedder(CtxEmbedder):
         emb, tokens = emb_tokens
         tok_start_idxs = []
         for idx, tok in enumerate(tokens):
+            # Skip when start, end sentinal or when BPE split continuation
             if idx in (0, len(tokens) - 1) or tok.startswith("##"):
                 continue
             tok_start_idxs.append(idx)
