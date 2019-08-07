@@ -8,11 +8,18 @@ from finntk.wsd.nn import FixedWordExpert
 logger = logging.getLogger(__name__)
 
 
+class MismatchedGoldException(Exception):
+    pass
+
+
 def mk_training_examples(instances, keyin):
     def add_gold(inst_id, vec):
         key_id, synset_ids = next_key(keyin)
 
-        assert inst_id == key_id
+        if inst_id != key_id:
+            raise MismatchedGoldException(
+                f"Gold instance id {key_id} does not match expected instance id {inst_id}"
+            )
         return inst_id, vec, synset_ids[0]
 
     for item, cnt, it in instances:
