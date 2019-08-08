@@ -29,15 +29,15 @@ CORPUS_DIR_MAP = {
     "eurosense": lambda: config["EUROSENSEEVAL"],
 }
 
-group_at_once_map = SnakeMake.get_group_at_once_map(*parse_filter(FILTER))
-nick_to_group_nick_map = SnakeMake.get_nick_to_group_nick_map(*parse_filter(FILTER))
-path_nick_map = SnakeMake.get_path_nick_map(*parse_filter(FILTER))
+group_at_once_map = SnakeMake.get_group_at_once_map(parse_filter(FILTER))
+nick_to_group_nick_map = SnakeMake.get_nick_to_group_nick_map(parse_filter(FILTER))
+path_nick_map = SnakeMake.get_path_nick_map(parse_filter(FILTER))
 
 # Utility functions
 def all_results():
-    path, opt_dict = parse_filter(FILTER)
-    if "sup" not in opt_dict or opt_dict["sup"]:
-        for nick in SnakeMake.get_nicks(path, {"sup": True, **opt_dict}):
+    filter = parse_filter(FILTER)
+    if "sup" not in filter.opt_dict or filter.opt_dict["sup"]:
+        for nick in SnakeMake.get_nicks(filter.intersect_opts(sup=True)):
             yield from expand(
                 WORK + "/results/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
                 train_corpus=CORPUS_NAMES,
@@ -45,8 +45,8 @@ def all_results():
                 test_corpus=CORPUS_NAMES,
                 test_seg=TEST_SEGMENT
             )
-    if "sup" not in opt_dict or not opt_dict["sup"]:
-        for nick in SnakeMake.get_nicks(path, {"sup": False, **opt_dict}):
+    if "sup" not in filter.opt_dict or not filter.opt_dict["sup"]:
+        for nick in SnakeMake.get_nicks(filter.intersect_opts(sup=False)):
             yield from expand(
                 WORK + "/results/" + nick + "/{test_corpus}-{test_seg}.db",
                 test_corpus=CORPUS_NAMES,
@@ -55,15 +55,15 @@ def all_results():
 
 
 def group_at_onces():
-    path, opt_dict = parse_filter(FILTER)
-    for exp_group in SnakeMake.get_group_at_once_groups(path, {"sup": True, **opt_dict}):
+    filter = parse_filter(FILTER)
+    for exp_group in SnakeMake.get_group_at_once_groups(filter.intersect_opts(sup=True)):
         # XXX: Is this a reasonable way to filter to a whole group?
         yield " ".join(exp_group.exps[0].path), exp_group
 
 
 def group_at_once_nicks():
-    path, opt_dict = parse_filter(FILTER)
-    return SnakeMake.get_group_at_once_nicks(path, {"sup": True, **opt_dict})
+    filter = parse_filter(FILTER)
+    return SnakeMake.get_group_at_once_nicks(filter.intersect_opts(sup=True))
 
 
 def group_guesses(exp_group):
