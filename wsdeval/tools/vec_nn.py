@@ -46,10 +46,14 @@ def train_many_vec_nn(managers, training_examples):
 def train_vec_nn(manager, training_examples):
     for iden, cnt, group in training_examples:
         clf = FixedWordExpert(cnt)
+        empty = True
         for _, vec, synset_id in group:
             if vec is None:
                 continue
+            empty = False
             clf.add_word(vec, synset_id)
+        if empty:
+            continue
         clf.fit()
         manager.dump_expert(iden, clf)
 
