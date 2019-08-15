@@ -2,7 +2,6 @@ from expcomb.table.spec import (
     SqTableSpec,
     SumTableSpec,
     CatValGroup,
-    MeasuresSplit,
     LookupGroupDisplay,
     UnlabelledMeasure,
 )
@@ -14,20 +13,35 @@ def tf_group(name):
 
 
 VECS = LookupGroupDisplay(
-    CatValGroup("opts,vec", ["fasttext", "numberbatch", "word2vec", "double", "triple"])
+    CatValGroup(
+        "opts,vec", ["fasttext", "numberbatch", "word2vec", "double", "triple"]
+    ),
+    {
+        "fasttext": "fastText",
+        "numberbatch": "Numberbatch",
+        "word2vec": "Word2Vec",
+        "double": "Concat 2",
+        "triple": "Concat 3",
+    },
 )
 MEANS = LookupGroupDisplay(
     CatValGroup(
         "opts,mean",
         [
             "pre_sif_mean",
-            "sif_mean",
+            # "sif_mean",
             "normalized_mean",
-            "unnormalized_mean",
+            # "unnormalized_mean",
             "catp3_mean",
             "catp4_mean",
         ],
-    )
+    ),
+    {
+        "normalized_mean": "AWE",
+        "catp3_mean": "CATP3",
+        "catp4_mean": "CATP4",
+        "pre_sif_mean": "pre-SIF",
+    },
 )
 
 
@@ -45,17 +59,27 @@ TABLES = [
                     {"eurosense-train": "Eurosense", "stiff-train": "STIFF"},
                 ),
             ],
-            MeasuresSplit(["P", "R", "F1"]),
+            UnlabelledMeasure("F1"),
         ),
     ),
     (
         "lesk_square",
         SqTableSpec(
             [
-                LookupGroupDisplay(tf_group("opts,expand")),
-                LookupGroupDisplay(tf_group("opts,wn_filter")),
+                LookupGroupDisplay(
+                    tf_group("opts,use_freq"), {False: "No freq", True: "Freq"}
+                ),
+                VECS,
+                MEANS,
             ],
-            [LookupGroupDisplay(tf_group("opts,use_freq")), VECS, MEANS],
+            [
+                LookupGroupDisplay(
+                    tf_group("opts,expand"), {False: "No expand", True: "Expand"}
+                ),
+                LookupGroupDisplay(
+                    tf_group("opts,wn_filter"), {False: "No filter", "True": "Filter"}
+                ),
+            ],
             UnlabelledMeasure("F1"),
         ),
         SimpleFilter("Knowledge", "Cross-lingual Lesk", **{"test-corpus": "stiff-dev"}),
