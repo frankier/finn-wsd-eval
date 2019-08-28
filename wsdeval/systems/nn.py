@@ -35,6 +35,7 @@ def nn():
 
 
 def iter_inst_ctxs(inf, aggf, space):
+    import numpy
     from wsdeval.formats.sup_corpus import (
         iter_instances_grouped,
         norm_wf_lemma_of_tokens,
@@ -43,7 +44,13 @@ def iter_inst_ctxs(inf, aggf, space):
     def calc_vec(inst_id, texts):
         (be, he, af) = texts
         ctx = norm_wf_lemma_of_tokens(be + af)
-        ctx_vec = apply_vec(aggf, space, ctx, "fi") if ctx else None
+        ctx_vec = None
+        if ctx:
+            ctx_vec = apply_vec(aggf, space, ctx, "fi")
+            if (ctx_vec is not None) and (
+                (not numpy.isfinite(ctx_vec).all()) or (not numpy.any(ctx_vec))
+            ):
+                ctx_vec = None
         return inst_id, ctx_vec
 
     for item_pos, cnt, it in iter_instances_grouped(inf):
