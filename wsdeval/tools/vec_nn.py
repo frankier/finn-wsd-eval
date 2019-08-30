@@ -28,7 +28,7 @@ def mk_training_examples(instances, keyin):
 
 def train_many_vec_nn(managers, training_examples):
     for iden, cnt, group in training_examples:
-        clfs = [FixedWordExpert(cnt) for _ in managers]
+        clfs = [FixedWordExpert(cnt, algorithm="brute") for _ in managers]
         for _, vecs, synset_id in group:
             if vecs is None:
                 continue
@@ -45,7 +45,7 @@ def train_many_vec_nn(managers, training_examples):
 
 def train_vec_nn(manager, training_examples):
     for iden, cnt, group in training_examples:
-        clf = FixedWordExpert(cnt)
+        clf = FixedWordExpert(cnt, algorithm="brute")
         empty = True
         for _, vec, synset_id in group:
             if vec is None:
