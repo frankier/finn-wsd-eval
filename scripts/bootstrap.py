@@ -69,33 +69,6 @@ def disp_cmp(inf):
     print("result", result)
 
 
-@bootstrap.command("disp-hasse")
-@click.argument("inf", type=click.File("rb"))
-@click.option("--thresh", type=float, default=0.05)
-def disp_hasse(inf, thresh):
-    from networkx.algorithms.dag import transitive_reduction
-    from networkx.drawing.nx_pylab import draw
-    from networkx import DiGraph
-    from networkx.drawing.nx_agraph import graphviz_layout
-    import matplotlib.pyplot as plt
-
-    digraph = DiGraph()
-    result, guesses = pickle.load(inf)
-    for idx_a, row in enumerate(result):
-        for idx_b_adj, (b_bigger, p_val) in enumerate(row):
-            idx_b = idx_a + idx_b_adj + 1
-            if p_val > thresh:
-                continue
-            if b_bigger:
-                digraph.add_edge(idx_a, idx_b)
-            else:
-                digraph.add_edge(idx_b, idx_a)
-    digraph = transitive_reduction(digraph)
-    layout = graphviz_layout(digraph, prog="dot")
-    draw(digraph, pos=layout)
-    plt.show()
-
-
 def get_f1(score_dict):
     return float(score_dict["F1"].rstrip("%"))
 
