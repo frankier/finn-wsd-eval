@@ -1,0 +1,49 @@
+## Bootstrapping
+
+cnf("BOOTWORK", WORK + "/bootstrap")
+cnf("SEED", "42")
+
+def awe_boot_results():
+    for train_corpus in CORPUS_DIR_MAP:
+    	for test_corpus in CORPUS_DIR_MAP:
+            yield BOOTWORK + "/awe_nn/cmp-" + train_corpus  + "-" + test_corpus + ".pkl"
+
+def lesk_boot_results():
+    for test_corpus in CORPUS_DIR_MAP:
+        yield BOOTWORK + "/lesk/cmp-" + test_corpus + ".pkl"
+
+rule bootstrap_awe_dev:
+    input: list(awe_boot_results())
+
+rule bootstrap_lesk_dev:
+    input: list(lesk_boot_results())
+
+rule bootstrap_all:
+    input: list(awe_boot_results()) + list(lesk_boot_results())
+
+# Bootstrapping AWE on dev data
+rule resample_awe_dev:
+    output: BOOTWORK + "/awe_nn/f1s-{train_corpus,[^-/.]+}-{test_corpus,[^-/.]+}.pkl"
+    params:
+        gold=lambda wildcards, output: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.sup.key"
+    shell:
+        "python scripts/bootstrap.py resample-f1s --seed " + SEED + " " +
+	" {output} {params.gold} " + GUESS +
+	"/awe_nn.*/{wildcards.train_corpus}-train/{wildcards.test_corpus}-dev"
+
+# Bootstrapping Lesk on dev data
+rule resample_lesk_dev:
+    output: BOOTWORK + "/lesk/f1s-{test_corpus,[^-/.]+}.pkl"
+    params:
+        gold=lambda wildcards, output: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.key"
+    shell:
+        "python scripts/bootstrap.py resample-f1s --seed " + SEED +
+	" {output} {params.gold} " + GUESS +
+	"/lesk.*/{wildcards.test_corpus}-dev"
+
+# compare_f1s
+rule compare_f1s:
+    input: BOOTWORK + "/{exp}/f1s-{var,[^/]+}.pkl"
+    output: BOOTWORK + "/{exp}/cmp-{var,[^/]+}.pkl"
+    shell:
+        "python scripts/bootstrap.py compare-f1s {input} {output}"

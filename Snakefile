@@ -14,10 +14,7 @@ cnf("FILTER", "")
 
 # Intermediate dirs
 cnf("WORK", "work")
-cnf("STIFF_STIFF_GUESS", f"{WORK}/stiff-stiff-guess")
-cnf("STIFF_EURO_GUESS", f"{WORK}/stiff-euro-guess")
-cnf("EURO_STIFF_GUESS", f"{WORK}/euro-stiff-guess")
-cnf("EURO_EURO_GUESS", f"{WORK}/euro-euro-guess")
+cnf("GUESS", WORK + "/guess")
 
 #CORPUS_DIRS = [STIFFEVAL, EUROMODELS]
 cnf_list("CORPUS_NAMES", ["stiff", "eurosense"])
@@ -68,7 +65,7 @@ def group_at_once_nicks():
 
 def group_guesses(exp_group):
     return [
-        WORK + "/guess/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}/" + exp.nick
+        GUESS + "/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}/" + exp.nick
         for exp in exp_group.exps
     ]
 
@@ -79,9 +76,9 @@ def get_corpus_seg(wc):
 
 def get_sup_guess(wc):
     if wc.nick in group_at_once_nicks():
-        return f"{WORK}/guess/groupatonce/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}/{nick_to_group_nick_map[wc.nick]}/{wc.nick}"
+        return f"{GUESS}/groupatonce/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}/{nick_to_group_nick_map[wc.nick]}/{wc.nick}"
     else:
-        return f"{WORK}/guess/{wc.nick}/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}"
+        return f"{GUESS}/{wc.nick}/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}"
 
 
 ## Top levels
@@ -116,7 +113,7 @@ rule test_sup_groupatonce:
     input:
         test = get_corpus_seg,
         model = WORK + "/models/groupatonce/{train_corpus}-{train_seg}/{group_nick}"
-    output: directory(WORK + "/guess/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}")
+    output: directory(GUESS + "/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}")
     run:
         shell(
             "mkdir -p {output} && " +
@@ -129,9 +126,9 @@ rule test_sup:
         test = get_corpus_seg,
         model = WORK + "/models/{train_corpus}-{train_seg}/{nick}",
     output: 
-        WORK + "/guess/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
-        "mkdir -p " + WORK + "/guess/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
+        "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
 
 # Testing unsupervised models
@@ -139,18 +136,18 @@ rule test_unsup:
     input:
         test = get_corpus_seg,
     output:
-        WORK + "/guess/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
-        "mkdir -p " + WORK + "/guess/{wildcards.nick}/ && "
+        "mkdir -p " + GUESS + "/{wildcards.nick}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test {input.test} {output}"
 
 ## Fan out
 for group_nick, exp_group in group_at_once_map.items():
     rule:
-        input: WORK + "/guess/groupatonce/{train_corpus}-{train_seg}/{corpus}-{seg}/{group_nick}"
+        input: GUESS + "/groupatonce/{train_corpus}-{train_seg}/{corpus}-{seg}/{group_nick}"
         output:
             group_guesses(exp_group),
-            touch(WORK + "/guess/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}.fan-out")
+            touch(GUESS + "/groupatonce/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}/{group_nick,[^/]+}.fan-out")
 
 ## Scoring
 
@@ -169,9 +166,12 @@ rule eval_sup:
 rule eval_unsup:
     input:
         test = get_corpus_seg,
-        guess = WORK + "/guess/{nick}/{corpus}-{seg}"
+        guess = GUESS + "/{nick}/{corpus}-{seg}"
     output:
         WORK + "/results/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell:
         "mkdir -p " + WORK + "/results/{wildcards.nick}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} test-corpus={wildcards.corpus}-{wildcards.seg}"
+
+## Include bootstrapping tasks
+include: "Snakefile.bs"
