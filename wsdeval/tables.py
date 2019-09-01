@@ -44,23 +44,26 @@ MEANS = LookupGroupDisplay(
     },
 )
 
+TRAIN_CORPORA = LookupGroupDisplay(
+    CatValGroup("train-corpus", ["eurosense-train", "stiff-train"]),
+    {"eurosense-train": "Eurosense", "stiff-train": "STIFF"},
+)
+
+TEST_CORPORA = LookupGroupDisplay(
+    CatValGroup("test-corpus", ["eurosense-test", "stiff-test"]),
+    {"eurosense-test": "Eurosense", "stiff-test": "STIFF"},
+)
+
+DEV_CORPORA = LookupGroupDisplay(
+    CatValGroup("test-corpus", ["eurosense-dev", "stiff-dev"]),
+    {"eurosense-dev": "Eurosense", "stiff-dev": "STIFF"},
+)
+
 
 TABLES = [
     (
         "full_sum_table",
-        SumTableSpec(
-            [
-                LookupGroupDisplay(
-                    CatValGroup("test-corpus", ["eurosense-test", "stiff-test"]),
-                    {"eurosense-test": "Eurosense", "stiff-test": "STIFF"},
-                ),
-                LookupGroupDisplay(
-                    CatValGroup("train-corpus", ["eurosense-train", "stiff-train"]),
-                    {"eurosense-train": "Eurosense", "stiff-train": "STIFF"},
-                ),
-            ],
-            UnlabelledMeasure("F1"),
-        ),
+        SumTableSpec([TEST_CORPORA, TRAIN_CORPORA], UnlabelledMeasure("F1")),
     ),
     (
         "lesk_square",
@@ -86,11 +89,9 @@ TABLES = [
     ),
     (
         "nn_awe_square",
-        SqTableSpec([MEANS], [VECS], UnlabelledMeasure("F1")),
-        SimpleFilter(
-            "Supervised",
-            "AWE-NN",
-            **{"train-corpus": "eurosense-train", "test-corpus": "eurosense-dev"}
+        SqTableSpec(
+            [TRAIN_CORPORA, MEANS], [DEV_CORPORA, VECS], UnlabelledMeasure("F1")
         ),
+        SimpleFilter("Supervised", "AWE-NN"),
     ),
 ]
