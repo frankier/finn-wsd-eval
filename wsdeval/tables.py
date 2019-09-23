@@ -4,6 +4,7 @@ from expcomb.table.spec import (
     CatValGroup,
     LookupGroupDisplay,
     UnlabelledMeasure,
+    box_highlight,
 )
 from expcomb.filter import SimpleFilter
 
@@ -84,13 +85,17 @@ TABLES = [
                 ),
             ],
             UnlabelledMeasure("F1"),
+            box_highlight,
         ),
         SimpleFilter("Knowledge", "Cross-lingual Lesk", **{"test-corpus": "stiff-dev"}),
     ),
     (
         "nn_awe_square",
         SqTableSpec(
-            [TRAIN_CORPORA, MEANS], [DEV_CORPORA, VECS], UnlabelledMeasure("F1")
+            [TRAIN_CORPORA, MEANS],
+            [DEV_CORPORA, VECS],
+            UnlabelledMeasure("F1"),
+            box_highlight,
         ),
         SimpleFilter("Supervised", "AWE-NN"),
     ),

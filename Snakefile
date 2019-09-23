@@ -15,6 +15,7 @@ cnf("FILTER", "")
 # Intermediate dirs
 cnf("WORK", "work")
 cnf("GUESS", WORK + "/guess")
+cnf("RESULTS", WORK + "/results")
 
 #CORPUS_DIRS = [STIFFEVAL, EUROMODELS]
 cnf_list("CORPUS_NAMES", ["stiff", "eurosense"])
@@ -36,7 +37,7 @@ def all_results():
     if "sup" not in filter.opt_dict or filter.opt_dict["sup"]:
         for nick in SnakeMake.get_nicks(filter.intersect_opts(sup=True)):
             yield from expand(
-                WORK + "/results/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
+                RESULTS + "/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
                 train_corpus=CORPUS_NAMES,
                 train_seg=TRAIN_SEGMENT,
                 test_corpus=CORPUS_NAMES,
@@ -45,7 +46,7 @@ def all_results():
     if "sup" not in filter.opt_dict or not filter.opt_dict["sup"]:
         for nick in SnakeMake.get_nicks(filter.intersect_opts(sup=False)):
             yield from expand(
-                WORK + "/results/" + nick + "/{test_corpus}-{test_seg}.db",
+                RESULTS + "/" + nick + "/{test_corpus}-{test_seg}.db",
                 test_corpus=CORPUS_NAMES,
                 test_seg=TEST_SEGMENT
             )
@@ -157,9 +158,9 @@ rule eval_sup:
         test = get_corpus_seg,
         guess = get_sup_guess,
     output:
-        WORK + "/results/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
+        RESULTS + "/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell:
-        "mkdir -p " + WORK + "/results/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
+        "mkdir -p " + RESULTS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} train-corpus={wildcards.train_corpus}-{wildcards.train_seg} test-corpus={wildcards.corpus}-{wildcards.seg}"
 
 # Scoring unsupervised models
@@ -168,9 +169,9 @@ rule eval_unsup:
         test = get_corpus_seg,
         guess = GUESS + "/{nick}/{corpus}-{seg}"
     output:
-        WORK + "/results/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
+        RESULTS + "/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell:
-        "mkdir -p " + WORK + "/results/{wildcards.nick}/ && "
+        "mkdir -p " + RESULTS + "/{wildcards.nick}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} test-corpus={wildcards.corpus}-{wildcards.seg}"
 
 ## Include bootstrapping tasks

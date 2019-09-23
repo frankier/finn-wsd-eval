@@ -2,15 +2,26 @@
 
 cnf("BOOTWORK", WORK + "/bootstrap")
 cnf("SEED", "42")
+cnf("ITERS", "100000")
+
+AWE_NN_VAR, = glob_wildcards(GUESS + "/awe_nn.{awe_nn_var,[^/]+}/")
+LESK_VAR, = glob_wildcards(GUESS + "/lesk.{lesk_nn_var,[^/]+}/")
+
+def cmp_inputs(wildcards):
+    if wildcards.exp == "awe_nn":
+        vars = AWE_NN_VAR
+    else:
+        vars = LESK_VAR
+    return [BOOTWORK + "/resamples/{exp,[^/\.]+}." + var + "/{corpora,[^/]+}.pkl" for var in vars]
 
 def awe_boot_results():
     for train_corpus in CORPUS_DIR_MAP:
     	for test_corpus in CORPUS_DIR_MAP:
-            yield BOOTWORK + "/awe_nn/cmp-" + train_corpus  + "-" + test_corpus + ".pkl"
+            yield BOOTWORK + "/awe_nn/nsd-best-" + train_corpus  + "-" + test_corpus + ".db"
 
 def lesk_boot_results():
     for test_corpus in CORPUS_DIR_MAP:
-        yield BOOTWORK + "/lesk/cmp-" + test_corpus + ".pkl"
+        yield BOOTWORK + "/lesk/nsd-best-" + test_corpus + ".db"
 
 rule bootstrap_awe_dev:
     input: list(awe_boot_results())
@@ -21,29 +32,55 @@ rule bootstrap_lesk_dev:
 rule bootstrap_all:
     input: list(awe_boot_results()) + list(lesk_boot_results())
 
+rule create_schedule:
+    output:
+        BOOTWORK + "/schedules/{test_corpus,[^-/.]+}/{gold_key,.+}.pkl"
+    input:
+        lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/" + wildcards.gold_key
+    shell:
+        "python scripts/expc.py sigtest create-schedule" +
+        " --seed " + SEED +
+        " --iters " + ITERS +
+        " {input} {output}"
+
 # Bootstrapping AWE on dev data
 rule resample_awe_dev:
-    output: BOOTWORK + "/awe_nn/f1s-{train_corpus,[^-/.]+}-{test_corpus,[^-/.]+}.pkl"
-    params:
-        gold=lambda wildcards, output: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.sup.key"
+    output: BOOTWORK + "/resamples/awe_nn.{var,[^-/]+}/{train_corpus,[^-/.]+}-{test_corpus,[^-/.]+}.pkl"
+    input:
+        schedule=BOOTWORK + "/schedules/{test_corpus}/dev/corpus.sup.key.pkl",
+        gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.sup.key",
     shell:
-        "python scripts/bootstrap.py resample-f1s --seed " + SEED + " " +
-	" {output} {params.gold} " + GUESS +
-	"/awe_nn.*/{wildcards.train_corpus}-train/{wildcards.test_corpus}-dev"
+        "python scripts/expc.py sigtest resample" +
+	" {output} {input.gold} " +
+        GUESS + "/awe_nn.{wildcards.var}/{wildcards.train_corpus}-train/{wildcards.test_corpus}-dev " +
+        RESULTS + "/awe_nn.{wildcards.var}/{wildcards.train_corpus}-train/{wildcards.test_corpus}-dev.db" +
+        " {input.schedule}"
 
 # Bootstrapping Lesk on dev data
 rule resample_lesk_dev:
-    output: BOOTWORK + "/lesk/f1s-{test_corpus,[^-/.]+}.pkl"
-    params:
-        gold=lambda wildcards, output: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.key"
+    output: BOOTWORK + "/resamples/lesk.{var,[^-/]+}/{test_corpus,[^-/.]+}.pkl"
+    input:
+        schedule=BOOTWORK + "/schedules/{test_corpus}/dev/corpus.sup.key.pkl",
+        gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.sup.key",
     shell:
-        "python scripts/bootstrap.py resample-f1s --seed " + SEED +
-	" {output} {params.gold} " + GUESS +
-	"/lesk.*/{wildcards.test_corpus}-dev"
+        "python scripts/expc.py sigtest resample" +
+	" {output} {input.gold} " +
+        GUESS + "/lesk.{wildcards.var}/{wildcards.test_corpus}-dev " +
+        RESULTS + "/lesk.{wildcards.var}/{wildcards.test_corpus}-dev.db" +
+        " {input.schedule} "
 
-# compare_f1s
+# Compare f1s
 rule compare_f1s:
-    input: BOOTWORK + "/{exp}/f1s-{var,[^/]+}.pkl"
-    output: BOOTWORK + "/{exp}/cmp-{var,[^/]+}.pkl"
+    input: cmp_inputs
+    output: BOOTWORK + "/{exp,[^/\.]+}/cmp-{corpora,[^/]+}.db"
     shell:
-        "python scripts/bootstrap.py compare-f1s {input} {output}"
+        "python scripts/expc.py sigtest compare-resampled {input} {output}"
+
+
+# Get info about NSD from best
+rule nsd_from_best:
+    input:
+        BOOTWORK + "/{exp,[^/\.]+}/cmp-{copora,[^/]+}.db"
+    output: BOOTWORK + "/{exp,[^/\.]+}/nsd-best-{copora,[^/]+}.db"
+    shell:
+        "python scripts/expc.py sigtest nsd-from-best {input} {output}"

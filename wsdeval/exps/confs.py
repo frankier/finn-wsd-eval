@@ -43,9 +43,8 @@ for vec, sur_words in [
 EXPERIMENTS.append(SupExpGroup(supwsd_exps))
 
 
-LESK_MEANS = list(ALL_MEANS.keys())
-LESK_MEANS.remove("normalized_mean")
-LESK_MEANS.append("sif_mean")
+MEANS = list(ALL_MEANS.keys())
+MEANS.remove("unnormalized_mean")
 
 
 xlingual_lesk = []
@@ -53,7 +52,7 @@ for use_freq in [False, True]:
     for do_expand in [False, True]:
         for vec in ["fasttext", "numberbatch", "double"]:
             lower_vec = vec.lower()
-            for mean in LESK_MEANS:
+            for mean in MEANS:
                 for wn_filter in [False, True]:
                     baseline_args = [lower_vec, mean]
                     nick_extra = ""
@@ -92,7 +91,7 @@ EXPERIMENTS.append(ExpGroup(xlingual_lesk))
 
 awe_nn_exps = []
 for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
-    for mean in list(ALL_MEANS.keys()) + ["sif_mean"]:
+    for mean in MEANS:
         awe_nn_exps.append(AweNn(vec, mean))
 EXPERIMENTS.append(SupExpGroup(awe_nn_exps))
 
