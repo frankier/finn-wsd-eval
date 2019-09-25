@@ -1,4 +1,5 @@
 from expcomb.table.spec import (
+    DimGroups,
     SqTableSpec,
     SumTableSpec,
     CatValGroup,
@@ -69,21 +70,26 @@ TABLES = [
     (
         "lesk_square",
         SqTableSpec(
-            [
-                LookupGroupDisplay(
-                    tf_group("opts,use_freq"), {False: "No freq", True: "Freq"}
-                ),
-                VECS,
-                MEANS,
-            ],
-            [
-                LookupGroupDisplay(
-                    tf_group("opts,expand"), {False: "No expand", True: "Expand"}
-                ),
-                LookupGroupDisplay(
-                    tf_group("opts,wn_filter"), {False: "No filter", "True": "Filter"}
-                ),
-            ],
+            DimGroups(
+                [
+                    LookupGroupDisplay(
+                        tf_group("opts,use_freq"), {False: "No freq", True: "Freq"}
+                    ),
+                    VECS,
+                    MEANS,
+                ]
+            ),
+            DimGroups(
+                [
+                    LookupGroupDisplay(
+                        tf_group("opts,expand"), {False: "No expand", True: "Expand"}
+                    ),
+                    LookupGroupDisplay(
+                        tf_group("opts,wn_filter"),
+                        {False: "No filter", "True": "Filter"},
+                    ),
+                ]
+            ),
             UnlabelledMeasure("F1"),
             box_highlight,
         ),
@@ -92,8 +98,8 @@ TABLES = [
     (
         "nn_awe_square",
         SqTableSpec(
-            [TRAIN_CORPORA, MEANS],
-            [DEV_CORPORA, VECS],
+            DimGroups([TRAIN_CORPORA, MEANS], 0),
+            DimGroups([DEV_CORPORA, VECS], 0),
             UnlabelledMeasure("F1"),
             box_highlight,
         ),
