@@ -81,13 +81,19 @@ def train(vec, mean, inf, keyin, model):
 @click.argument("model", type=click.Path())
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyout", type=click.File("w"))
-def test(vec, mean, model, inf, keyout):
+@click.option("--use-freq/--no-use-freq")
+def test(vec, mean, model, inf, keyout, use_freq):
     """
     Test nearest neighbour classifier.
     """
     space = get_vec_space(vec)
     aggf = get_mean(mean, vec)
-    test_vec_nn(WordExpertManager(model), iter_inst_ctxs(inf, aggf, space), keyout)
+    test_vec_nn(
+        WordExpertManager(model),
+        iter_inst_ctxs(inf, aggf, space),
+        keyout,
+        allow_most_freq=use_freq,
+    )
 
 
 if __name__ == "__main__":

@@ -58,16 +58,31 @@ def train_vec_nn(manager, training_examples):
         manager.dump_expert(iden, clf)
 
 
-def pred_write(inst_id, clf, vec, keyout):
+def write_most_freq(inst_id, iden, keyout):
+    from finntk.wordnet.reader import fiwn_encnt
+    from wsdeval.formats.wordnet import write_lemma
+
+    lemma, pos = iden.split(".", 1)
+    lemmas = fiwn_encnt.lemmas(lemma, pos=pos)
+    if not lemmas:
+        return False
+    write_lemma(keyout, inst_id, lemmas[0])
+    return True
+
+
+def pred_write(inst_id, clf, vec, keyout, allow_most_freq=False, iden=None):
     prediction = None
     if clf is not None and vec is not None:
         prediction = clf.predict(vec)
     if prediction is None:
+        if allow_most_freq:
+            if write_most_freq(inst_id, iden, keyout):
+                return
         prediction = "U"
     keyout.write("{} {}\n".format(inst_id, prediction))
 
 
-def test_many_vec_nn(managers, instances, keyouts):
+def test_many_vec_nn(managers, instances, keyouts, allow_most_freq=False):
     logger.debug(f"test_many_vec_nn: keyouts: {keyouts}")
     wrote_anything = False
     for iden, cnt, group in instances:
@@ -76,14 +91,23 @@ def test_many_vec_nn(managers, instances, keyouts):
             if vecs is None:
                 vecs = [None] * len(clfs)
             for clf, vec, keyout in zip(clfs, vecs, keyouts):
-                pred_write(inst_id, clf, vec, keyout)
+                pred_write(
+                    inst_id,
+                    clf,
+                    vec,
+                    keyout,
+                    allow_most_freq=allow_most_freq,
+                    iden=iden,
+                )
                 wrote_anything = True
     if wrote_anything:
         logger.debug("Wrote at least something...")
 
 
-def test_vec_nn(manager, instances, keyout):
+def test_vec_nn(manager, instances, keyout, allow_most_freq=False):
     for iden, cnt, group in instances:
         clf = manager.load_expert(iden)
         for inst_id, vec in group:
-            pred_write(inst_id, clf, vec, keyout)
+            pred_write(
+                inst_id, clf, vec, keyout, allow_most_freq=allow_most_freq, iden=iden
+            )
