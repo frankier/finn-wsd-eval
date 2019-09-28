@@ -19,7 +19,7 @@ torch = {version = "1.1.0", optional = true}
 elmoformanylangs = {git = "https://github.com/frankier/ELMoForManyLangs.git",rev = "36ec6987e2d00baee6c364d151cd43b813c374a7", optional = true}
 pytorch-pretrained-bert = {version = "*", optional = true}
 snakemake = "^5.5"
-expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "cf66ead8a4150c0e64ace7ec9d7b0e36c6a5d294"}
+expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "ff7f1f5b7bd2e86284f5e0e68ed121e58f72f6ef"}
 memory_tempfile = {git = "https://github.com/frankier/memory-tempfile.git", rev = "b76bda163a7614f5d0730d9619c79ec2d803db21"}
 networkx = "^2.3"
 pygraphviz = "^1.5"
