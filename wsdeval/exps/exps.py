@@ -41,13 +41,15 @@ class SupWSD(SupExp):
         self.vec_path = vec_path
         self.use_vec = vec is not None
         self.sur_words = sur_words
+        nick = mk_nick("supwsd", vec, (sur_words, "sur"))
         super().__init__(
             ["Supervised", "SupWSD"],
-            mk_nick("supwsd", vec, (sur_words, "sur")),
+            nick,
             disp,
             None,
             {"vec": vec, "sur_words": sur_words},
         )
+        self.supwsd_dir = abspath(pjoin("systems", "supwsd_confs", nick))
 
     def conf(self, model_path):
         from wsdeval.systems.supwsd import conf
@@ -55,6 +57,7 @@ class SupWSD(SupExp):
         conf.callback(
             work_dir=abspath(model_path),
             vec_path=abspath(self.vec_path),
+            dest=self.supwsd_dir,
             use_vec=self.use_vec,
             use_surrounding_words=self.sur_words,
         )
@@ -68,7 +71,7 @@ class SupWSD(SupExp):
             timestr = datetime.now().isoformat()
             shutil.move(model_path, "{}.{}".format(model_path, timestr))
         makedirs(model_path, exist_ok=True)
-        train.callback(paths["suptag"], paths["supkey"])
+        train.callback(paths["suptag"], paths["supkey"], self.supwsd_dir)
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.supwsd import test
@@ -76,7 +79,7 @@ class SupWSD(SupExp):
 
         self.conf(model_path)
 
-        test.callback(paths["suptag"], paths["supkey"])
+        test.callback(paths["suptag"], paths["supkey"], self.supwsd_dir)
         with open(paths["unikey"]) as goldkey, open(
             pjoin(model_path, "scores/plain.result"), "rb"
         ) as supwsd_result_fp, open(cwd_relpath(guess_fn), "w") as guess_fp:

@@ -1,8 +1,9 @@
 import click
 from plumbum import local
-from plumbum.cmd import java
+from plumbum.cmd import java, ln
 from string import Template
-from os.path import join as pjoin
+from os import makedirs
+from os.path import abspath, exists, join as pjoin
 
 
 SUPWSD_JAR = "target/supwsd-toolkit-1.0.0.jar"
@@ -16,10 +17,17 @@ def supwsd():
 @supwsd.command()
 @click.argument("work_dir")
 @click.argument("vec_path", required=False)
+@click.argument("dest", required=False)
 @click.option("--use-vec/--no-use-vec")
 @click.option("--use-surrounding-words/--no-use-surrounding-words")
-def conf(work_dir, vec_path="", use_vec=False, use_surrounding_words=True):
+def conf(work_dir, vec_path="", dest=None, use_vec=False, use_surrounding_words=True):
     from finntk.wordnet.reader import fiwn_resman
+
+    if dest is not None and not exists(dest):
+        makedirs(dest, exist_ok=True)
+        ln("-s", abspath("systems/supWSD") + "/*", dest)
+    else:
+        dest = "systems/supWSD"
 
     fiwn_path = fiwn_resman.get_res("")
     for src_fn, dst_fn in [
@@ -38,15 +46,16 @@ def conf(work_dir, vec_path="", use_vec=False, use_surrounding_words=True):
             }
         )
 
-        with open("systems/supWSD/{}".format(dst_fn), "w") as dst_f:
+        with open("{}/{}".format(dest, dst_fn), "w") as dst_f:
             dst_f.write(content)
 
 
 @supwsd.command()
 @click.argument("inf")
 @click.argument("keyin")
-def train(inf, keyin):
-    with local.cwd("systems/supWSD"):
+@click.argument("supwsd-dir", required=False)
+def train(inf, keyin, supwsd_dir="systems/supWSD"):
+    with local.cwd(supwsd_dir):
         inf_path = pjoin("../../", inf)
         keyin_path = pjoin("../../", keyin)
         print(
@@ -73,8 +82,9 @@ def train(inf, keyin):
 @supwsd.command()
 @click.argument("inf")
 @click.argument("goldkey")
-def test(inf, goldkey):
-    with local.cwd("systems/supWSD"):
+@click.argument("supwsd-dir", required=False)
+def test(inf, goldkey, supwsd_dir="systems/supWSD"):
+    with local.cwd(supwsd_dir):
         inf_path = pjoin("../../", inf)
         goldkey_path = pjoin("../../", goldkey)
         java(
