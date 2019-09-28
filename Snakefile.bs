@@ -9,10 +9,16 @@ LESK_VAR, = glob_wildcards(GUESS + "/lesk.{lesk_nn_var,[^/]+}/")
 
 def cmp_inputs(wildcards):
     if wildcards.exp == "awe_nn":
-        vars = AWE_NN_VAR
+        return [BOOTWORK + "/resamples/{exp,[^/\.]+}." + var + "/{corpora,[^/]+}.pkl" for var in AWE_NN_VAR]
     else:
-        vars = LESK_VAR
-    return [BOOTWORK + "/resamples/{exp,[^/\.]+}." + var + "/{corpora,[^/]+}.pkl" for var in vars]
+        freq = ".freq" in wildcards.corpora
+        if freq:
+            corpus = wildcards.corpora.replace(".freq", "")
+            vars = [var for var in LESK_VAR if ".freq" in var]
+        else:
+            corpus = wildcards.corpora
+            vars = [var for var in LESK_VAR if ".freq" not in var]
+        return [BOOTWORK + "/resamples/{exp,[^/\.]+}." + var + "/" + corpus + ".pkl" for var in vars]
 
 def awe_boot_results():
     for train_corpus in CORPUS_DIR_MAP:
@@ -20,8 +26,9 @@ def awe_boot_results():
             yield BOOTWORK + "/awe_nn/nsd-best-" + train_corpus  + "-" + test_corpus + ".db"
 
 def lesk_boot_results():
-    for test_corpus in CORPUS_DIR_MAP:
-        yield BOOTWORK + "/lesk/nsd-best-" + test_corpus + ".db"
+    for freq in [".freq", ""]:
+        for test_corpus in CORPUS_DIR_MAP:
+            yield BOOTWORK + "/lesk/nsd-best-" + test_corpus + freq + ".db"
 
 rule bootstrap_awe_dev:
     input: list(awe_boot_results())
@@ -58,7 +65,7 @@ rule resample_awe_dev:
 
 # Bootstrapping Lesk on dev data
 rule resample_lesk_dev:
-    output: BOOTWORK + "/resamples/lesk.{var,[^-/]+}/{test_corpus,[^-/.]+}.pkl"
+    output: BOOTWORK + "/resamples/lesk.{var,[^/]+}/{test_corpus,[^-/.]+}.pkl"
     input:
         schedule=BOOTWORK + "/schedules/{test_corpus}/dev/corpus.sup.key.pkl",
         gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.sup.key",
@@ -80,7 +87,7 @@ rule compare_f1s:
 # Get info about NSD from best
 rule nsd_from_best:
     input:
-        BOOTWORK + "/{exp,[^/\.]+}/cmp-{copora,[^/]+}.db"
-    output: BOOTWORK + "/{exp,[^/\.]+}/nsd-best-{copora,[^/]+}.db"
+        BOOTWORK + "/{exp,[^/\.]+}/cmp-{corpora,[^/]+}.db"
+    output: BOOTWORK + "/{exp,[^/\.]+}/nsd-best-{corpora,[^/]+}.db"
     shell:
         "python scripts/expc.py sigtest nsd-from-best {input} {output}"
