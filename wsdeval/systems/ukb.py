@@ -70,8 +70,6 @@ def unified_to_ukb(inf, outf, extract_extra):
         extractor = FinExtractor()
     for sent_elem in iter_sentences(inf):
         bits = []
-        outf.write(sent_elem.attrib["id"])
-        outf.write("\n")
         for instance in sent_elem.xpath("instance"):
             id = instance.attrib["id"]
             lemma = instance.attrib["lemma"].lower()
@@ -101,8 +99,11 @@ def unified_to_ukb(inf, outf, extract_extra):
                 for lemma, pos in lemma_poses:
                     bits.append(f"{lemma}#{pos}#xT{tok_idx}N{extra_id}#0")
                     extra_id += 1
-        outf.write(" ".join(bits))
-        outf.write("\n")
+        if bits:
+            outf.write(sent_elem.attrib["id"])
+            outf.write("\n")
+            outf.write(" ".join(bits))
+            outf.write("\n")
 
 
 @ukb.command()
