@@ -4,6 +4,7 @@ from plumbum.cmd import java, ln
 from string import Template
 from os import makedirs
 from os.path import abspath, exists, join as pjoin
+from glob import glob
 
 
 SUPWSD_JAR = "target/supwsd-toolkit-1.0.0.jar"
@@ -25,7 +26,7 @@ def conf(work_dir, vec_path="", dest=None, use_vec=False, use_surrounding_words=
 
     if dest is not None and not exists(dest):
         makedirs(dest, exist_ok=True)
-        ln("-s", abspath("systems/supWSD") + "/*", dest)
+        ln("-s", *glob(abspath("systems/supWSD") + "/*"), dest)
     else:
         dest = "systems/supWSD"
 
