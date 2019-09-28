@@ -315,7 +315,7 @@ class AweNn(SupExp):
         with open(paths["suptag"], "rb") as inf, open(
             cwd_relpath(guess_fn), "w"
         ) as keyout:
-            test.callback(self.vec, self.mean, model_path, inf, keyout)
+            test.callback(self.vec, self.mean, model_path, inf, keyout, use_freq=True)
 
 
 def lesk_pp(mean, do_expand, exclude_cand, score_by):
