@@ -90,6 +90,16 @@ def test(inf, goldkey, supwsd_dir="systems/supWSD"):
     with local.cwd(supwsd_dir):
         inf_path = pjoin("../../", inf)
         goldkey_path = pjoin("../../", goldkey)
+        print(
+            "java",
+            "-jar",
+            "-Xmx512g",
+            SUPWSD_JAR,
+            "test",
+            "supconfig.xml",
+            inf_path,
+            goldkey_path,
+        )
         java(
             "-jar",
             "-Xmx512g",
