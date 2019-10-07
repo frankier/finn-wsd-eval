@@ -33,6 +33,7 @@ def conf(work_dir, vec_path="", dest=None, use_vec=False, use_surrounding_words=
         dest = "systems/supWSD"
 
     fiwn_path = fiwn_resman.get_res("")
+    makedirs(pjoin(dest, "resources/wndictionary"), exist_ok=True)
     for src_fn, dst_fn in [
         ("jwnl-properties.xml", "resources/wndictionary/prop.xml"),
         ("supconfig.xml", "supconfig.xml"),
