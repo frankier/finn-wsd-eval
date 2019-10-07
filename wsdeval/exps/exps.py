@@ -6,7 +6,7 @@ from expcomb.filter import SimpleFilter
 from .utils import mk_nick
 from stiff.eval import get_partition_paths
 import traceback
-import datetime
+from datetime import datetime
 from os import makedirs
 from os.path import abspath, dirname, exists, join as pjoin
 import shutil
