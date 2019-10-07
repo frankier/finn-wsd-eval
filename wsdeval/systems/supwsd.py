@@ -1,6 +1,6 @@
 import click
 from plumbum import local
-from plumbum.cmd import java, ln
+from plumbum.cmd import java, ln, rm
 from string import Template
 from os import makedirs
 from os.path import abspath, exists, join as pjoin
@@ -27,6 +27,8 @@ def conf(work_dir, vec_path="", dest=None, use_vec=False, use_surrounding_words=
     if dest is not None and not exists(dest):
         makedirs(dest, exist_ok=True)
         ln("-s", *glob(abspath("systems/supWSD") + "/*"), dest)
+        rm("-r", pjoin(dest, "resources"))
+        rm(pjoin(dest, "supconfig.xml"))
     else:
         dest = "systems/supWSD"
 
