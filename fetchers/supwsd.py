@@ -27,7 +27,7 @@ def fetch_program():
     with local.cwd("systems"):
         git("clone", "https://github.com/frankier/supWSD.git")
         with local.cwd("supWSD"):
-            git("checkout", "fixes-sep-24-1")
+            git("checkout", "fix-null-exception")
             mvn("package")
 
 
