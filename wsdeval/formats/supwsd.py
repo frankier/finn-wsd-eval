@@ -1,4 +1,5 @@
 import re
+from itertools import zip_longest
 
 
 CHUNK_SIZE = 4096
@@ -43,12 +44,39 @@ def iter_supwsd_result(fp):
             assert len(buffer) == 0
 
 
+def zip_equal(*iterables, names=None):
+    sentinel = object()
+    for combo in zip_longest(*iterables, fillvalue=sentinel):
+        if sentinel in combo:
+            msg = "Iterables have different lengths. "
+            if names is None:
+                msg += "Indexes: {} depleted before rest".format(
+                    ", ".join(str(idx) for idx, c in enumerate(combo) if c is sentinel)
+                )
+            else:
+                msg += "Columns: {} depleted before rest".format(
+                    ", ".join(
+                        names[idx] for idx, c in enumerate(combo) if c is sentinel
+                    )
+                )
+            raise ValueError(msg)
+        yield combo
+
+
 def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
-    for gold_line, supwsd_result in zip(goldkey, iter_supwsd_result(supwsd_result_fp)):
+    from finntk.wordnet.reader import fiwn
+
+    for gold_line, supwsd_result in zip_equal(
+        goldkey, iter_supwsd_result(supwsd_result_fp), names=["gold", "supwsd_result"]
+    ):
         key = gold_line.split()[0]
         synsets = supwsd_result[1]
         if len(synsets):
-            synset = synsets[0][0].decode("utf-8")
+            payload = synsets[0][0].decode("utf-8")
+            if payload[0].isdigit():
+                synset = payload
+            else:
+                synset = fiwn.ss2of(fiwn.lemma_from_key(payload).synset())
         else:
             synset = "U"
         guess_fp.write("{} {}\n".format(key, synset))
