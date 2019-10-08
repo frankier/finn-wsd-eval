@@ -57,7 +57,7 @@ class SupWSD(SupExp):
         self.supwsd_dir = abspath(pjoin("systems", "supwsd_confs", nick))
 
     def get_work_dir(self, model_path):
-        work_dir = pjoin(model_path, timestr(), uuid4())
+        work_dir = pjoin(model_path, timestr(), str(uuid4()))
         makedirs(work_dir, exist_ok=True)
         return work_dir
 
