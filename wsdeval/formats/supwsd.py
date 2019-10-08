@@ -65,6 +65,7 @@ def zip_equal(*iterables, names=None):
 
 def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
     from finntk.wordnet.reader import fiwn
+    from nltk.corpus.reader.wordnet import WordNetError
 
     for gold_line, supwsd_result in zip_equal(
         goldkey, iter_supwsd_result(supwsd_result_fp), names=["gold", "supwsd_result"]
@@ -76,7 +77,12 @@ def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
             if payload[0].isdigit():
                 synset = payload
             else:
-                synset = fiwn.ss2of(fiwn.lemma_from_key(payload).synset())
+                try:
+                    lemma = fiwn.lemma_from_key(payload)
+                except WordNetError:
+                    synset = "U"
+                else:
+                    synset = fiwn.ss2of(lemma.synset())
         else:
             synset = "U"
         guess_fp.write("{} {}\n".format(key, synset))
