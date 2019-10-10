@@ -27,9 +27,10 @@ def conf(work_dir, vec_path="", dest=None, use_vec=False, use_surrounding_words=
     if dest is not None and not exists(dest):
         makedirs(dest, exist_ok=True)
         ln("-s", *glob(abspath("systems/supWSD") + "/*"), dest)
-        rm("-r", pjoin(dest, "resources"))
-        rm(pjoin(dest, "supconfig.xml"))
-    else:
+        rm("-r", pjoin(dest, "resources"), retcode=None)
+        rm(pjoin(dest, "supconfig.xml"), retcode=None)
+
+    if dest is None:
         dest = "systems/supWSD"
 
     fiwn_path = fiwn_resman.get_res("")

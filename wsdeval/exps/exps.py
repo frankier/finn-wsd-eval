@@ -13,6 +13,7 @@ import shutil
 from wsdeval.tools.means import MEAN_DISPS
 from .base import SupGpuExpGroup
 from uuid import uuid4
+from hashlib import sha256
 
 
 def relpath(rel):
@@ -54,20 +55,23 @@ class SupWSD(SupExp):
             None,
             {"vec": vec, "sur_words": sur_words},
         )
-        self.supwsd_dir = abspath(pjoin("systems", "supwsd_confs", nick))
+
+    def get_conf_dir(self, type, *paths):
+        hashed_paths = (sha256(path.encode("utf-8")).hexdigest() for path in paths)
+        return abspath(pjoin("systems", "supwsd_confs", self.nick, type, *hashed_paths))
 
     def get_work_dir(self, model_path):
-        work_dir = pjoin(model_path, timestr(), str(uuid4()))
+        work_dir = abspath(pjoin(model_path, timestr(), str(uuid4())))
         makedirs(work_dir, exist_ok=True)
         return work_dir
 
-    def conf(self, model_path, work_dir):
+    def conf(self, model_path, work_dir, conf_dir):
         from wsdeval.systems.supwsd import conf
 
         conf.callback(
             work_dir=work_dir,
             vec_path=abspath(self.vec_path),
-            dest=self.supwsd_dir,
+            dest=conf_dir,
             use_vec=self.use_vec,
             use_surrounding_words=self.sur_words,
         )
@@ -75,22 +79,24 @@ class SupWSD(SupExp):
     def train(self, paths, model_path):
         from wsdeval.systems.supwsd import train
 
-        self.conf(model_path, model_path)
+        conf_dir = self.get_conf_dir("train", model_path)
+        self.conf(model_path, model_path, conf_dir)
 
         if exists(model_path):
             shutil.move(model_path, "{}.{}".format(model_path, timestr()))
         makedirs(model_path, exist_ok=True)
-        train.callback(paths["suptag"], paths["supkey"], self.supwsd_dir)
+        train.callback(paths["suptag"], paths["supkey"], conf_dir)
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.supwsd import test
         from wsdeval.formats.supwsd import proc_supwsd
 
         work_dir = self.get_work_dir(model_path)
-        self.conf(model_path, work_dir)
+        conf_dir = self.get_conf_dir("test", model_path, guess_fn)
+        self.conf(model_path, work_dir, conf_dir)
 
-        test.callback(paths["suptag"], paths["supkey"], self.supwsd_dir)
-        with open(paths["unikey"]) as goldkey, open(
+        test.callback(paths["suptag"], paths["supkey"], conf_dir)
+        with open(paths["supkey"]) as goldkey, open(
             pjoin(work_dir, "scores/plain.result"), "rb"
         ) as supwsd_result_fp, open(cwd_relpath(guess_fn), "w") as guess_fp:
             proc_supwsd(goldkey, supwsd_result_fp, guess_fp)
