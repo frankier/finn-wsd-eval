@@ -7,12 +7,11 @@ from .utils import mk_nick
 from stiff.eval import get_partition_paths
 import traceback
 from datetime import datetime
-from os import makedirs
+from os import makedirs, symlink
 from os.path import abspath, dirname, exists, join as pjoin
 import shutil
 from wsdeval.tools.means import MEAN_DISPS
 from .base import SupGpuExpGroup
-from uuid import uuid4
 from hashlib import sha256
 
 
@@ -38,6 +37,17 @@ def timestr():
     return datetime.now().isoformat()
 
 
+def hash_paths(paths):
+    return (sha256(path.encode("utf-8")).hexdigest() for path in paths)
+
+
+def ensure_symlink(src_par, dst_par, sub):
+    src = pjoin(src_par, sub)
+    dst = pjoin(dst_par, sub)
+    if not exists(dst):
+        symlink(src, dst)
+
+
 class SupWSD(SupExp):
     def __init__(self, vec, sur_words):
         vec_path = "support/emb/{}.txt".format(vec) if vec is not None else ""
@@ -57,15 +67,16 @@ class SupWSD(SupExp):
         )
 
     def get_conf_dir(self, type, *paths):
-        hashed_paths = (sha256(path.encode("utf-8")).hexdigest() for path in paths)
-        return abspath(pjoin("systems", "supwsd_confs", self.nick, type, *hashed_paths))
+        return abspath(
+            pjoin("systems", "supwsd_confs", self.nick, type, *hash_paths(paths))
+        )
 
-    def get_work_dir(self, model_path):
-        work_dir = abspath(pjoin(model_path, timestr(), str(uuid4())))
+    def get_work_dir(self, model_path, type, *paths):
+        work_dir = abspath(pjoin(model_path, type, *hash_paths(paths)))
         makedirs(work_dir, exist_ok=True)
         return work_dir
 
-    def conf(self, model_path, work_dir, conf_dir):
+    def conf(self, work_dir, conf_dir):
         from wsdeval.systems.supwsd import conf
 
         conf.callback(
@@ -79,8 +90,9 @@ class SupWSD(SupExp):
     def train(self, paths, model_path):
         from wsdeval.systems.supwsd import train
 
+        work_dir = self.get_work_dir(model_path, "train")
         conf_dir = self.get_conf_dir("train", model_path)
-        self.conf(model_path, model_path, conf_dir)
+        self.conf(work_dir, conf_dir)
 
         if exists(model_path):
             shutil.move(model_path, "{}.{}".format(model_path, timestr()))
@@ -91,9 +103,12 @@ class SupWSD(SupExp):
         from wsdeval.systems.supwsd import test
         from wsdeval.formats.supwsd import proc_supwsd
 
-        work_dir = self.get_work_dir(model_path)
+        train_work_dir = self.get_work_dir(model_path, "train")
+        work_dir = self.get_work_dir(model_path, "test", guess_fn)
         conf_dir = self.get_conf_dir("test", model_path, guess_fn)
-        self.conf(model_path, work_dir, conf_dir)
+        self.conf(work_dir, conf_dir)
+        ensure_symlink(train_work_dir, work_dir, "models")
+        ensure_symlink(train_work_dir, work_dir, "stat")
 
         test.callback(paths["suptag"], paths["supkey"], conf_dir)
         with open(paths["supkey"]) as goldkey, open(
