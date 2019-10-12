@@ -122,8 +122,7 @@ def create_sample_maps(gold, guess):
 
 
 class WSDEvalBootstrapper(Bootstrapper):
-    @classmethod
-    def score_one(cls, gold, guess):
+    def score_one(self, gold, guess):
         score_dict = eval_func(gold, guess)
         scorer_score = float(score_dict["F1"].rstrip("%"))
 
@@ -140,8 +139,7 @@ class WSDEvalBootstrapper(Bootstrapper):
 
         return our_score
 
-    @classmethod
-    def create_score_dist(cls, gold, guess, schedule):
+    def create_score_dist(self, gold, guess, schedule):
         line_map, guess_map, gold_map = create_sample_maps(gold, guess)
         dist = []
         for resample in schedule:
@@ -151,6 +149,8 @@ class WSDEvalBootstrapper(Bootstrapper):
         return dist
 
 
+bootstrapper = WSDEvalBootstrapper()
+
 simple_compare_resampled(extra_pk)
-simple_create_schedule(WSDEvalBootstrapper)
-simple_resample(WSDEvalBootstrapper, extra_pk)
+simple_create_schedule(bootstrapper)
+simple_resample(bootstrapper, extra_pk)
