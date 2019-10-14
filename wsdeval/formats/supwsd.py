@@ -72,10 +72,14 @@ def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
     # here rather than SupWSD's idea of the most frequent. Is it a similar
     # result. Does SupWSD have proper access to frequency data ATM?
 
-    for gold_line, supwsd_result in zip_equal(
-        goldkey, iter_supwsd_result(supwsd_result_fp), names=["gold", "supwsd_result"]
+    gold_keys = []
+    for gold_line in goldkey:
+        gold_keys.append(gold_line.split()[0])
+    gold_keys.sort()
+
+    for key, supwsd_result in zip_equal(
+        gold_keys, iter_supwsd_result(supwsd_result_fp), names=["gold", "supwsd_result"]
     ):
-        key = gold_line.split()[0]
         synsets = supwsd_result[1]
         if len(synsets):
             payload = synsets[0][0].decode("utf-8")
