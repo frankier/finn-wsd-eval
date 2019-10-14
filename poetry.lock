@@ -274,7 +274,7 @@ description = "Disk Cache -- Disk and file backed persistent cache."
 name = "diskcache"
 optional = false
 python-versions = "*"
-version = "4.0.0"
+version = "4.1.0"
 
 [[package]]
 category = "main"
@@ -328,7 +328,7 @@ tinydb = "*"
 tinyrecord = "*"
 
 [package.source]
-reference = "d6ba0ec349d6714fc70df5322ad3ff7671bb6e63"
+reference = "bafe082ff8a5cd457f641286196c782a21648f8d"
 type = "git"
 url = "https://github.com/frankier/expcomb.git"
 [[package]]
@@ -883,19 +883,22 @@ category = "dev"
 description = "pytest: simple powerful testing with Python"
 name = "pytest"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "4.6.5"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
+version = "4.6.6"
 
 [package.dependencies]
 atomicwrites = ">=1.0"
 attrs = ">=17.4.0"
 colorama = "*"
-importlib-metadata = ">=0.12"
 packaging = "*"
 pluggy = ">=0.12,<1.0"
 py = ">=1.5.0"
 six = ">=1.10.0"
 wcwidth = "*"
+
+[package.dependencies.importlib-metadata]
+python = "<3.8"
+version = ">=0.12"
 
 [package.dependencies.more-itertools]
 python = ">=2.8"
@@ -1151,7 +1154,7 @@ description = "TinyDB is a tiny, document oriented database optimized for your h
 name = "tinydb"
 optional = false
 python-versions = "*"
-version = "3.14.2"
+version = "3.15.0"
 
 [[package]]
 category = "main"
@@ -1276,7 +1279,7 @@ more-itertools = "*"
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]
 
 [metadata]
-content-hash = "574f6e9a7120549bd9cde12c51c6f9b05a34f0c0557c2ae708522e217608d8c1"
+content-hash = "a9f1fc94d9f339e60c9a4b33123f1fbc3642e17550983acd21e09500998be017"
 python-versions = "^3.6"
 
 [metadata.hashes]
@@ -1307,7 +1310,7 @@ cython = ["07efba7b32c082c519b75e3b03821c2f32848e2b3e9986c784bbd8ffaf0666d7", "0
 dataclasses = ["454a69d788c7fda44efd71e259be79577822f5e3f53f029a22d08004e951dc9f", "6988bd2b895eef432d562370bb707d540f32f7360ab13da45340101bc2307d84"]
 datrie = ["bdd5da6ba6a97e7cd96eef2e7441c8d2ef890d04ba42694a41c7dffa3aca680c", "c931f3c67a12db49cef0680ed4dbbd25f7dd90eb71d7e28880b3b5980a5b7f42"]
 decorator = ["86156361c50488b84a3f148056ea716ca587df2f0de1d34750d35c21312725de", "f069f3a01830ca754ba5258fde2278454a0b5b79e0d7f5c13b3b97e57d4acff6"]
-diskcache = ["7c20b58ed07d03bbfba793f823d1fc27a61e590371fe6011fa1319a25c028cd1", "a4e94d91e97b7b3f4474f0c46213f233193e5a6f60ae866746ef36af869f9615"]
+diskcache = ["69b253a6ffe95bb4bafb483b97c24fca3c2c6c47b82e92b36486969a7e80d47d", "bcee5a59f9c264e2809e58d01be6569a3bbb1e36a1e0fb83f7ef9b2075f95ce0"]
 docutils = ["6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0", "9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827", "a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"]
 elmoformanylangs = []
 entrypoints = ["589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19", "c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451"]
@@ -1365,7 +1368,7 @@ pylatex = ["b854a889ea879199cdfaa319e314838c717c423eb5390f8bae64875742fb171b"]
 pyparsing = ["6f98a7b9397e206d78cc01df10131398f1c8b8510a2f4d97d9abd82e1aacdd80", "d9338df12903bbf5d65a0e4e87c2161968b10d2e489652bb47001d82a9b028b4"]
 pypiwin32 = ["67adf399debc1d5d14dffc1ab5acacb800da569754fafdc576b2a039485aa775", "71be40c1fbd28594214ecaecb58e7aa8b708eabfa0125c8a109ebd51edbd776a"]
 pyrsistent = ["34b47fa169d6006b32e99d4b3c4031f155e6e68ebcc107d6454852e8e0ee6533"]
-pytest = ["8fc39199bdda3d9d025d3b1f4eb99a192c20828030ea7c9a0d2840721de7d347", "d100a02770f665f5dcf7e3f08202db29857fee6d15f34c942be0a511f39814f0"]
+pytest = ["5d0d20a9a66e39b5845ab14f8989f3463a7aa973700e6cdf02db69da9821e738", "692d9351353ef709c1126266579edd4fd469dcf6b5f4f583050f72161d6f3592"]
 python-dateutil = ["7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb", "c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"]
 pytorch-pretrained-bert = ["9cf7c6221e854071b9844f2a9a581e05a24777351618c010493d9c76601c6747", "ddd86f2f4ca595a2ad05d48c35d4f5c1c5f150bef79d56e3159701840a574d06", "edf4f9c2e64ef4e3cc68a335c88938fa45c17f18300952c64ba59fa66580f2f4"]
 pytz = ["1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d", "b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"]
@@ -1386,7 +1389,7 @@ snakemake = ["874808ed3265d96d9df10c04dfb3fa28c0aa80484483d8973bbc5971e28b5dfb"]
 soupsieve = ["605f89ad5fdbfefe30cdc293303665eff2d188865d4dbe4eb510bba1edfbfce3", "b91d676b330a0ebd5b21719cb6e9b57c57d433671f65b9c28dd3461d9a1ed0b6"]
 stiff = []
 streamz = ["6c59be1d09c0b666eb32548b6e6e6252ec460593e55859780b3e982a27cdb324", "89c9f10aadebad218878a150782ec030997eaf5a02afb555a5e7f994160af27d"]
-tinydb = ["582c8fc7c2d1fa09662aebf26255a56fa2e3ec96b090a438d08d9486c9ba4502", "99059b9d9518440ac0749e7eb545b71f2cb21def8ea43c8001c5249726293231"]
+tinydb = ["7b120fcb65deed856c30ddbb89f4cd845bfe38d68a8c027aa8f3f95b72936edb", "e890ce216d27d98f6bbfffb1849a1c4ab83b7b95a233272d69a49d7a062d54b8"]
 tinyrecord = ["bc7e6a8e78600df234d7a85c2f5d584130f2c6ffd7cd310f9d3a1d976d3373c8"]
 toml = ["229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c", "235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e", "f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"]
 toolz = ["08fdd5ef7c96480ad11c12d472de21acd32359996f69a5259299b540feba4560"]

@@ -151,6 +151,6 @@ class WSDEvalBootstrapper(Bootstrapper):
 
 bootstrapper = WSDEvalBootstrapper()
 
-simple_compare_resampled(extra_pk)
+simple_compare_resampled()
 simple_create_schedule(bootstrapper)
 simple_resample(bootstrapper, extra_pk)
