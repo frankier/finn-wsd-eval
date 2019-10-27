@@ -5,39 +5,87 @@ cnf("SEED", "42")
 cnf("ITERS", "100000")
 
 AWE_NN_VAR, = glob_wildcards(GUESS + "/awe_nn.{awe_nn_var,[^/]+}/")
-LESK_VAR, = glob_wildcards(GUESS + "/lesk.{lesk_nn_var,[^/]+}/")
+SUPWSD_VAR, = glob_wildcards(GUESS + "/supwsd.{supwsd_var,[^/]+}/")
+LESK_VAR, = glob_wildcards(GUESS + "/lesk.{lesk_var,[^/]+}/")
+
+# Utils
+
+def nicks_of_selected(selected):
+    nicks = []
+    for _label, filter in selected:
+        for nick in SnakeMake.get_nicks(filter):
+            nicks.append(nick)
+    return nicks
+
 
 def cmp_inputs(wildcards):
-    if wildcards.exp == "awe_nn":
-        return [BOOTWORK + "/resamples/{exp,[^/\.]+}." + var + "/{corpora,[^/]+}.pkl" for var in AWE_NN_VAR]
-    else:
-        freq = ".freq" in wildcards.corpora
+    from wsdeval.selectedexps import UNSUP_SELECTED, SUP_SELECTED
+    if wildcards.cmp == "over":
+        result = []
+        # Add supervised
+        result.extend((
+            BOOTWORK + "/resamples/" + nick + "/" + training_corpus + "-train/{cmp_var,[^/]+}.pkl"
+            for nick in nicks_of_selected(SUP_SELECTED)
+            for training_corpus in CORPUS_NAMES
+        ))
+        # Add unsupervised
+        result.extend((
+            BOOTWORK + "/resamples/" + nick + "/{cmp_var,[^/]+}.pkl"
+            for nick in nicks_of_selected(UNSUP_SELECTED)
+        ))
+        return result
+    elif wildcards.cmp == "awe_nn":
+        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/{cmp_var,.+}.pkl" for var in AWE_NN_VAR]
+    elif wildcards.cmp == "supwsd":
+        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/{cmp_var,.+}.pkl" for var in SUPWSD_VAR]
+    else: # lesk
+        freq = ".freq" in wildcards.cmp_var
         if freq:
-            corpus = wildcards.corpora.replace(".freq", "")
+            corpus = wildcards.cmp_var.replace(".freq", "")
             vars = [var for var in LESK_VAR if ".freq" in var]
         else:
-            corpus = wildcards.corpora
+            corpus = wildcards.cmp_var
             vars = [var for var in LESK_VAR if ".freq" not in var]
-        return [BOOTWORK + "/resamples/{exp,[^/\.]+}." + var + "/" + corpus + ".pkl" for var in vars]
+        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/" + corpus + ".pkl" for var in vars]
+
+# Top levels
+
+def over_boot_results():
+    for test_corpus in CORPUS_NAMES:
+        for test_seg in TEST_SEGMENT:
+            yield BOOTWORK + "/over/nsd-best-" + test_corpus  + "-" + test_seg + ".db"
 
 def awe_boot_results():
     for train_corpus in CORPUS_DIR_MAP:
     	for test_corpus in CORPUS_DIR_MAP:
             yield BOOTWORK + "/awe_nn/nsd-best-" + train_corpus  + "-" + test_corpus + ".db"
 
+def supwsd_boot_results():
+    for train_corpus in CORPUS_DIR_MAP:
+        for test_corpus in CORPUS_DIR_MAP:
+            yield BOOTWORK + "/supwsd/nsd-best-" + train_corpus  + "-" + test_corpus + ".db"
+
 def lesk_boot_results():
     for freq in [".freq", ""]:
         for test_corpus in CORPUS_DIR_MAP:
             yield BOOTWORK + "/lesk/nsd-best-" + test_corpus + freq + ".db"
 
+rule bootstrap_over:
+    input: list(over_boot_results())
+
 rule bootstrap_awe_dev:
     input: list(awe_boot_results())
+
+rule bootstrap_supwsd_dev:
+    input: list(supwsd_boot_results())
 
 rule bootstrap_lesk_dev:
     input: list(lesk_boot_results())
 
 rule bootstrap_all:
-    input: list(awe_boot_results()) + list(lesk_boot_results())
+    input: list(over_boot_results()) + list(awe_boot_results()) + list(supwsd_boot_results()) + list(lesk_boot_results())
+
+# Schedule
 
 rule create_schedule:
     output:
@@ -50,36 +98,36 @@ rule create_schedule:
         " --iters " + ITERS +
         " {input} {output}"
 
-# Bootstrapping AWE on dev data
-rule resample_awe_dev:
-    output: BOOTWORK + "/resamples/awe_nn.{var,[^-/]+}/{train_corpus,[^-/.]+}-{test_corpus,[^-/.]+}.pkl"
+# Bootstrapping sup
+rule resample_sup:
+    output: BOOTWORK + "/resamples/{nick,[^-/]+}/{train_corpus,[^-/.]+}-{train_seg,[^-/.]+}/{test_corpus,[^-/.]+}-{test_seg,[^-/.]+}.pkl"
     input:
-        schedule=BOOTWORK + "/schedules/{test_corpus}/dev/corpus.sup.key.pkl",
-        gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.sup.key",
+        schedule=BOOTWORK + "/schedules/{test_corpus}/{test_seg}/corpus.sup.key.pkl",
+        gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/{test_seg}/corpus.sup.key",
     shell:
         "python scripts/expc.py sigtest resample" +
 	" {output} {input.gold} " +
-        GUESS + "/awe_nn.{wildcards.var}/{wildcards.train_corpus}-train/{wildcards.test_corpus}-dev " +
-        RESULTS + "/awe_nn.{wildcards.var}/{wildcards.train_corpus}-train/{wildcards.test_corpus}-dev.db" +
+        GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.test_corpus}-{wildcards.test_seg} " +
+        RESULTS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.test_corpus}-{wildcards.test_seg}.db" +
         " {input.schedule}"
 
-# Bootstrapping Lesk on dev data
-rule resample_lesk_dev:
-    output: BOOTWORK + "/resamples/lesk.{var,[^/]+}/{test_corpus,[^-/.]+}.pkl"
+# Bootstrapping unsup
+rule resample_unsup:
+    output: BOOTWORK + "/resamples/{nick,[^/]+}/{test_corpus,[^-/.]+}-{test_seg,[^-/.]+}.pkl"
     input:
-        schedule=BOOTWORK + "/schedules/{test_corpus}/dev/corpus.sup.key.pkl",
-        gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/dev/corpus.sup.key",
+        schedule=BOOTWORK + "/schedules/{test_corpus}/{test_seg}/corpus.sup.key.pkl",
+        gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/{test_seg}/corpus.sup.key",
     shell:
         "python scripts/expc.py sigtest resample" +
 	" {output} {input.gold} " +
-        GUESS + "/lesk.{wildcards.var}/{wildcards.test_corpus}-dev " +
-        RESULTS + "/lesk.{wildcards.var}/{wildcards.test_corpus}-dev.db" +
+        GUESS + "/{wildcards.nick}/{wildcards.test_corpus}-{wildcards.test_seg} " +
+        RESULTS + "/{wildcards.nick}/{wildcards.test_corpus}-{wildcards.test_seg}.db" +
         " {input.schedule} "
 
 # Compare f1s
 rule compare_f1s:
     input: cmp_inputs
-    output: BOOTWORK + "/{exp,[^/\.]+}/cmp-{corpora,[^/]+}.db"
+    output: BOOTWORK + "/{cmp,[^/\.]+}/cmp-{cmp_var,[^/]+}.db"
     shell:
         "python scripts/expc.py sigtest compare-resampled {input} {output}"
 
@@ -87,7 +135,7 @@ rule compare_f1s:
 # Get info about NSD from best
 rule nsd_from_best:
     input:
-        BOOTWORK + "/{exp,[^/\.]+}/cmp-{corpora,[^/]+}.db"
-    output: BOOTWORK + "/{exp,[^/\.]+}/nsd-best-{corpora,[^/]+}.db"
+        BOOTWORK + "/{cmp,[^/\.]+}/cmp-{corpus,[^/]+}.db"
+    output: BOOTWORK + "/{cmp,[^/\.]+}/nsd-best-{corpus,[^/]+}.db"
     shell:
         "python scripts/expc.py sigtest nsd-from-best {input} {output}"

@@ -139,10 +139,10 @@ for use_freq in [False, True]:
             ukb_args += ("--dict_weight",)
         else:
             ukb_args += ("--dict_noweight",)
-            label_extra = "_nf"
+            label_extra += "\\textsubscript{nf}"
             nick_extra += ".nf"
         if extract_extra:
-            label_extra += "+extract"
+            label_extra += "\\textsubscript{+extract}"
             nick_extra += ".extract"
         ukb_exps.append(
             Exp(
