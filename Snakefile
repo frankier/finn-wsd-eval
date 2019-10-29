@@ -19,7 +19,7 @@ cnf("RESULTS", WORK + "/results")
 
 #CORPUS_DIRS = [STIFFEVAL, EUROMODELS]
 cnf_list("CORPUS_NAMES", ["stiff", "eurosense"])
-cnf_list("TRAIN_SEGMENT", ["train", "test"])
+cnf_list("TRAIN_SEGMENT", ["trainf", "test"])
 cnf_list("TEST_SEGMENT", ["dev", "test"])
 
 CORPUS_DIR_MAP = {
