@@ -384,8 +384,16 @@ class Floor(Exp):
 
 
 class Ceil(SupExp):
-    def __init__(self):
-        super().__init__(["Limits", "Ceil"], "ceil", "Ceil")
+    def __init__(self, tok):
+        if tok:
+            disp_tok = "Tok"
+        else:
+            disp_tok = "Inst"
+        super().__init__(
+            ["Limits", "Ceil" + disp_tok],
+            mk_nick("ceil", (tok, {False: "inst", True: "tok"})),
+            "Ceil" + disp_tok,
+        )
 
     def train(self, paths, model_path):
         from wsdeval.systems.limits import train_ceil

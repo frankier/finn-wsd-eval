@@ -35,7 +35,8 @@ def train_ceil(inf, keyin, model):
 @click.argument("inf", type=click.File("rb"))
 @click.argument("keyin", type=click.File("r"))
 @click.argument("keyout", type=click.File("w"))
-def test_ceil(model, inf, keyin, keyout):
+@click.option("--tok/--inst")
+def test_ceil(model, inf, keyin, keyout, tok):
     for item_pos, cnt, it in iter_instances_grouped(inf):
         item_pos_str = ".".join(item_pos)
         model_path = pjoin(model, item_pos_str)
@@ -46,7 +47,10 @@ def test_ceil(model, inf, keyin, keyout):
             all_synset_ids = []
         for inst_id, _ in it:
             key_id, gold_synset_ids = next_key(keyin)
-            prediction = set(gold_synset_ids) & set(all_synset_ids)
+            if tok:
+                prediction = set(gold_synset_ids) if len(all_synset_ids) else set()
+            else:
+                prediction = set(gold_synset_ids) & set(all_synset_ids)
             if not prediction:
                 prediction = ["U"]
             keyout.write("{} {}\n".format(inst_id, " ".join(prediction)))
