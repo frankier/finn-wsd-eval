@@ -64,14 +64,6 @@ def zip_equal(*iterables, names=None):
 
 
 def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
-    from finntk.wordnet.reader import fiwn
-    from finntk.wordnet.utils import fi2en_post
-    from nltk.corpus.reader.wordnet import WordNetError
-
-    # Possible TODO: try picking the most frequent according to what's known
-    # here rather than SupWSD's idea of the most frequent. Is it a similar
-    # result. Does SupWSD have proper access to frequency data ATM?
-
     gold_keys = []
     for gold_line in goldkey:
         gold_keys.append(gold_line.split()[0])
@@ -81,17 +73,9 @@ def proc_supwsd(goldkey, supwsd_result_fp, guess_fp):
         gold_keys, iter_supwsd_result(supwsd_result_fp), names=["gold", "supwsd_result"]
     ):
         synsets = supwsd_result[1]
+        synset = "U"
         if len(synsets):
             payload = synsets[0][0].decode("utf-8")
             if payload[0].isdigit():
                 synset = payload
-            else:
-                try:
-                    lemma = fiwn.lemma_from_key(payload)
-                except WordNetError:
-                    synset = "U"
-                else:
-                    synset = fi2en_post(fiwn.ss2of(lemma.synset()))
-        else:
-            synset = "U"
         guess_fp.write("{} {}\n".format(key, synset))
