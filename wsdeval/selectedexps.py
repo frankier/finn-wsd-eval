@@ -27,9 +27,10 @@ class OutCorpusFilter:
 
 
 UNSUP_SELECTED = [
-    ("Baseline", SimpleFilter("Baseline")),
+    ("1st", SimpleFilter("Baseline", "1st")),
+    ("Rand", SimpleFilter("Baseline", "Rand")),
     (
-        "UKB no freq",
+        "UKB",
         SimpleFilter("Knowledge", "UKB", **{"extract_extra": False, "use_freq": False}),
     ),
     (
@@ -37,7 +38,7 @@ UNSUP_SELECTED = [
         SimpleFilter("Knowledge", "UKB", **{"extract_extra": False, "use_freq": True}),
     ),
     (
-        "Lesk no freq",
+        "Lesk",
         SimpleFilter(
             "Knowledge",
             "Cross-lingual Lesk",
@@ -81,3 +82,21 @@ SUP_INOUT_SELECTED = [
     for label, filter in SUP_SELECTED
     for inout, inout_filter in INOUT
 ]
+
+LIMITS_SELECTED = [
+    ("Unambg", SimpleFilter("Limits", "Floor")),
+    ("1st", SimpleFilter("Baseline", "1st")),
+    ("Rand", SimpleFilter("Baseline", "Rand")),
+]
+
+for inout, inout_filter in INOUT[::-1]:
+    LIMITS_SELECTED += [
+        (
+            "InstKnown " + inout,
+            AndFilter(SimpleFilter("Limits", "CeilInst"), inout_filter),
+        ),
+        (
+            "TokKnown " + inout,
+            AndFilter(SimpleFilter("Limits", "CeilTok"), inout_filter),
+        ),
+    ]

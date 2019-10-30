@@ -9,7 +9,12 @@ from expcomb.table.spec import (
     box_highlight,
 )
 from expcomb.filter import SimpleFilter
-from .selectedexps import UNSUP_SELECTED, SUP_SELECTED, SUP_INOUT_SELECTED
+from .selectedexps import (
+    UNSUP_SELECTED,
+    SUP_SELECTED,
+    SUP_INOUT_SELECTED,
+    LIMITS_SELECTED,
+)
 
 
 def tf_group(name):
@@ -61,12 +66,29 @@ TRAIN_CORPORA = LookupGroupDisplay(
 
 TEST_CORPORA = LookupGroupDisplay(
     CatValGroup("test-corpus", ["eurosense-test", "stiff-test"]),
-    {"eurosense-test": "Eurosense tested", "stiff-test": "STIFF tested"},
+    {"eurosense-test": "Eurosense", "stiff-test": "STIFF"},
 )
 
 DEV_CORPORA = LookupGroupDisplay(
     CatValGroup("test-corpus", ["eurosense-dev", "stiff-dev"]),
-    {"eurosense-dev": "Eurosense tested", "stiff-dev": "STIFF tested"},
+    {"eurosense-dev": "Eurosense", "stiff-dev": "STIFF"},
+)
+
+ALL_TEST_CORPORA = DimGroups(
+    [
+        LookupGroupDisplay(
+            CatValGroup(
+                "test-corpus",
+                ["eurosense-dev", "stiff-dev", "eurosense-test", "stiff-test"],
+            ),
+            {
+                "eurosense-dev": "Euro dev",
+                "stiff-dev": "STIFF dev",
+                "eurosense-test": "Euro test",
+                "stiff-test": "STIFF test",
+            },
+        )
+    ]
 )
 
 LESK_SQUARE_SPEC = SqTableSpec(
@@ -95,13 +117,18 @@ LESK_SQUARE_SPEC = SqTableSpec(
     box_highlight,
 )
 
-UNSUP_GROUPS = SelectDimGroups(*(UNSUP_SELECTED + SUP_INOUT_SELECTED))
+OVER_GROUPS = SelectDimGroups(*(UNSUP_SELECTED + SUP_INOUT_SELECTED))
 SUP_GROUPS = SelectDimGroups(*SUP_SELECTED)
+LIMITS_GROUPS = SelectDimGroups(*LIMITS_SELECTED)
 
 TABLES = [
     (
-        "unsup_sum_table",
-        SumTableSpec(UNSUP_GROUPS, DimGroups([TEST_CORPORA]), UnlabelledMeasure("F1")),
+        "over_table",
+        SumTableSpec(OVER_GROUPS, ALL_TEST_CORPORA, UnlabelledMeasure("F1")),
+    ),
+    (
+        "limits_table",
+        SumTableSpec(LIMITS_GROUPS, ALL_TEST_CORPORA, UnlabelledMeasure("F1")),
     ),
     (
         "sup_sum_table",
