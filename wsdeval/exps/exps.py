@@ -422,10 +422,10 @@ class Post1stSenseCombExp(Exp):
         self.inner_exp = inner_exp
         super().__init__(
             inner_exp.path[:],
-            inner_exp.nick + "." + type,
-            inner_exp.disp + "+" + type,
+            inner_exp.nick + "." + self.type,
+            inner_exp.disp + "+" + self.type,
             None,
-            {"1stsensecomb": type, **inner_exp.opts},
+            {"1stsensecomb": self.type, **inner_exp.opts},
         )
 
     def run(self, paths, guess_fn):

@@ -136,8 +136,8 @@ rule test_sup_1st:
     input:
         test = get_corpus_seg,
         ceil_model = WORK + "/models/{train_corpus}-{train_seg}/ceil.inst",
-        guess_1st = GUESS + "/first/{corpus}-{seg}"
-        inner_guess = GUESS + "/{inner_nick}/{train_corpus}-{train_seg}/{corpus}-{seg}"
+        guess_1st = GUESS + "/first/{corpus}-{seg}",
+        inner_guess = GUESS + "/{inner_nick}/{train_corpus}-{train_seg}/{corpus}-{seg}",
     output:
         GUESS + "/{inner_nick,[^/]+.{type,(x1st|u1st}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
