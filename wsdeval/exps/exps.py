@@ -385,6 +385,7 @@ class Floor(Exp):
 
 class Ceil(SupExp):
     def __init__(self, tok):
+        self.tok = tok
         if tok:
             disp_tok = "Tok"
         else:
@@ -407,4 +408,61 @@ class Ceil(SupExp):
         with open(paths["suptag"], "rb") as inf, open(
             paths["supkey"], "r"
         ) as keyin, open(cwd_relpath(guess_fn), "w") as keyout:
-            test_ceil.callback(model_path, inf, keyin, keyout)
+            test_ceil.callback(
+                model_path, inf, keyin, keyout, "--tok" if self.tok else "--inst"
+            )
+
+
+class Post1stSenseCombExp(Exp):
+    def __init__(self, inner_exp, x1st):
+        if x1st:
+            self.type = "x1st"
+        else:
+            self.type = "u1st"
+        self.inner_exp = inner_exp
+        super().__init__(
+            inner_exp.path[:],
+            inner_exp.nick + "." + type,
+            inner_exp.disp + "+" + type,
+            None,
+            {"1stsensecomb": type, **inner_exp.opts},
+        )
+
+    def run(self, paths, guess_fn):
+        import pickle
+        from wsdeval.formats.sup_corpus import iter_keys, iter_instances_grouped
+
+        with open(os.environ["GUESS_1ST"], "r") as key1stin:
+            gold_map = dict(iter_keys(key1stin))
+        with open(os.environ["INNER_GUESS"], "rb") as inkey, open(
+            cwd_relpath(guess_fn), "w"
+        ) as keyout:
+            if self.type == "x1st":
+                # Check each word to see if 1st was available when guessing: if not replace with 1st
+                inst_lemmas = {}
+                lemma_senses = {}
+                ceil_model = os.environ["CEIL_MODEL"]
+                with open(paths["suptag"], "rb") as inf:
+                    for item_pos, cnt, it in iter_instances_grouped(inf):
+                        item_pos_str = ".".join(item_pos)
+                        with open(pjoin(ceil_model, item_pos_str), "rb") as modelf:
+                            lemma_senses[item_pos_str] = pickle.load(modelf, protocol=4)
+                        for inst_id, _ in it:
+                            inst_lemmas[inst_id] = item_pos_str
+                for k, senses in iter_keys(inkey):
+                    if len(set(gold_map[k]) & set(lemma_senses[inst_lemmas[k]])):
+                        # It was available: pass through
+                        good_senses = senses
+                    else:
+                        # It wasn't: replace
+                        good_senses = gold_map[k]
+                    keyout.write("{} {}\n".format(k, " ".join(good_senses)))
+            else:
+                # Replace each "U" with GOLD
+                for k, senses in iter_keys(inkey):
+                    if senses != ["U"]:
+                        # It was given: pass through
+                        good_senses = senses
+                    else:
+                        # It wasn't: replace
+                        good_senses = gold_map[k]

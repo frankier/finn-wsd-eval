@@ -14,22 +14,26 @@ from .exps import (
     lesk,
     Floor,
     Ceil,
+    Post1stSenseCombExp,
 )
 from wsdeval.tools.means import ALL_MEANS, MEAN_DISPS, NON_EXPANDING_MEANS
 
+enhanced_backoff_exps = []
 
 EXPERIMENTS = [
     ExpGroup(
         [
-            Exp(["Baseline"], "first", "FiWN 1st sense", baseline("first")),
-            Exp(["Baseline"], "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
+            Exp(["Baseline", "Rand"], "first", "FiWN 1st sense", baseline("first")),
+            Exp(["Baseline", "1st"], "mfe", "FiWN + PWN 1st sense", baseline("mfe")),
         ]
     ),
-    SupExpGroup([Ctx2Vec()]),
     ExpGroup([Floor()]),
-    SupExpGroup([Ceil()]),
+    SupExpGroup([Ceil(False), Ceil(True)]),
 ]
 
+ctx2vec = Ctx2Vec()
+enhanced_backoff_exps.append(ctx2vec)
+EXPERIMENTS.append(SupExpGroup([ctx2vec]))
 
 supwsd_exps = []
 for vec, sur_words in [
@@ -40,6 +44,7 @@ for vec, sur_words in [
     ("fasttext", True),
 ]:
     supwsd_exps.append(SupWSD(vec, sur_words))
+enhanced_backoff_exps.extend(supwsd_exps)
 EXPERIMENTS.append(SupExpGroup(supwsd_exps))
 
 
@@ -93,6 +98,7 @@ awe_nn_exps = []
 for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
     for mean in MEANS:
         awe_nn_exps.append(AweNn(vec, mean))
+enhanced_backoff_exps.extend(awe_nn_exps)
 EXPERIMENTS.append(SupExpGroup(awe_nn_exps))
 
 
@@ -154,3 +160,13 @@ for use_freq in [False, True]:
             )
         )
 EXPERIMENTS.append(ExpGroup(ukb_exps))
+
+supwsd_1st_exps = []
+for supwsd_exp in supwsd_exps:
+    supwsd_1st_exps.append(Post1stSenseCombExp(supwsd_exp, True))
+EXPERIMENTS.append(ExpGroup(supwsd_1st_exps))
+
+sup_1st_backoff_exps = []
+for exp in enhanced_backoff_exps:
+    sup_1st_backoff_exps.append(Post1stSenseCombExp(exp, False))
+EXPERIMENTS.append(ExpGroup(sup_1st_backoff_exps))

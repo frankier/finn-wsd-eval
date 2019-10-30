@@ -127,9 +127,24 @@ rule test_sup:
         test = get_corpus_seg,
         model = WORK + "/models/{train_corpus}-{train_seg}/{nick}",
     output: 
-        GUESS + "/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{nick,[^/]+[^(.x1st|.u1st)]}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
         "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
+        "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
+
+rule test_sup_1st:
+    input:
+        test = get_corpus_seg,
+        ceil_model = WORK + "/models/{train_corpus}-{train_seg}/ceil.inst",
+        guess_1st = GUESS + "/first/{corpus}-{seg}"
+        inner_guess = GUESS + "/{inner_nick}/{train_corpus}-{train_seg}/{corpus}-{seg}"
+    output:
+        GUESS + "/{inner_nick,[^/]+.{type,(x1st|u1st}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+    shell:
+        "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
+        "GUESS_1ST={inputs.guess_1st} "
+        "INNER_GUESS={inputs.inner_guess} "
+        "CEIL_MODEL={inputs.ceil_model} "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
 
 # Testing unsupervised models

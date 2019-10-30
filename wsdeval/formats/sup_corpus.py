@@ -69,3 +69,8 @@ def norm_wf_lemma_of_tokens(tokens):
 def next_key(keyin):
     bits = next(keyin).strip().split()
     return bits[0], bits[1:]
+
+
+def iter_keys(keyin):
+    while 1:
+        yield next_key(keyin)
