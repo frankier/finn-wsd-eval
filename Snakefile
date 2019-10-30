@@ -152,7 +152,7 @@ rule test_unsup:
     input:
         test = get_corpus_seg,
     output:
-        GUESS + "/{nick,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{nick,[^/]+[^(.x1st|.u1st)]}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
         "mkdir -p " + GUESS + "/{wildcards.nick}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test {input.test} {output}"
