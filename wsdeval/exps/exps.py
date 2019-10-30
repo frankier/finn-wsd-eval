@@ -449,20 +449,14 @@ class Post1stSenseCombExp(Exp):
                             lemma_senses[item_pos_str] = pickle.load(modelf, protocol=4)
                         for inst_id, _ in it:
                             inst_lemmas[inst_id] = item_pos_str
-                for k, senses in iter_keys(inkey):
-                    if len(set(gold_map[k]) & set(lemma_senses[inst_lemmas[k]])):
-                        # It was available: pass through
-                        good_senses = senses
-                    else:
-                        # It wasn't: replace
-                        good_senses = gold_map[k]
-                    keyout.write("{} {}\n".format(k, " ".join(good_senses)))
-            else:
-                # Replace each "U" with GOLD
-                for k, senses in iter_keys(inkey):
-                    if senses != ["U"]:
-                        # It was given: pass through
-                        good_senses = senses
-                    else:
-                        # It wasn't: replace
-                        good_senses = gold_map[k]
+            for k, senses in iter_keys(inkey):
+                if senses != ["U"] and (
+                    self.type == "u1st"
+                    or len(set(gold_map[k]) & set(lemma_senses[inst_lemmas[k]]))
+                ):
+                    # It was available: pass through
+                    good_senses = senses
+                else:
+                    # It wasn't available or was U: replace
+                    good_senses = gold_map[k]
+                keyout.write("{} {}\n".format(k, " ".join(good_senses)))
