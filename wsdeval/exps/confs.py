@@ -164,9 +164,9 @@ EXPERIMENTS.append(ExpGroup(ukb_exps))
 supwsd_1st_exps = []
 for supwsd_exp in supwsd_exps:
     supwsd_1st_exps.append(Post1stSenseCombExp(supwsd_exp, True))
-EXPERIMENTS.append(ExpGroup(supwsd_1st_exps))
+EXPERIMENTS.append(SupExpGroup(supwsd_1st_exps))
 
 sup_1st_backoff_exps = []
 for exp in enhanced_backoff_exps:
     sup_1st_backoff_exps.append(Post1stSenseCombExp(exp, False))
-EXPERIMENTS.append(ExpGroup(sup_1st_backoff_exps))
+EXPERIMENTS.append(SupExpGroup(sup_1st_backoff_exps))
