@@ -2,11 +2,14 @@ from stiff.munge.utils import space_tokenize
 from stiff.utils.xml import free_elem, iter_blocks
 
 
-def iter_lexelts(inf):
+def iter_lexelts(inf, synsets=False):
     for lexelt in iter_blocks("lexelt")(inf):
-        item = lexelt.get("item")
-        pos = lexelt.get("pos")
-        yield lexelt, (item, pos)
+        if synsets:
+            yield lexelt, lexelt.get("synset")
+        else:
+            item = lexelt.get("item")
+            pos = lexelt.get("pos")
+            yield lexelt, (item, pos)
 
 
 def proc_instance(instance):
@@ -42,8 +45,8 @@ def iter_instances(inf):
             yield inst_id, item_pos, texts
 
 
-def iter_instances_grouped(inf):
-    for lexelt, item_pos in iter_lexelts(inf):
+def iter_instances_grouped(inf, synsets=False):
+    for lexelt, item_pos in iter_lexelts(inf, synsets=synsets):
 
         def group_iter():
             for instance in lexelt.xpath("instance"):

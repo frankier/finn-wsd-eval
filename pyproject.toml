@@ -22,6 +22,7 @@ snakemake = "^5.5"
 expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "fbfe110e2287ae6149a9231cce607b3ea87fabea"}
 networkx = "^2.3"
 pygraphviz = "^1.5"
+lmdb = "^0.97.0"
 
 [tool.poetry.extras]
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]

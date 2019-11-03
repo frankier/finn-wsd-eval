@@ -338,7 +338,7 @@ class AweNn(SupExp):
         from wsdeval.systems.nn import train
 
         with open(paths["suptag"], "rb") as inf, open(paths["supkey"], "r") as keyin:
-            train.callback(self.vec, self.mean, inf, keyin, model_path)
+            train.callback(self.vec, self.mean, inf, keyin, model_path, synsets=False)
 
     def run(self, paths, guess_fn, model_path):
         from wsdeval.systems.nn import test
@@ -346,7 +346,15 @@ class AweNn(SupExp):
         with open(paths["suptag"], "rb") as inf, open(
             cwd_relpath(guess_fn), "w"
         ) as keyout:
-            test.callback(self.vec, self.mean, model_path, inf, keyout, use_freq=True)
+            test.callback(
+                self.vec,
+                self.mean,
+                model_path,
+                inf,
+                keyout,
+                use_freq=True,
+                synsets=False,
+            )
 
 
 def lesk_pp(mean, do_expand, exclude_cand, score_by):

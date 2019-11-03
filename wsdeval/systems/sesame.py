@@ -1,7 +1,7 @@
 import click
 import logging
-from wsdeval.tools.vec_nn import (
-    mk_training_examples,
+from wsdeval.vec_nn_common import mk_training_examples
+from wsdeval.nn.vec_nn_old import (
     train_vec_nn,
     test_vec_nn,
     train_many_vec_nn,
