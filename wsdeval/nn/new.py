@@ -137,9 +137,13 @@ class GroupedVecExactNN:
 
 
 def nearest_from_mats(mats, query_vec):
+    if query_vec is None:
+        return None
     best_sim = NEG_INF
     best_idx = None
     for mat_idx, mat in enumerate(mats):
+        if mat is None:
+            continue
         sim = numpy.amax(mat.dot(query_vec))
         if sim > best_sim:
             best_sim = sim
@@ -148,7 +152,7 @@ def nearest_from_mats(mats, query_vec):
 
 
 def value_from_mat(mat, vals, query_vec):
-    if mat is None or vals is None:
+    if (mat is None) or (query_vec is None):
         return None
     best_idx = numpy.argmax(mat.dot(query_vec))
     return vals[best_idx]

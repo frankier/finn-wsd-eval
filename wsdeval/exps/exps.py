@@ -357,6 +357,41 @@ class AweNn(SupExp):
             )
 
 
+class EngAweNn(SupExp):
+    def __init__(self, vec, mean):
+        self.vec = vec
+        self.mean = mean
+        super().__init__(
+            ["Supervised", "XAWE-NN"],
+            mk_nick("xawe_nn", vec, mean),
+            "XAWE-NN ({}, {})".format(vec, MEAN_DISPS[mean]),
+            None,
+            {"vec": vec, "mean": mean},
+        )
+
+    def train(self, paths, model_path):
+        from wsdeval.systems.nn import train
+
+        with open(paths["suptag"], "rb") as inf, open(paths["supkey"], "r") as keyin:
+            train.callback(self.vec, self.mean, inf, keyin, model_path, synsets=True)
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.nn import test
+
+        with open(paths["suptag"], "rb") as inf, open(
+            cwd_relpath(guess_fn), "w"
+        ) as keyout:
+            test.callback(
+                self.vec,
+                self.mean,
+                model_path,
+                inf,
+                keyout,
+                use_freq=True,
+                synsets=True,
+            )
+
+
 def lesk_pp(mean, do_expand, exclude_cand, score_by):
     def inner(paths, guess_fn):
         args = [

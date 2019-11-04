@@ -31,25 +31,34 @@ group_at_once_map = SnakeMake.get_group_at_once_map(parse_filter(FILTER))
 nick_to_group_nick_map = SnakeMake.get_nick_to_group_nick_map(parse_filter(FILTER))
 path_nick_map = SnakeMake.get_path_nick_map(parse_filter(FILTER))
 
+def intersect_nicks(filter, **kwargs):
+    if all((k not in filter.opt_dict or filter.opt_dict[k] == v for k, v in kwargs.items())):
+        yield from SnakeMake.get_nicks(filter.intersect_opts(**kwargs))
+
+
 # Utility functions
 def all_results():
     filter = parse_filter(FILTER)
-    if "sup" not in filter.opt_dict or filter.opt_dict["sup"]:
-        for nick in SnakeMake.get_nicks(filter.intersect_opts(sup=True)):
-            yield from expand(
-                RESULTS + "/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
-                train_corpus=CORPUS_NAMES,
-                train_seg=TRAIN_SEGMENT,
-                test_corpus=CORPUS_NAMES,
-                test_seg=TEST_SEGMENT
-            )
-    if "sup" not in filter.opt_dict or not filter.opt_dict["sup"]:
-        for nick in SnakeMake.get_nicks(filter.intersect_opts(sup=False)):
-            yield from expand(
-                RESULTS + "/" + nick + "/{test_corpus}-{test_seg}.db",
-                test_corpus=CORPUS_NAMES,
-                test_seg=TEST_SEGMENT
-            )
+    for nick in intersect_nicks(filter, sup=True):
+        yield from expand(
+            RESULTS + "/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
+            train_corpus=CORPUS_NAMES,
+            train_seg=TRAIN_SEGMENT,
+            test_corpus=CORPUS_NAMES,
+            test_seg=TEST_SEGMENT
+        )
+    for nick in intersect_nicks(filter, eng_sup=True):
+        yield from expand(
+            RESULTS + "/" + nick + "/semcor/{test_corpus}-{test_seg}.db",
+            test_corpus=CORPUS_NAMES,
+            test_seg=TEST_SEGMENT
+        )
+    for nick in intersect_nicks(filter, sup=False, eng_sup=False):
+        yield from expand(
+            RESULTS + "/" + nick + "/{test_corpus}-{test_seg}.db",
+            test_corpus=CORPUS_NAMES,
+            test_seg=TEST_SEGMENT
+        )
 
 
 def group_at_onces():
@@ -77,9 +86,9 @@ def get_corpus_seg(wc):
 
 def get_sup_guess(wc):
     if wc.nick in group_at_once_nicks():
-        return f"{GUESS}/groupatonce/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}/{nick_to_group_nick_map[wc.nick]}/{wc.nick}"
+        return f"{GUESS}/groupatonce/{wc.train_corpusseg}/{wc.corpus}-{wc.seg}/{nick_to_group_nick_map[wc.nick]}/{wc.nick}"
     else:
-        return f"{GUESS}/{wc.nick}/{wc.train_corpus}-{wc.train_seg}/{wc.corpus}-{wc.seg}"
+        return f"{GUESS}/{wc.nick}/{wc.train_corpusseg}/{wc.corpus}-{wc.seg}"
 
 
 ## Top levels
@@ -107,6 +116,13 @@ rule train:
         "mkdir -p " + WORK + "/models/{wildcards.corpus}-{wildcards.seg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" train {input} {output}"
 
+rule train_eng:
+    input: lambda wc: config["SEMCOR"]
+    output: directory(WORK + "/models/semcor/{nick,[^/]+}")
+    shell:
+        "mkdir -p " + WORK + "/models/semcor/ && "
+        "python scripts/expc.py --filter \"nick={wildcards.nick}\" train {input} {output}"
+
 ## Testing
 
 # Testing supervised models
@@ -125,23 +141,23 @@ rule test_sup_groupatonce:
 rule test_sup:
     input:
         test = get_corpus_seg,
-        model = WORK + "/models/{train_corpus}-{train_seg}/{nick}",
+        model = WORK + "/models/{train_corpusseg}/{nick}",
     output: 
-        GUESS + "/{nick,[^/]+[^(.x1st|.u1st)]}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{nick,[^/]+[^(.x1st|.u1st)]}/{train_corpusseg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
-        "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
+        "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpusseg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
 
 rule test_sup_1st:
     input:
         test = get_corpus_seg,
-        ceil_model = WORK + "/models/{train_corpus}-{train_seg}/ceil.inst",
+        ceil_model = WORK + "/models/{train_corpusseg}/ceil.inst",
         guess_1st = GUESS + "/first/{corpus}-{seg}",
-        inner_guess = GUESS + "/{inner_nick}/{train_corpus}-{train_seg}/{corpus}-{seg}",
+        inner_guess = GUESS + "/{inner_nick}/{train_corpusseg}/{corpus}-{seg}",
     output:
-        GUESS + "/{inner_nick,[^/]+}.{type,(x1st|u1st}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{inner_nick,[^/]+}.{type,(x1st|u1st)}/{train_corpusseg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
-        "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
+        "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpusseg}/ && "
         "GUESS_1ST={inputs.guess_1st} "
         "INNER_GUESS={inputs.inner_guess} "
         "CEIL_MODEL={inputs.ceil_model} "
@@ -173,10 +189,10 @@ rule eval_sup:
         test = get_corpus_seg,
         guess = get_sup_guess,
     output:
-        RESULTS + "/{nick,[^/]+}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
+        RESULTS + "/{nick,[^/]+}/{train_corpusseg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}.db"
     shell:
-        "mkdir -p " + RESULTS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
-        "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} train-corpus={wildcards.train_corpus}-{wildcards.train_seg} test-corpus={wildcards.corpus}-{wildcards.seg}"
+        "mkdir -p " + RESULTS + "/{wildcards.nick}/{wildcards.train_corpusseg}/ && "
+        "python scripts/expc.py --filter \"nick={wildcards.nick}\" eval {output} {input.guess} {input.test} train-corpus={wildcards.train_corpusseg} test-corpus={wildcards.corpus}-{wildcards.seg}"
 
 # Scoring unsupervised models
 rule eval_unsup:

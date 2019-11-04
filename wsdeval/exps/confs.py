@@ -1,8 +1,9 @@
 import os
 from expcomb.models import Exp
-from .base import ExpGroup, SupExpGroup, SupGpuExpGroup
+from .base import ExpGroup, SupExpGroup, SupGpuExpGroup, EngSupExpGroup
 from .exps import (
     AweNn,
+    EngAweNn,
     SupWSD,
     Elmo,
     ElmoAllExpGroup,
@@ -100,6 +101,12 @@ for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
         awe_nn_exps.append(AweNn(vec, mean))
 enhanced_backoff_exps.extend(awe_nn_exps)
 EXPERIMENTS.append(SupExpGroup(awe_nn_exps))
+
+xlingual_awe_nn_exps = []
+for vec in ["fasttext", "word2vec", "numberbatch", "triple", "double"]:
+    for mean in MEANS:
+        xlingual_awe_nn_exps.append(EngAweNn(vec, mean))
+EXPERIMENTS.append(EngSupExpGroup(xlingual_awe_nn_exps))
 
 
 if os.environ.get("USE_SINGLE_LAYER_ELMO"):

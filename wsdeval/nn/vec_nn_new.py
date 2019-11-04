@@ -21,11 +21,13 @@ def train_word_experts(manager, training_examples):
 
 def train_synset_examples(manager, instances):
     for iden, cnt, it in instances:
-        manager.add_group(iden, (vec for _inst_id, vec in it))
+        manager.add_group(
+            iden, (vec for _inst_id, vec, _synset_id in it if vec is not None)
+        )
 
 
 def write_one(keyout, inst_id, prediction):
-    keyout.write("{} {}\n".format(inst_id, prediction.decode("utf-8")))
+    keyout.write("{} {}\n".format(inst_id, prediction))
 
 
 def pred_write(keyout, inst_id, allow_most_freq, iden, pred, mapper):
@@ -51,7 +53,7 @@ def test_word_experts(grouped, instances, keyout, allow_most_freq=False):
                 allow_most_freq,
                 iden,
                 best_synset,
-                lambda best_synset: best_synset,
+                lambda best_synset: best_synset.decode("utf-8"),
             )
 
 
