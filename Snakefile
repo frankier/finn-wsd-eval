@@ -139,7 +139,7 @@ rule test_sup_1st:
         guess_1st = GUESS + "/first/{corpus}-{seg}",
         inner_guess = GUESS + "/{inner_nick}/{train_corpus}-{train_seg}/{corpus}-{seg}",
     output:
-        GUESS + "/{inner_nick,[^/]+.{type,(x1st|u1st}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{inner_nick,[^/]+}.{type,(x1st|u1st}/{train_corpus,[^/]+}-{train_seg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
         "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/ && "
         "GUESS_1ST={inputs.guess_1st} "
