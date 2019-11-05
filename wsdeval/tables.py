@@ -92,6 +92,10 @@ ALL_TEST_CORPORA = DimGroups(
     ]
 )
 
+EXPAND_GROUP_DISP = LookupGroupDisplay(
+    tf_group("expand"), {False: "No expand", True: "Expand"}
+)
+
 LESK_SQUARE_SPEC = SqTableSpec(
     DimGroups(
         [
@@ -106,9 +110,7 @@ LESK_SQUARE_SPEC = SqTableSpec(
     ),
     DimGroups(
         [
-            LookupGroupDisplay(
-                tf_group("expand"), {False: "No expand", True: "Expand"}
-            ),
+            EXPAND_GROUP_DISP,
             LookupGroupDisplay(
                 tf_group("wn_filter"), {False: "No filter", True: "Filter"}
             ),
@@ -116,6 +118,32 @@ LESK_SQUARE_SPEC = SqTableSpec(
     ),
     UnlabelledMeasure("F1"),
     box_highlight,
+)
+
+LESK_PP_SQUARE_SPEC = SqTableSpec(
+    DimGroups(
+        [
+            DEV_CORPORA,
+            LookupGroupDisplay(
+                CatValGroup("mean", ["pre_sif_mean", "normalized_mean"]),
+                {"normalized_mean": "AWE", "pre_sif_mean": "pre-SIF"},
+            ),
+        ],
+        div_idx=0,
+    ),
+    DimGroups(
+        [
+            EXPAND_GROUP_DISP,
+            LookupGroupDisplay(
+                CatValGroup("score_by", ["both", "defn", "lemma"]),
+                {"normalized_mean": "AWE", "pre_sif_mean": "pre-SIF"},
+            ),
+            LookupGroupDisplay(
+                tf_group("exclude_cand"), {False: "Include cand", True: "Exclude cand"}
+            ),
+        ]
+    ),
+    UnlabelledMeasure("F1"),
 )
 
 OVER_GROUPS = SelectDimGroups(*(UNSUP_SELECTED + SUP_INOUT_SELECTED))
@@ -149,6 +177,7 @@ TABLES = [
         LESK_SQUARE_SPEC,
         SimpleFilter("Knowledge", "Cross-lingual Lesk", **{"use_freq": True}),
     ),
+    ("lesk_pp_square", LESK_PP_SQUARE_SPEC, SimpleFilter("Knowledge", "Lesk++")),
     (
         "supwsd_square",
         SqTableSpec(

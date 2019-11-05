@@ -65,6 +65,19 @@ UNSUP_SELECTED = [
             }
         ),
     ),
+    (
+        "Lesk++",
+        SimpleFilter(
+            "Knowledge",
+            "Lesk++",
+            **{
+                "expand": False,
+                "mean": "normalized_mean",
+                "exclude_cand": True,
+                "score_by": "both",
+            }
+        ),
+    ),
 ]
 
 SUP_SELECTED = [
