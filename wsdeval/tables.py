@@ -3,6 +3,7 @@ from expcomb.table.spec import (
     DimGroups,
     SqTableSpec,
     SumTableSpec,
+    SortedColsSpec,
     CatValGroup,
     LookupGroupDisplay,
     UnlabelledMeasure,
@@ -124,11 +125,11 @@ LIMITS_GROUPS = SelectDimGroups(*LIMITS_SELECTED)
 TABLES = [
     (
         "over_table",
-        SumTableSpec(OVER_GROUPS, ALL_TEST_CORPORA, UnlabelledMeasure("F1")),
+        SortedColsSpec(OVER_GROUPS, ALL_TEST_CORPORA, UnlabelledMeasure("F1")),
     ),
     (
         "limits_table",
-        SumTableSpec(LIMITS_GROUPS, ALL_TEST_CORPORA, UnlabelledMeasure("F1")),
+        SortedColsSpec(LIMITS_GROUPS, ALL_TEST_CORPORA, UnlabelledMeasure("F1")),
     ),
     (
         "sup_sum_table",
