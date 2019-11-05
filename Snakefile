@@ -143,7 +143,7 @@ rule test_sup:
         test = get_corpus_seg,
         model = WORK + "/models/{train_corpusseg}/{nick}",
     output: 
-        GUESS + "/{nick,[^/]+[^(.x1st|.u1st)]}/{train_corpusseg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
+        GUESS + "/{nick,([^/](?!.x1st|.u1st))+}/{train_corpusseg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
         "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpusseg}/ && "
         "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
