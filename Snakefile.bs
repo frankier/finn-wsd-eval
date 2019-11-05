@@ -54,6 +54,7 @@ def over_boot_results():
     for test_corpus in CORPUS_NAMES:
         for test_seg in TEST_SEGMENT:
             yield BOOTWORK + "/over/nsd-best-" + test_corpus  + "-" + test_seg + ".db"
+            yield BOOTWORK + "/over/cld-" + test_corpus  + "-" + test_seg + ".db"
 
 def awe_boot_results():
     for train_corpus in CORPUS_DIR_MAP:
@@ -134,8 +135,15 @@ rule compare_f1s:
 
 # Get info about NSD from best
 rule nsd_from_best:
-    input:
-        BOOTWORK + "/{cmp,[^/\.]+}/cmp-{corpus,[^/]+}.db"
-    output: BOOTWORK + "/{cmp,[^/\.]+}/nsd-best-{corpus,[^/]+}.db"
+    input: BOOTWORK + "/{cmp,[^/\.]+}/cmp-{cmp_var,[^/]+}.db"
+    output: BOOTWORK + "/{cmp,[^/\.]+}/nsd-best-{cmp_var,[^/]+}.db"
     shell:
         "python scripts/expc.py sigtest nsd-from-best {input} {output}"
+
+
+# Get CLD
+rule cld:
+    input: BOOTWORK + "/{cmp,[^/\.]+}/cmp-{cmp_var,[^/]+}.db"
+    output: BOOTWORK + "/{cmp,[^/\.]+}/cld-{cmp_var,[^/]+}.db"
+    shell:
+        "python scripts/expc.py sigtest cld {input} {output}"
