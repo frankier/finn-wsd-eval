@@ -1,6 +1,12 @@
 import os
 from expcomb.models import Exp
-from .base import ExpGroup, SupExpGroup, SupGpuExpGroup, EngSupExpGroup
+from .base import (
+    ExpGroup,
+    SupExpGroup,
+    SupGpuExpGroup,
+    EngSupExpGroup,
+    EngSupGpuExpGroup,
+)
 from .exps import (
     AweNn,
     EngAweNn,
@@ -9,6 +15,7 @@ from .exps import (
     ElmoAllExpGroup,
     BertAllExpGroup,
     Bert2,
+    EngBert2,
     baseline,
     lesk_pp,
     ukb,
@@ -122,6 +129,7 @@ else:
 EXPERIMENTS.append(BertAllExpGroup())
 
 EXPERIMENTS.append(SupGpuExpGroup([Bert2()]))
+EXPERIMENTS.append(EngSupGpuExpGroup([EngBert2()]))
 EXPERIMENTS.append(SupExpGroup([Ctx2Vec2()]))
 
 

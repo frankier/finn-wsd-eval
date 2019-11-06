@@ -413,6 +413,27 @@ class Bert2(SupExp):
             test.callback(model_path, inf, keyout, use_freq=True, synsets=False)
 
 
+class EngBert2(SupExp):
+    def __init__(self):
+        super().__init__(
+            ["Supervised", "XBERT2-NN"], mk_nick("xbert2"), "XBERT2-NN", None, {}
+        )
+
+    def train(self, paths, model_path):
+        from wsdeval.systems.bert2 import train
+
+        with open(paths["sup"], "rb") as inf, open(paths["supkey"], "r") as keyin:
+            train.callback(inf, keyin, model_path, synsets=True)
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.bert2 import test
+
+        with open(paths["sup"], "rb") as inf, open(
+            cwd_relpath(guess_fn), "w"
+        ) as keyout:
+            test.callback(model_path, inf, keyout, use_freq=True, synsets=True)
+
+
 class Ctx2Vec2(SupExp):
     def __init__(self):
         super().__init__(

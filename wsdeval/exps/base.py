@@ -45,3 +45,7 @@ class SupGpuExpGroup(SupExpGroup):
 
 class EngSupExpGroup(ExpGroup):
     eng_sup = True
+
+
+class EngSupGpuExpGroup(EngSupExpGroup):
+    gpu = True
