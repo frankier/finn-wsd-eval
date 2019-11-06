@@ -174,14 +174,14 @@ class Bert2Embedder(CtxEmbedder):
                 try:
                     vec_idx = next(
                         islice(
-                            tok_start_idxs(tokenized_text, startend=True),
+                            tok_start_idxs(tokenized_text, startend=False),
                             start_idx,
                             start_idx + 1,
                         )
                     )
                 except StopIteration:
-                    print(sent)
-                    print(list(tok_start_idxs(sent, startend=True)))
+                    print(tokenized_text)
+                    print(list(tok_start_idxs(tokenized_text, startend=False)))
                     print(start_idx)
                     raise
                 else:
