@@ -11,7 +11,7 @@ def seg(corpusseg):
 
 class TrainSegFilter:
     def doc_included(self, d_path, d_opts):
-        return seg(d_opts["train-corpus"]) == "train"
+        return seg(d_opts["train-corpus"]) in ("train", "trainf")
 
 
 class InCorpusFilter:
@@ -102,14 +102,22 @@ LIMITS_SELECTED = [
     ("Rand", SimpleFilter("Baseline", "Rand")),
 ]
 
-for inout, inout_filter in INOUT[::-1]:
+for inout, inout_filter in INOUT:
+    # LIMITS_SELECTED += [
+    # (
+    # "InstKnown " + inout,
+    # AndFilter(SimpleFilter("Limits", "CeilInst"), TrainSegFilter(), inout_filter),
+    # ),
+    # (
+    # "TokKnown " + inout,
+    # AndFilter(SimpleFilter("Limits", "CeilTok"), TrainSegFilter(), inout_filter),
+    # ),
+    # ]
     LIMITS_SELECTED += [
         (
-            "InstKnown " + inout,
-            AndFilter(SimpleFilter("Limits", "CeilInst"), inout_filter),
-        ),
-        (
-            "TokKnown " + inout,
-            AndFilter(SimpleFilter("Limits", "CeilTok"), inout_filter),
-        ),
+            "Known " + inout,
+            AndFilter(
+                SimpleFilter("Limits", "CeilTok"), TrainSegFilter(), inout_filter
+            ),
+        )
     ]
