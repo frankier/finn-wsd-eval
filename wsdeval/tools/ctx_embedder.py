@@ -3,6 +3,7 @@ import numpy
 import os
 from functools import partial
 from itertools import groupby
+from wsdeval.formats.sup_corpus import iter_instances
 from wsdeval.nn.vec_nn_common import normalize
 from itertools import islice
 
@@ -54,8 +55,6 @@ def make_batch(iter, batch_size):
 
 class CtxEmbedder:
     def iter_inst_vecs(self, inf, batch_size=None, **kwargs):
-        from wsdeval.formats.sup_corpus import iter_instances
-
         if batch_size is None:
             batch_size = get_batch_size()
 
@@ -73,8 +72,8 @@ class CtxEmbedder:
             if is_end:
                 break
 
-    def iter_inst_vecs_grouped(self, inf, batch_size=None, synsets=False, **kwargs):
-        ungrouped = self.iter_inst_vecs(inf, batch_size, **kwargs)
+    def iter_inst_vecs_grouped(self, inf, synsets=False, **kwargs):
+        ungrouped = self.iter_inst_vecs(inf, **kwargs)
         for item_pos, group_iter in groupby(ungrouped, lambda tpl: tpl[1]):
             group_list = list(group_iter)
             yield (
@@ -155,7 +154,6 @@ class Bert2Embedder(CtxEmbedder):
         return cls._tokenizer, cls._model
 
     def iter_inst_vecs(self, inf, batch_size=None, **kwargs):
-        from wsdeval.formats.sup_corpus import iter_instances
 
         if batch_size is None:
             batch_size = get_batch_size()
@@ -227,6 +225,26 @@ class Bert2Embedder(CtxEmbedder):
                 break
 
 
+class Ctx2Vec2Embedder(CtxEmbedder):
+    def get_ctx2vec_models(cls):
+        from os.path import dirname, join as pjoin
+        from context2vec.common.model_reader import ModelReader
+
+        return ModelReader(
+            pjoin(
+                dirname(__file__), "..", "..", "systems", "context2vec", "model.params"
+            )
+        ).model
+
+    def iter_inst_vecs(self, inf, **kwargs):
+        model = self.get_ctx2vec_models()
+        iter = iter_instances(inf)
+        for inst_id, item_pos, (be, he, af) in iter:
+            vec = model.context2vec(be + he + af, len(be))
+            yield inst_id, item_pos, vec
+
+
 elmo_embedder = ElmoEmbedder()
 bert_embedder = BertEmbedder()
 bert2_embedder = Bert2Embedder()
+ctx2vec2_embedder = Ctx2Vec2Embedder()

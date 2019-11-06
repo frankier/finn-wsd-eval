@@ -413,6 +413,31 @@ class Bert2(SupExp):
             test.callback(model_path, inf, keyout, use_freq=True, synsets=False)
 
 
+class Ctx2Vec2(SupExp):
+    def __init__(self):
+        super().__init__(
+            ["Supervised", "Context2Vec2"],
+            mk_nick("ctx2vec2"),
+            "Context2Vec2",
+            None,
+            {},
+        )
+
+    def train(self, paths, model_path):
+        from wsdeval.systems.ctx2vec2 import train
+
+        with open(paths["sup"], "rb") as inf, open(paths["supkey"], "r") as keyin:
+            train.callback(inf, keyin, model_path)
+
+    def run(self, paths, guess_fn, model_path):
+        from wsdeval.systems.ctx2vec2 import test
+
+        with open(paths["sup"], "rb") as inf, open(
+            cwd_relpath(guess_fn), "w"
+        ) as keyout:
+            test.callback(model_path, inf, keyout, use_freq=True)
+
+
 def lesk_pp(mean, do_expand, exclude_cand, score_by):
     def inner(paths, guess_fn):
         args = [

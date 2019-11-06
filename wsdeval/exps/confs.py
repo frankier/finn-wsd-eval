@@ -13,6 +13,7 @@ from .exps import (
     lesk_pp,
     ukb,
     Ctx2Vec,
+    Ctx2Vec2,
     lesk,
     Floor,
     Ceil,
@@ -121,6 +122,7 @@ else:
 EXPERIMENTS.append(BertAllExpGroup())
 
 EXPERIMENTS.append(SupGpuExpGroup([Bert2()]))
+EXPERIMENTS.append(SupExpGroup([Ctx2Vec2()]))
 
 
 lesk_pp_exps = []
