@@ -213,7 +213,9 @@ class Bert2Embedder(CtxEmbedder):
                             vecs.append(None)
                         else:
                             vecs.append(
-                                normalize(outputs[0][sent_idx, vec_idx, :].numpy())
+                                normalize(
+                                    outputs[0][sent_idx, vec_idx, :].cpu().numpy()
+                                )
                             )
 
                 return vecs
