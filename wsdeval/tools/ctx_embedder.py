@@ -1,11 +1,55 @@
+import torch
 import numpy
 import os
 from functools import partial
 from itertools import groupby
+from wsdeval.nn.vec_nn_common import normalize
+from itertools import islice
 
 
 def get_batch_size():
     return int(os.environ.get("BATCH_SIZE", "32"))
+
+
+def memory_debug(func):
+    try:
+        return func()
+    except MemoryError:
+        # Try once more
+        import gc
+
+        gc.collect()
+        try:
+            return func()
+        except MemoryError:
+            # Output some debugging info
+            print("Whoops! Out of memory!")
+            from pympler import muppy, summary
+
+            all_objects = muppy.get_objects()
+            summary = summary.summarize(all_objects)
+            summary.print_(summary)
+            for ao in all_objects:
+                if not isinstance(ao, numpy.ndarry):
+                    continue
+                print(ao.dtype, ao.shape)
+            raise
+
+
+def make_batch(iter, batch_size):
+    infos = []
+    sents = []
+    is_end = True
+    for idx, (inst_id, item_pos, (be, he, af)) in enumerate(iter):
+        sents.append(be + he + af)
+        start_idx = len(be)
+        end_idx = len(be) + len(he)
+        infos.append((inst_id, item_pos, start_idx, end_idx))
+        if (idx + 1) == batch_size:
+            is_end = False
+            break
+
+    return infos, sents, is_end
 
 
 class CtxEmbedder:
@@ -18,39 +62,8 @@ class CtxEmbedder:
         model = self.vecs.get()
         iter = iter_instances(inf)
         while 1:
-            infos = []
-            sents = []
-            is_end = True
-            for idx, (inst_id, item_pos, (be, he, af)) in enumerate(iter):
-                sents.append(be + he + af)
-                start_idx = len(be)
-                end_idx = len(be) + len(he)
-                infos.append((inst_id, item_pos, start_idx, end_idx))
-                if (idx + 1) == batch_size:
-                    is_end = False
-                    break
-            try:
-                embs = self.embed_sentences(model, sents, **kwargs)
-            except MemoryError:
-                # Try once more
-                import gc
-
-                gc.collect()
-                try:
-                    embs = self.embed_sentences(model, sents, **kwargs)
-                except MemoryError:
-                    # Output some debugging info
-                    print("Whoops! Out of memory!")
-                    from pympler import muppy, summary
-
-                    all_objects = muppy.get_objects()
-                    summary = summary.summarize(all_objects)
-                    summary.print_(summary)
-                    for ao in all_objects:
-                        if not isinstance(ao, numpy.ndarry):
-                            continue
-                        print(ao.dtype, ao.shape)
-                    raise
+            infos, sents, is_end = make_batch(iter, batch_size)
+            embs = memory_debug(lambda: self.embed_sentences(model, sents, **kwargs))
             for (inst_id, item_pos, start_idx, end_idx), sent, emb in zip(
                 infos, sents, embs
             ):
@@ -60,12 +73,12 @@ class CtxEmbedder:
             if is_end:
                 break
 
-    def iter_inst_vecs_grouped(self, inf, batch_size=None, **kwargs):
+    def iter_inst_vecs_grouped(self, inf, batch_size=None, synsets=False, **kwargs):
         ungrouped = self.iter_inst_vecs(inf, batch_size, **kwargs)
         for item_pos, group_iter in groupby(ungrouped, lambda tpl: tpl[1]):
             group_list = list(group_iter)
             yield (
-                ".".join(item_pos),
+                ".".join(item_pos) if not synsets else item_pos,
                 len(group_list),
                 ((inst_id, vec) for inst_id, item_pos, vec in group_list),
             )
@@ -88,6 +101,17 @@ class ElmoEmbedder(CtxEmbedder):
         return vec
 
 
+def tok_start_idxs(tokens, startend=True):
+    for idx, tok in enumerate(tokens):
+        # Skip when start, end sentinal or when BPE split continuation
+        if startend and idx in (0, len(tokens) - 1):
+            continue
+        if tok.startswith("##"):
+            continue
+        yield idx + (0 if startend else 1)
+    yield len(tokens) - 1
+
+
 class BertEmbedder(CtxEmbedder):
     from finntk.emb.bert import vecs
     from finntk.vendor.bert import embed_sentences
@@ -97,19 +121,110 @@ class BertEmbedder(CtxEmbedder):
 
     def proc_vec(self, emb_tokens, sent, start_idx, end_idx):
         emb, tokens = emb_tokens
-        tok_start_idxs = []
-        for idx, tok in enumerate(tokens):
-            # Skip when start, end sentinal or when BPE split continuation
-            if idx in (0, len(tokens) - 1) or tok.startswith("##"):
-                continue
-            tok_start_idxs.append(idx)
-        if len(tok_start_idxs) < end_idx:
+        start_idxs = list(tok_start_idxs(tokens))
+        if len(start_idxs) - 1 < end_idx:
             return None
-        tok_start_idxs.append(len(tokens) - 1)
-        vec = emb[:, tok_start_idxs[start_idx] : tok_start_idxs[end_idx], :]
+        vec = emb[:, start_idxs[start_idx] : start_idxs[end_idx], :]
         vec = vec.reshape((vec.shape[0] * vec.shape[1], vec.shape[2]))
         return vec
 
 
+class Bert2Embedder(CtxEmbedder):
+    TENSOR_LENGTH = 256
+    _tokenizer = None
+    _model = None
+
+    def get_bert2_models(cls):
+        from transformers import BertTokenizer, BertModel
+
+        if cls._tokenizer is None:
+            cls._tokenizer = BertTokenizer.from_pretrained(
+                "bert-base-multilingual-cased"
+            )
+            cls._tokenizer.do_basic_tokenize = False
+            cls._model = BertModel.from_pretrained("bert-base-multilingual-cased")
+            device = torch.device(
+                "cuda"
+                if torch.cuda.is_available() and not os.environ.get("NO_GPU")
+                else "cpu"
+            )
+            cls._model.to(device)
+            cls._model.device = device
+            cls._model.eval()
+
+        return cls._tokenizer, cls._model
+
+    def iter_inst_vecs(self, inf, batch_size=None, **kwargs):
+        from wsdeval.formats.sup_corpus import iter_instances
+
+        if batch_size is None:
+            batch_size = get_batch_size()
+
+        tokenizer, model = self.get_bert2_models()
+        iter = iter_instances(inf)
+        while 1:
+            infos, sents, is_end = make_batch(iter, batch_size)
+
+            all_indexed_tokens = []
+            all_segment_ids = []
+            vec_idxs = []
+
+            for sent, (_inst_id, _item_pos, start_idx, _end_idx) in zip(sents, infos):
+                tokenized_text = tokenizer._tokenize(" ".join(sent))
+                try:
+                    vec_idx = next(
+                        islice(
+                            tok_start_idxs(tokenized_text, startend=True),
+                            start_idx,
+                            start_idx + 1,
+                        )
+                    )
+                except StopIteration:
+                    print(sent)
+                    print(list(tok_start_idxs(sent, startend=True)))
+                    print(start_idx)
+                    raise
+                else:
+                    vec_idxs.append(vec_idx if vec_idx < self.TENSOR_LENGTH else None)
+                indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
+                indexed_tokens = tokenizer.prepare_for_model(
+                    indexed_tokens,
+                    max_length=self.TENSOR_LENGTH,
+                    add_special_tokens=True,
+                )["input_ids"]
+
+                indexed_tokens = indexed_tokens + (
+                    [0] * (self.TENSOR_LENGTH - len(indexed_tokens))
+                )
+                segment_ids = [0] * self.TENSOR_LENGTH
+                all_indexed_tokens.append(indexed_tokens)
+                all_segment_ids.append(segment_ids)
+
+            def embed():
+
+                tokens_tensor = torch.tensor(all_indexed_tokens, device=model.device)
+                segments_tensors = torch.tensor(all_segment_ids, device=model.device)
+
+                vecs = []
+                with torch.no_grad():
+                    outputs = model(tokens_tensor, token_type_ids=segments_tensors)
+                    for sent_idx, vec_idx in enumerate(vec_idxs):
+                        if vec_idx is None:
+                            vecs.append(None)
+                        else:
+                            vecs.append(
+                                normalize(outputs[0][sent_idx, vec_idx, :].numpy())
+                            )
+
+                return vecs
+
+            embs = memory_debug(embed)
+            for (inst_id, item_pos, _, _), emb in zip(infos, embs):
+                yield inst_id, item_pos, emb
+            if is_end:
+                break
+
+
 elmo_embedder = ElmoEmbedder()
 bert_embedder = BertEmbedder()
+bert2_embedder = Bert2Embedder()

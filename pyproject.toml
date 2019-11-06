@@ -23,6 +23,7 @@ expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "fbfe110e2287a
 networkx = "^2.3"
 pygraphviz = "^1.5"
 lmdb = "^0.97.0"
+transformers = "^2.1"
 
 [tool.poetry.extras]
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]

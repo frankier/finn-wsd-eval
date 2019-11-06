@@ -8,6 +8,7 @@ from .exps import (
     Elmo,
     ElmoAllExpGroup,
     BertAllExpGroup,
+    Bert2,
     baseline,
     lesk_pp,
     ukb,
@@ -118,6 +119,8 @@ else:
     EXPERIMENTS.append(ElmoAllExpGroup())
 
 EXPERIMENTS.append(BertAllExpGroup())
+
+EXPERIMENTS.append(SupGpuExpGroup([Bert2()]))
 
 
 lesk_pp_exps = []
