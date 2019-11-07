@@ -157,11 +157,11 @@ rule test_sup_1st:
     output:
         GUESS + "/{inner_nick,[^/]+}.{type,(x1st|u1st)}/{train_corpusseg,[^/]+}/{corpus,[^/]+}-{seg,[^/]+}"
     shell:
-        "mkdir -p " + GUESS + "/{wildcards.nick}/{wildcards.train_corpusseg}/ && "
+        "mkdir -p " + GUESS + "/{wildcards.inner_nick}.{wildcards.type}/{wildcards.train_corpusseg}/ && "
         "GUESS_1ST={inputs.guess_1st} "
         "INNER_GUESS={inputs.inner_guess} "
         "CEIL_MODEL={inputs.ceil_model} "
-        "python scripts/expc.py --filter \"nick={wildcards.nick}\" test --model {input.model} {input.test} {output}"
+        "python scripts/expc.py --filter \"nick={wildcards.inner_nick}.{wildcards.type}\" test --model {input.model} {input.test} {output}"
 
 # Testing unsupervised models
 rule test_unsup:
