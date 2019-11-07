@@ -99,6 +99,7 @@ class GroupedVecExactNN:
                     f"Cannot use zero-copy when adding vector to GroupedVecExactNN due to wrong data type: {k.dtype!r}"
                 )
                 k = TYPE(k)
+            assert k.shape == (self.vec_width,)
             self.data.write(memoryview(k))
             self.data.write(v)
             actual_bytes = len(v)

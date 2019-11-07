@@ -18,6 +18,8 @@ EXPANDING_MEANS = {
     "catp4_mean": partial(catp_mean, ps=CATP_4),
 }
 
+EXPANSION_FACTOR = {"catp3_mean": 3, "catp4_mean": 4}
+
 NON_EXPANDING_MEANS = {
     "unnormalized_mean": unnormalized_mean,
     "normalized_mean": normalized_mean,

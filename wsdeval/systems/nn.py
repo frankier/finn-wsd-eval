@@ -9,7 +9,7 @@ from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.utils import apply_vec
 from finntk.emb.word2vec import space as word2vec_space
 from wsdeval.nn.vec_nn_common import mk_training_examples, normalize
-from wsdeval.tools.means import get_mean
+from wsdeval.tools.means import EXPANSION_FACTOR, get_mean
 
 
 def get_vec_space(vec):
@@ -91,10 +91,14 @@ def train(vec, mean, inf, keyin, model, synsets):
         from wsdeval.nn.vec_nn_new import train_word_experts, train_synset_examples
 
         if synsets:
-            manager = GroupedVecExactNN(model, space.dim, "wd")
+            manager = GroupedVecExactNN(
+                model, space.dim * EXPANSION_FACTOR.get(mean, 1), "wd"
+            )
             train_synset_examples(manager, training_examples)
         else:
-            manager = GroupedVecExactNN(model, space.dim, "wd", value_bytes=10)
+            manager = GroupedVecExactNN(
+                model, space.dim * EXPANSION_FACTOR.get(mean, 1), "wd", value_bytes=10
+            )
             train_word_experts(manager, training_examples)
 
 
@@ -127,10 +131,14 @@ def test(vec, mean, model, inf, keyout, use_freq, synsets):
         from wsdeval.nn.vec_nn_new import test_synset_experts, test_word_experts
 
         if synsets:
-            manager = GroupedVecExactNN(model, space.dim, "rd")
+            manager = GroupedVecExactNN(
+                model, space.dim * EXPANSION_FACTOR.get(mean, 1), "rd"
+            )
             test_synset_experts(manager, inst_ctxs, keyout, allow_most_freq=use_freq)
         else:
-            manager = GroupedVecExactNN(model, space.dim, "rd", value_bytes=10)
+            manager = GroupedVecExactNN(
+                model, space.dim * EXPANSION_FACTOR.get(mean, 1), "rd", value_bytes=10
+            )
             test_word_experts(manager, inst_ctxs, keyout, allow_most_freq=use_freq)
 
 
