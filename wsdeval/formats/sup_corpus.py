@@ -38,8 +38,8 @@ def proc_instance(instance):
     )
 
 
-def iter_instances(inf):
-    for lexelt, item_pos in iter_lexelts(inf):
+def iter_instances(inf, synsets=False):
+    for lexelt, item_pos in iter_lexelts(inf, synsets=synsets):
         for instance in lexelt.xpath("instance"):
             inst_id, texts = proc_instance(instance)
             yield inst_id, item_pos, texts

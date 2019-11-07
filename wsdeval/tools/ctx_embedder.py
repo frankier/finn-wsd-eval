@@ -54,12 +54,12 @@ def make_batch(iter, batch_size):
 
 
 class CtxEmbedder:
-    def iter_inst_vecs(self, inf, batch_size=None, **kwargs):
+    def iter_inst_vecs(self, inf, batch_size=None, synsets=False, **kwargs):
         if batch_size is None:
             batch_size = get_batch_size()
 
         model = self.vecs.get()
-        iter = iter_instances(inf)
+        iter = iter_instances(inf, synsets=synsets)
         while 1:
             infos, sents, is_end = make_batch(iter, batch_size)
             embs = memory_debug(lambda: self.embed_sentences(model, sents, **kwargs))
@@ -73,7 +73,7 @@ class CtxEmbedder:
                 break
 
     def iter_inst_vecs_grouped(self, inf, synsets=False, **kwargs):
-        ungrouped = self.iter_inst_vecs(inf, **kwargs)
+        ungrouped = self.iter_inst_vecs(inf, synsets=synsets, **kwargs)
         for item_pos, group_iter in groupby(ungrouped, lambda tpl: tpl[1]):
             group_list = list(group_iter)
             yield (
@@ -236,9 +236,9 @@ class Ctx2Vec2Embedder(CtxEmbedder):
             )
         ).model
 
-    def iter_inst_vecs(self, inf, **kwargs):
+    def iter_inst_vecs(self, inf, synsets=False, **kwargs):
         model = self.get_ctx2vec_models()
-        iter = iter_instances(inf)
+        iter = iter_instances(inf, synsets=synsets)
         for inst_id, item_pos, (be, he, af) in iter:
             vec = model.context2vec(be + he + af, len(be))
             yield inst_id, item_pos, vec
