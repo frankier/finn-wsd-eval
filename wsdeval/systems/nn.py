@@ -117,7 +117,7 @@ def test(vec, mean, model, inf, keyout, use_freq, synsets):
     space = get_vec_space(vec)
     aggf = get_mean(mean, vec)
     use_old = os.environ.get("USE_OLD_NN")
-    inst_ctxs = iter_inst_ctxs(inf, aggf, space, do_new=not use_old)
+    inst_ctxs = iter_inst_ctxs(inf, aggf, space, do_new=not use_old, synsets=False)
     if use_old:
         assert not synsets
         from wsdeval.nn.old import WordExpertManager

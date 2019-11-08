@@ -46,7 +46,7 @@ def train(inf, keyin, model, synsets):
 @click.option("--use-freq/--no-use-freq")
 @click.option("--synsets/--words")
 def test(model, inf, keyout, use_freq, synsets):
-    inst_it = bert2_embedder.iter_inst_vecs_grouped(inf, synsets=synsets)
+    inst_it = bert2_embedder.iter_inst_vecs_grouped(inf, synsets=False)
 
     if synsets:
         manager = GroupedVecExactNN(model, BERT_SIZE, "rd")
