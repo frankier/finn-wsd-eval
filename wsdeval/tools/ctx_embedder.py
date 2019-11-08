@@ -153,13 +153,13 @@ class Bert2Embedder(CtxEmbedder):
 
         return cls._tokenizer, cls._model
 
-    def iter_inst_vecs(self, inf, batch_size=None, **kwargs):
+    def iter_inst_vecs(self, inf, batch_size=None, synsets=False, **kwargs):
 
         if batch_size is None:
             batch_size = get_batch_size()
 
         tokenizer, model = self.get_bert2_models()
-        iter = iter_instances(inf)
+        iter = iter_instances(inf, synsets=synsets)
         while 1:
             infos, sents, is_end = make_batch(iter, batch_size)
 
