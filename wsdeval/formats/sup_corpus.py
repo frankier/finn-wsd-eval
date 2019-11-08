@@ -76,4 +76,7 @@ def next_key(keyin):
 
 def iter_keys(keyin):
     while 1:
-        yield next_key(keyin)
+        try:
+            yield next_key(keyin)
+        except StopIteration:
+            return
