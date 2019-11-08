@@ -161,7 +161,7 @@ rule test_sup_1st:
         "GUESS_1ST={input.guess_1st} "
         "INNER_GUESS={input.inner_guess} "
         "CEIL_MODEL={input.ceil_model} "
-        "python scripts/expc.py --filter \"nick={wildcards.inner_nick}.{wildcards.type}\" test --model {input.model} {input.test} {output}"
+        "python scripts/expc.py --filter \"nick={wildcards.inner_nick}.{wildcards.type}\" test {input.test} {output}"
 
 # Testing unsupervised models
 rule test_unsup:
