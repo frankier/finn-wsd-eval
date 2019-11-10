@@ -78,6 +78,11 @@ UNSUP_SELECTED = [
             }
         ),
     ),
+    (
+        "xAWE-NN",
+        SimpleFilter("Supervised", "XAWE-NN", mean="normalized_mean", vec="double"),
+    ),
+    ("xBERT-NN", SimpleFilter("Supervised", "XBERT2-NN")),
 ]
 
 SUP_SELECTED = [
@@ -86,6 +91,7 @@ SUP_SELECTED = [
         "AWE-NN",
         SimpleFilter("Supervised", "AWE-NN", mean="normalized_mean", vec="double"),
     ),
+    ("BERT-NN", SimpleFilter("Supervised", "BERT2-NN")),
 ]
 
 INOUT = [("in", InCorpusFilter()), ("out", OutCorpusFilter())]
