@@ -544,7 +544,7 @@ class Post1stSenseCombExp(Exp):
 
         with open(os.environ["GUESS_1ST"], "r") as key1stin:
             gold_map = dict(iter_keys(key1stin))
-        with open(os.environ["INNER_GUESS"], "rb") as inkey, open(
+        with open(os.environ["INNER_GUESS"], "r") as inkey, open(
             cwd_relpath(guess_fn), "w"
         ) as keyout:
             if self.type == "x1st":
@@ -556,7 +556,7 @@ class Post1stSenseCombExp(Exp):
                     for item_pos, cnt, it in iter_instances_grouped(inf):
                         item_pos_str = ".".join(item_pos)
                         with open(pjoin(ceil_model, item_pos_str), "rb") as modelf:
-                            lemma_senses[item_pos_str] = pickle.load(modelf, protocol=4)
+                            lemma_senses[item_pos_str] = pickle.load(modelf)
                         for inst_id, _ in it:
                             inst_lemmas[inst_id] = item_pos_str
             for k, senses in iter_keys(inkey):
