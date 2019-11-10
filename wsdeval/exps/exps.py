@@ -555,8 +555,12 @@ class Post1stSenseCombExp(Exp):
                 with open(paths["suptag"], "rb") as inf:
                     for item_pos, cnt, it in iter_instances_grouped(inf):
                         item_pos_str = ".".join(item_pos)
-                        with open(pjoin(ceil_model, item_pos_str), "rb") as modelf:
-                            lemma_senses[item_pos_str] = pickle.load(modelf)
+                        model_path = pjoin(ceil_model, item_pos_str)
+                        if exists(model_path):
+                            with open(model_path, "rb") as modelf:
+                                lemma_senses[item_pos_str] = pickle.load(modelf)
+                        else:
+                            lemma_senses[item_pos_str] = []
                         for inst_id, _ in it:
                             inst_lemmas[inst_id] = item_pos_str
             for k, senses in iter_keys(inkey):
