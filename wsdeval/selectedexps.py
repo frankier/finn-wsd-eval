@@ -86,7 +86,16 @@ UNSUP_SELECTED = [
 ]
 
 SUP_SELECTED = [
-    ("SupWSD", SimpleFilter("Supervised", "SupWSD", vec="fasttext", sur_words=True)),
+    (
+        "SupWSD",
+        SimpleFilter(
+            "Supervised",
+            "SupWSD",
+            vec="fasttext",
+            sur_words=True,
+            **{"1stsensecomb": "x1st"}
+        ),
+    ),
     (
         "AWE-NN",
         SimpleFilter("Supervised", "AWE-NN", mean="normalized_mean", vec="double"),

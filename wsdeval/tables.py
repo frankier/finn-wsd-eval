@@ -65,6 +65,11 @@ TRAIN_CORPORA = LookupGroupDisplay(
     {"eurosense-train": "Eurosense trained", "stiff-train": "STIFF trained"},
 )
 
+TRAINF_CORPORA = LookupGroupDisplay(
+    CatValGroup("train-corpus", ["eurosense-trainf", "stiff-trainf"]),
+    {"eurosense-trainf": "Eurosense trained", "stiff-trainf": "STIFF trained"},
+)
+
 TEST_CORPORA = LookupGroupDisplay(
     CatValGroup("test-corpus", ["eurosense-test", "stiff-test"]),
     {"eurosense-test": "Eurosense", "stiff-test": "STIFF"},
@@ -181,7 +186,7 @@ TABLES = [
     (
         "supwsd_square",
         SqTableSpec(
-            DimGroups([TRAIN_CORPORA, DEV_CORPORA]),
+            DimGroups([TRAINF_CORPORA, DEV_CORPORA]),
             SelectDimGroups(
                 ("fasttext", SimpleFilter(sur_words=False, vec="fasttext")),
                 ("word2vec", SimpleFilter(sur_words=False, vec="word2vec")),
@@ -192,7 +197,7 @@ TABLES = [
             UnlabelledMeasure("F1"),
             box_highlight,
         ),
-        SimpleFilter("Supervised", "SupWSD"),
+        SimpleFilter("Supervised", "SupWSD", **{"1stsensecomb": "x1st"}),
     ),
     (
         "nn_awe_square",
