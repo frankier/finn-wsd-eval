@@ -1,5 +1,5 @@
 from finntk.finnpos import sent_finnpos
-from finntk.wordnet.reader import fiwn
+from finntk.wordnet.reader import fiwn_encnt
 from finntk.emb.numberbatch import multispace as numberbatch_multispace
 from finntk.emb.autoextend import mk_lemma_vec
 from finntk.wsd.lesk_pp import LeskPP
@@ -37,7 +37,7 @@ def lesk_pp(mean, inf, keyout, include_wfs, expand, exclude_cand, score_by):
                 lemma_str = tagged_sent[idx][1]
                 lemmas = []
             else:
-                lemma_str, _pos, lemmas = lemmas_from_instance(fiwn, instance)
+                lemma_str, _pos, lemmas = lemmas_from_instance(fiwn_encnt, instance)
             sent_lemmas.append((lemma_str, lemmas))
             if instance.tag == "instance":
                 instance_ids.append(instance.attrib["id"])
