@@ -99,9 +99,8 @@ def lesk_pp(mean, inf, keyout, include_wfs, expand, exclude_cand, score_by):
                         best_lemma = lemma
                         best_score = score
                 sent_lemmas[lemma_idx] = (lemma_str, [best_lemma])
-        for (lemma_str, lemmas), inst_id in zip(
-            (x for x in sent_lemmas if len(x[1]) > 0), instance_ids
-        ):
+        instance_sent_lemmas = (x for x in sent_lemmas if len(x[1]) > 0)
+        for (lemma_str, lemmas), inst_id in zip(instance_sent_lemmas, instance_ids):
             if lemmas[0] is None:
                 continue
             write_lemma(keyout, inst_id, lemmas[0])
