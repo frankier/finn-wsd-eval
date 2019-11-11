@@ -26,6 +26,7 @@ from .exps import (
     Ceil,
     Post1stSenseCombExp,
 )
+from .utils import mk_nick
 from wsdeval.tools.means import ALL_MEANS, MEAN_DISPS, NON_EXPANDING_MEANS
 
 enhanced_backoff_exps = []
@@ -141,7 +142,13 @@ for score_by in ["both", "defn", "lemma"]:
                 lesk_pp_exps.append(
                     Exp(
                         ["Knowledge", "Lesk++"],
-                        "lesk_pp",
+                        mk_nick(
+                            "lesk_pp",
+                            mean,
+                            score_by,
+                            (exclude_cand, "exclcand"),
+                            (do_expand, "expand"),
+                        ),
                         "Lesk++ ({} {})".format(MEAN_DISPS[mean], do_expand),
                         lesk_pp(mean, do_expand, exclude_cand, score_by),
                         {
