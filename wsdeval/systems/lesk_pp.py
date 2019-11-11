@@ -8,6 +8,11 @@ from stiff.utils.xml import iter_sentences
 import click
 from wsdeval.tools.means import ALL_MEANS
 from wsdeval.formats.wordnet import lemmas_from_instance, write_lemma
+import wsdeval.tools.log  # noqa
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 @click.command("lesk-pp")
@@ -56,13 +61,17 @@ def lesk_pp(mean, inf, keyout, include_wfs, expand, exclude_cand, score_by):
                 sent_lemmas, *([lemma_idx] if exclude_cand else [])
             )
             if context_vec is None:
+                logger.debug("No context vec, backing off to MFS")
                 # Back off to MFS
                 sent_lemmas[lemma_idx] = (lemma_str, [lemmas[0]])
             else:
+                logger.debug(f"Got context vec {context_vec}")
                 best_lemma = None
                 best_score = -2
                 for lemma in lemmas:
+                    logger.debug(f"Considering lemma: {lemma}")
                     defn_vec = lesk_pp.mk_defn_vec(lemma)
+                    logger.debug(f"Got defn_vec: {defn_vec}")
                     if defn_vec is None:
                         defn_ctx_score = 0
                     else:
@@ -73,6 +82,7 @@ def lesk_pp(mean, inf, keyout, include_wfs, expand, exclude_cand, score_by):
                         # XXX: Is this reasonable, or should there be a penalty?
                         lemma_ctx_score = defn_ctx_score
                     else:
+                        logger.debug(f"Got lemma_vec: {lemma_vec}")
                         lemma_ctx_score = cosine_sim(lemma_vec, context_vec)
                     if score_by == "both":
                         score = defn_ctx_score + lemma_ctx_score
@@ -82,6 +92,9 @@ def lesk_pp(mean, inf, keyout, include_wfs, expand, exclude_cand, score_by):
                         score = lemma_ctx_score
                     else:
                         assert False
+                    logger.debug(
+                        f"Score: {score} ({defn_ctx_score} + {lemma_ctx_score})"
+                    )
                     if score > best_score:
                         best_lemma = lemma
                         best_score = score
