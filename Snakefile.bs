@@ -1,12 +1,15 @@
 ## Bootstrapping
 
+from os.path import exists
+
 cnf("BOOTWORK", WORK + "/bootstrap")
 cnf("SEED", "42")
 cnf("ITERS", "100000")
 
 AWE_NN_VAR, = glob_wildcards(GUESS + "/awe_nn.{awe_nn_var,[^/]+}/")
-SUPWSD_VAR, = glob_wildcards(GUESS + "/supwsd.{supwsd_var,[^/]+}/")
+SUPWSD_VAR, = glob_wildcards(GUESS + "/supwsd.{supwsd_var,[^/]+}.x1st/")
 LESK_VAR, = glob_wildcards(GUESS + "/lesk.{lesk_var,[^/]+}/")
+LESK_PP_VAR, = glob_wildcards(GUESS + "/lesk_pp.{lesk_pp_var,[^/]+}/")
 
 # Utils
 
@@ -20,6 +23,15 @@ def nicks_of_selected(selected):
 
 def cmp_inputs(wildcards):
     from wsdeval.selectedexps import UNSUP_SELECTED, SUP_SELECTED
+
+    def sup_var():
+        train, test = wildcards.cmp_var.split("-")
+        return train + "-train/" + test + "-dev.pkl"
+
+    def unsup_var():
+        test = wildcards.cmp_var
+        return test + "-dev.pkl"
+
     if wildcards.cmp == "over":
         result = []
         # Add supervised
@@ -35,9 +47,12 @@ def cmp_inputs(wildcards):
         ))
         return result
     elif wildcards.cmp == "awe_nn":
-        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/{cmp_var,.+}.pkl" for var in AWE_NN_VAR]
+        train, test = wildcards.cmp_var.split("-")
+        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/" + sup_var() for var in AWE_NN_VAR]
     elif wildcards.cmp == "supwsd":
-        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/{cmp_var,.+}.pkl" for var in SUPWSD_VAR]
+        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + ".x1st/" + sup_var() for var in SUPWSD_VAR]
+    elif wildcards.cmp == "lesk_pp":
+        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/" + unsup_var() for var in LESK_PP_VAR]
     else: # lesk
         freq = ".freq" in wildcards.cmp_var
         if freq:
@@ -46,7 +61,7 @@ def cmp_inputs(wildcards):
         else:
             corpus = wildcards.cmp_var
             vars = [var for var in LESK_VAR if ".freq" not in var]
-        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/" + corpus + ".pkl" for var in vars]
+        return [BOOTWORK + "/resamples/{cmp,[^/\.]+}." + var + "/" + corpus + "-dev.pkl" for var in vars]
 
 # Top levels
 
@@ -71,6 +86,10 @@ def lesk_boot_results():
         for test_corpus in CORPUS_DIR_MAP:
             yield BOOTWORK + "/lesk/nsd-best-" + test_corpus + freq + ".db"
 
+def lesk_pp_boot_results():
+    for test_corpus in CORPUS_DIR_MAP:
+        yield BOOTWORK + "/lesk_pp/nsd-best-" + test_corpus + ".db"
+
 rule bootstrap_over:
     input: list(over_boot_results())
 
@@ -82,6 +101,9 @@ rule bootstrap_supwsd_dev:
 
 rule bootstrap_lesk_dev:
     input: list(lesk_boot_results())
+
+rule bootstrap_lesk_pp_dev:
+    input: list(lesk_pp_boot_results())
 
 rule bootstrap_all:
     input: list(over_boot_results()) + list(awe_boot_results()) + list(supwsd_boot_results()) + list(lesk_boot_results())
@@ -105,12 +127,17 @@ rule resample_sup:
     input:
         schedule=BOOTWORK + "/schedules/{test_corpus}/{test_seg}/corpus.sup.key.pkl",
         gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/{test_seg}/corpus.sup.key",
-    shell:
-        "python scripts/expc.py sigtest resample" +
-	" {output} {input.gold} " +
-        GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.test_corpus}-{wildcards.test_seg} " +
-        RESULTS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.test_corpus}-{wildcards.test_seg}.db" +
-        " {input.schedule}"
+    run:
+        train_base = GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}"
+        if not exists(train_base):
+            train_base += "f"
+        shell(
+            "python scripts/expc.py sigtest resample" +
+            " {output} {input.gold} " +
+            train_base + "/{wildcards.test_corpus}-{wildcards.test_seg} " +
+            RESULTS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.test_corpus}-{wildcards.test_seg}.db" +
+            " {input.schedule}"
+        )
 
 # Bootstrapping unsup
 rule resample_unsup:
