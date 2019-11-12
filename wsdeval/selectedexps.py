@@ -101,6 +101,7 @@ SUP_SELECTED = [
         SimpleFilter("Supervised", "AWE-NN", mean="normalized_mean", vec="double"),
     ),
     ("BERT-NN", SimpleFilter("Supervised", "BERT2-NN")),
+    ("Ctx2Vec", SimpleFilter("Supervised", "Context2Vec2")),
 ]
 
 INOUT = [("in", InCorpusFilter()), ("out", OutCorpusFilter())]
