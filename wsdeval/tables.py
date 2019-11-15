@@ -129,20 +129,20 @@ LESK_PP_SQUARE_SPEC = SqTableSpec(
     DimGroups(
         [
             DEV_CORPORA,
-            EXPAND_GROUP_DISP,
             LookupGroupDisplay(
                 CatValGroup("mean", ["pre_sif_mean", "normalized_mean"]),
                 {"normalized_mean": "AWE", "pre_sif_mean": "pre-SIF"},
+            ),
+            LookupGroupDisplay(
+                CatValGroup("score_by", ["both", "defn", "lemma"]),
+                {"both": "Both", "defn": "Defn", "lemma": "Lemma"},
             ),
         ],
         div_idx=0,
     ),
     DimGroups(
         [
-            LookupGroupDisplay(
-                CatValGroup("score_by", ["both", "defn", "lemma"]),
-                {"both": "Both", "defn": "Defn", "lemma": "Lemma"},
-            ),
+            EXPAND_GROUP_DISP,
             LookupGroupDisplay(
                 tf_group("exclude_cand"), {False: "Incl. cand", True: "Excl. cand"}
             ),
