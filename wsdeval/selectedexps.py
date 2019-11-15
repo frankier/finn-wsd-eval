@@ -71,10 +71,10 @@ UNSUP_SELECTED = [
             "Knowledge",
             "Lesk++",
             **{
-                "expand": False,
-                "mean": "normalized_mean",
-                "exclude_cand": True,
-                "score_by": "both",
+                "expand": True,
+                "mean": "pre_sif_mean",
+                "exclude_cand": False,
+                "score_by": "defn",
             }
         ),
     ),
