@@ -128,14 +128,14 @@ rule resample_sup:
         schedule=BOOTWORK + "/schedules/{test_corpus}/{test_seg}/corpus.sup.key.pkl",
         gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/{test_seg}/corpus.sup.key",
     run:
-        train_base = GUESS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}"
-        if not exists(train_base):
+        train_base = wildcards.nick + "/" + wildcards.train_corpus + "-" + wildcards.train_seg
+        if not exists(GUESS + "/" + train_base):
             train_base += "f"
         shell(
             "python scripts/expc.py sigtest resample" +
             " {output} {input.gold} " +
-            train_base + "/{wildcards.test_corpus}-{wildcards.test_seg} " +
-            RESULTS + "/{wildcards.nick}/{wildcards.train_corpus}-{wildcards.train_seg}/{wildcards.test_corpus}-{wildcards.test_seg}.db" +
+            GUESS + "/" + train_base + "/{wildcards.test_corpus}-{wildcards.test_seg} " +
+            RESULTS + "/" + train_base + "/{wildcards.test_corpus}-{wildcards.test_seg}.db" +
             " {input.schedule}"
         )
 
