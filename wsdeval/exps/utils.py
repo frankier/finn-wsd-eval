@@ -23,6 +23,10 @@ def mk_nick(*inbits):
     return ".".join(outbits)
 
 
+class ScoreOutputException(Exception):
+    pass
+
+
 def score(gold, guess):
     scorer = java["Scorer", gold, guess]
     score_out = scorer()
@@ -31,7 +35,10 @@ def score(gold, guess):
         if not line:
             continue
         bits = line.split()
-        assert bits[0][-1] == "="
+        if bits[0][-1] != "=":
+            raise ScoreOutputException(
+                f"Missing = after running: Scorer {gold} {guess}"
+            )
         measures[bits[0][:-1]] = bits[1]
     return measures
 
