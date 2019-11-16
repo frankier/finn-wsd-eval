@@ -11,6 +11,7 @@ from expcomb.table.spec import (
 )
 from expcomb.filter import SimpleFilter
 from .selectedexps import (
+    XLING_SELECTED,
     UNSUP_SELECTED,
     SUP_SELECTED,
     SUP_INOUT_SELECTED,
@@ -151,7 +152,7 @@ LESK_PP_SQUARE_SPEC = SqTableSpec(
     UnlabelledMeasure("F1"),
 )
 
-OVER_GROUPS = SelectDimGroups(*(UNSUP_SELECTED + SUP_INOUT_SELECTED))
+OVER_GROUPS = SelectDimGroups(*(UNSUP_SELECTED + XLING_SELECTED + SUP_INOUT_SELECTED))
 SUP_GROUPS = SelectDimGroups(*SUP_SELECTED)
 LIMITS_GROUPS = SelectDimGroups(*LIMITS_SELECTED)
 

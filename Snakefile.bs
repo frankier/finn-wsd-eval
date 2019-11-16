@@ -22,7 +22,7 @@ def nicks_of_selected(selected):
 
 
 def cmp_inputs(wildcards):
-    from wsdeval.selectedexps import UNSUP_SELECTED, SUP_SELECTED
+    from wsdeval.selectedexps import UNSUP_SELECTED, SUP_SELECTED, XLING_SELECTED
 
     def sup_var():
         train, test = wildcards.cmp_var.split("-")
@@ -39,6 +39,11 @@ def cmp_inputs(wildcards):
             BOOTWORK + "/resamples/" + nick + "/" + training_corpus + "-train/{cmp_var,[^/]+}.pkl"
             for nick in nicks_of_selected(SUP_SELECTED)
             for training_corpus in CORPUS_NAMES
+        ))
+        # Add xling
+        result.extend((
+            BOOTWORK + "/resamples/" + nick + "/semcor/{cmp_var,[^/]+}.pkl"
+            for nick in nicks_of_selected(XLING_SELECTED)
         ))
         # Add unsupervised
         result.extend((
@@ -123,12 +128,12 @@ rule create_schedule:
 
 # Bootstrapping sup
 rule resample_sup:
-    output: BOOTWORK + "/resamples/{nick,[^-/]+}/{train_corpus,[^-/.]+}-{train_seg,[^-/.]+}/{test_corpus,[^-/.]+}-{test_seg,[^-/.]+}.pkl"
+    output: BOOTWORK + "/resamples/{nick,[^-/]+}/{train_corpusseg,[^/.]+}/{test_corpus,[^-/.]+}-{test_seg,[^-/.]+}.pkl"
     input:
         schedule=BOOTWORK + "/schedules/{test_corpus}/{test_seg}/corpus.sup.key.pkl",
         gold=lambda wildcards: CORPUS_DIR_MAP[wildcards.test_corpus]() + "/{test_seg}/corpus.sup.key",
     run:
-        train_base = wildcards.nick + "/" + wildcards.train_corpus + "-" + wildcards.train_seg
+        train_base = wildcards.nick + "/" + wildcards.train_corpusseg
         if not exists(GUESS + "/" + train_base):
             train_base += "f"
         shell(

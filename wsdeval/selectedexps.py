@@ -78,6 +78,9 @@ UNSUP_SELECTED = [
             }
         ),
     ),
+]
+
+XLING_SELECTED = [
     (
         "xAWE-NN",
         SimpleFilter("Supervised", "XAWE-NN", mean="normalized_mean", vec="double"),
