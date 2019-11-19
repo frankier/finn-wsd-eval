@@ -84,13 +84,15 @@ def resampled_f1_score(resample, line_map, guess_map, gold_map):
         if guesses:
             local_tp = 0
             local_fp = 0
+            len_guesses = len(guesses)
+            gold_set = gold_map[sample_key]
             for guess in guesses:
-                if guess in gold_map[sample_key]:
+                if guess in gold_set:
                     local_tp += 1
                 else:
                     local_fp += 1
-            tp += local_tp / len(guesses)
-            fp += local_fp / len(guesses)
+            tp += local_tp / len_guesses
+            fp += local_fp / len_guesses
     all_p = tp + fp
     p = tp / all_p if all_p > 0 else 0
     r = tp / len(resample)
