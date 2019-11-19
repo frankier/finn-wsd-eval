@@ -189,11 +189,11 @@ TABLES = [
         SqTableSpec(
             DimGroups([TRAINF_CORPORA, DEV_CORPORA]),
             SelectDimGroups(
-                ("fasttext", SimpleFilter(sur_words=False, vec="fasttext")),
-                ("word2vec", SimpleFilter(sur_words=False, vec="word2vec")),
-                ("-s", SimpleFilter(sur_words=True, vec=None)),
-                ("fasttext-s", SimpleFilter(sur_words=True, vec="fasttext")),
-                ("word2vec-s", SimpleFilter(sur_words=True, vec="word2vec")),
+                ("default", SimpleFilter(sur_words=True, vec=None)),
+                ("fasttext", SimpleFilter(sur_words=True, vec="fasttext")),
+                ("word2vec", SimpleFilter(sur_words=True, vec="word2vec")),
+                ("fasttext-s", SimpleFilter(sur_words=False, vec="fasttext")),
+                ("word2vec-s", SimpleFilter(sur_words=False, vec="word2vec")),
             ),
             UnlabelledMeasure("F1"),
             box_highlight,
