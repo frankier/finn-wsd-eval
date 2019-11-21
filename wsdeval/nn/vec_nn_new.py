@@ -3,7 +3,7 @@ import logging
 from finntk.wordnet.utils import fi2en_post
 from finntk.wordnet.reader import fiwn_encnt
 from .vec_nn_common import lemmas_from_iden, write_most_freq
-from .new import nearest_from_mats, value_from_mat
+from vecstorenn import nearest_from_mats, value_from_mat
 
 
 logger = logging.getLogger(__name__)

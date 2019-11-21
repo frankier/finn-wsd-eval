@@ -40,7 +40,7 @@ def iter_inst_ctxs(inf, aggf, space, synsets=False, do_new=True):
         iter_instances_grouped,
         norm_wf_lemma_of_tokens,
     )
-    from wsdeval.nn.new import TYPE
+    from vecstorenn import TYPE
 
     def calc_vec(inst_id, texts):
         (be, he, af) = texts
@@ -87,16 +87,14 @@ def train(vec, mean, inf, keyin, model, synsets):
 
         train_vec_nn(WordExpertManager(model, "w"), training_examples)
     else:
-        from wsdeval.nn.new import GroupedVecExactNN
+        from vecstorenn import VecStorage
         from wsdeval.nn.vec_nn_new import train_word_experts, train_synset_examples
 
         if synsets:
-            manager = GroupedVecExactNN(
-                model, space.dim * EXPANSION_FACTOR.get(mean, 1), "wd"
-            )
+            manager = VecStorage(model, space.dim * EXPANSION_FACTOR.get(mean, 1), "wd")
             train_synset_examples(manager, training_examples)
         else:
-            manager = GroupedVecExactNN(
+            manager = VecStorage(
                 model, space.dim * EXPANSION_FACTOR.get(mean, 1), "wd", value_bytes=10
             )
             train_word_experts(manager, training_examples)
@@ -127,16 +125,14 @@ def test(vec, mean, model, inf, keyout, use_freq, synsets):
             WordExpertManager(model), inst_ctxs, keyout, allow_most_freq=use_freq
         )
     else:
-        from wsdeval.nn.new import GroupedVecExactNN
+        from vecstorenn import VecStorage
         from wsdeval.nn.vec_nn_new import test_synset_experts, test_word_experts
 
         if synsets:
-            manager = GroupedVecExactNN(
-                model, space.dim * EXPANSION_FACTOR.get(mean, 1), "rd"
-            )
+            manager = VecStorage(model, space.dim * EXPANSION_FACTOR.get(mean, 1), "rd")
             test_synset_experts(manager, inst_ctxs, keyout, allow_most_freq=use_freq)
         else:
-            manager = GroupedVecExactNN(
+            manager = VecStorage(
                 model, space.dim * EXPANSION_FACTOR.get(mean, 1), "rd", value_bytes=10
             )
             test_word_experts(manager, inst_ctxs, keyout, allow_most_freq=use_freq)
