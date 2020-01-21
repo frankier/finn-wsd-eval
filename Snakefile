@@ -31,15 +31,10 @@ group_at_once_map = SnakeMake.get_group_at_once_map(parse_filter(FILTER))
 nick_to_group_nick_map = SnakeMake.get_nick_to_group_nick_map(parse_filter(FILTER))
 path_nick_map = SnakeMake.get_path_nick_map(parse_filter(FILTER))
 
-def intersect_nicks(filter, **kwargs):
-    if all((k not in filter.opt_dict or filter.opt_dict[k] == v for k, v in kwargs.items())):
-        yield from SnakeMake.get_nicks(filter.intersect_opts(**kwargs))
-
-
 # Utility functions
 def all_results():
     filter = parse_filter(FILTER)
-    for nick in intersect_nicks(filter, sup=True):
+    for nick in SnakeMake.intersect_nicks(filter, sup=True):
         yield from expand(
             RESULTS + "/" + nick + "/{train_corpus}-{train_seg}/{test_corpus}-{test_seg}.db",
             train_corpus=CORPUS_NAMES,
@@ -47,13 +42,13 @@ def all_results():
             test_corpus=CORPUS_NAMES,
             test_seg=TEST_SEGMENT
         )
-    for nick in intersect_nicks(filter, eng_sup=True):
+    for nick in SnakeMake.intersect_nicks(filter, eng_sup=True):
         yield from expand(
             RESULTS + "/" + nick + "/semcor/{test_corpus}-{test_seg}.db",
             test_corpus=CORPUS_NAMES,
             test_seg=TEST_SEGMENT
         )
-    for nick in intersect_nicks(filter, sup=False, eng_sup=False):
+    for nick in SnakeMake.intersect_nicks(filter, sup=False, eng_sup=False):
         yield from expand(
             RESULTS + "/" + nick + "/{test_corpus}-{test_seg}.db",
             test_corpus=CORPUS_NAMES,
