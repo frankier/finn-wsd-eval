@@ -12,20 +12,20 @@ nltk = "==3.4"
 tinydb = "*"
 tinyrecord = "*"
 dataclasses = "*"
-hfst = {version = "*", allows-prereleases = true}
+hfst = {version = "*", allow-prereleases = true}
 finntk = ">=0.0.65"
 pyahocorasick = { git = "https://github.com/frankier/pyahocorasick.git", branch = "stiff-2018-09-20-3" }
 torch = {version = "1.1.0", optional = true}
 elmoformanylangs = {git = "https://github.com/frankier/ELMoForManyLangs.git",rev = "36ec6987e2d00baee6c364d151cd43b813c374a7", optional = true}
 pytorch-pretrained-bert = {version = "*", optional = true}
 snakemake = "^5.5"
-expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "61723f87ab585ae92ac309ee1f796638313d1346"}
+expcomb = {git = "https://github.com/frankier/expcomb.git", rev = "4722095b8757fd8717ee033d327b2447a0e27051"}
 networkx = "^2.3"
 pygraphviz = "^1.5"
 transformers = "^2.1"
-context2vec = {git = "https://github.com/orenmel/context2vec.git"}
+context2vec = {git = "https://github.com/orenmel/context2vec.git", rev = "dbd386222d2eb2a1451fd169dc98a24762b97307"}
 chainer = "^6.5"
-vecstorenn = {git = "https://github.com/frankier/vecstorenn.git"}
+vecstorenn = {git = "https://github.com/frankier/vecstorenn.git", rev = "fe4d13df3b5826b982120f30d604dc1729d9a4ea"}
 
 [tool.poetry.extras]
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]
