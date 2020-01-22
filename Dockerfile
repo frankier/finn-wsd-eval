@@ -6,7 +6,7 @@ ENV LANG=C.UTF-8
 # Apt-get requirements
 RUN apt-get update && apt-get install -y \
     # Pipenv
-        python3 python3.7 python3-pip \
+        python3 python3.7 python3-pip python3-venv \
     # UKB
         libboost-all-dev libboost-program-options-dev libxml-libxml-perl \
     # Python build requirements
