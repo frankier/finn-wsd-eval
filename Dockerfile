@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
 
 
 # Poetry + Pipenv
-RUN set -ex && curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python3
+RUN set -ex && curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py --version 1.0.0 | python3
 RUN ~/.poetry/bin/poetry config virtualenvs.create false
 RUN pip3 install pipenv
 
