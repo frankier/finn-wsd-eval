@@ -36,10 +36,7 @@ def nn():
 
 def iter_inst_ctxs(inf, aggf, space, synsets=False, do_new=True):
     import numpy
-    from wsdeval.formats.sup_corpus import (
-        iter_instances_grouped,
-        norm_wf_lemma_of_tokens,
-    )
+    from stiff.sup_corpus import iter_instances_grouped, norm_wf_lemma_of_tokens
     from vecstorenn import TYPE
 
     def calc_vec(inst_id, texts):

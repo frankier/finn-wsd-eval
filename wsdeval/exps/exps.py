@@ -540,7 +540,7 @@ class Post1stSenseCombExp(Exp):
 
     def run(self, paths, guess_fn):
         import pickle
-        from wsdeval.formats.sup_corpus import iter_keys, iter_instances_grouped
+        from stiff.sup_corpus import iter_keys, iter_instances_grouped
 
         with open(os.environ["GUESS_1ST"], "r") as key1stin:
             gold_map = dict(iter_keys(key1stin))

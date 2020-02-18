@@ -32,7 +32,7 @@ def lesk(vec, mean, inf, keyout, wn_filter, expand, use_freq):
 
 
 def wordvec_lesk(aggf, multispace, wn_filter, expand, use_freq, inf, keyout):
-    from wsdeval.formats.sup_corpus import iter_instances, norm_wf_lemma_of_tokens
+    from stiff.sup_corpus import iter_instances, norm_wf_lemma_of_tokens
 
     lesk = MultilingualLesk(multispace, aggf, wn_filter, expand, use_freq)
     for inst_id, lemma_pos, (be, he, af) in iter_instances(inf):

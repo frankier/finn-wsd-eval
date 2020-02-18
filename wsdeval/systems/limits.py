@@ -5,7 +5,7 @@ from os.path import join as pjoin, exists
 from os import makedirs
 import pickle
 
-from wsdeval.formats.sup_corpus import iter_instances_grouped, next_key
+from stiff.sup_corpus import iter_instances_grouped, next_key
 
 
 @click.group()

@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-stiff = {git = "https://github.com/frankier/STIFF.git",rev = "4bccff15ec1c4470e23cafe964c5b0855b703141"}
+stiff = {git = "https://github.com/frankier/STIFF.git",rev = "53e343f8c14e6a602c5198da07cc48c550f93b6c"}
 nltk = "==3.4"
 tinydb = "*"
 tinyrecord = "*"
@@ -26,6 +26,7 @@ transformers = "^2.1"
 context2vec = {git = "https://github.com/orenmel/context2vec.git", rev = "dbd386222d2eb2a1451fd169dc98a24762b97307"}
 chainer = "^6.5"
 vecstorenn = {git = "https://github.com/frankier/vecstorenn.git", rev = "fe4d13df3b5826b982120f30d604dc1729d9a4ea"}
+matplotlib-label-lines = "^0.3.6"
 
 [tool.poetry.extras]
 gpu = ["elmoformanylangs", "torch", "pytorch-pretrained-bert"]

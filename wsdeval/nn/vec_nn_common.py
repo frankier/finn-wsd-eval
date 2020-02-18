@@ -1,7 +1,7 @@
 from itertools import starmap
 import numpy as np
 
-from wsdeval.formats.sup_corpus import next_key
+from stiff.sup_corpus import next_key
 from finntk.wordnet.reader import fiwn_encnt
 from wsdeval.formats.wordnet import write_lemma
 

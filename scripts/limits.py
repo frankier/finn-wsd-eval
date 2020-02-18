@@ -1,6 +1,6 @@
 import click
 from stiff.eval import get_eval_paths
-from wsdeval.formats.sup_corpus import iter_lexelts, next_key
+from stiff.sup_corpus import iter_lexelts, next_key
 from finntk.wordnet.reader import fiwn
 
 

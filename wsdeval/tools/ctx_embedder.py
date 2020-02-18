@@ -3,7 +3,7 @@ import numpy
 import os
 from functools import partial
 from itertools import groupby
-from wsdeval.formats.sup_corpus import iter_instances
+from stiff.sup_corpus import iter_instances
 from wsdeval.nn.vec_nn_common import normalize
 from itertools import islice
 
